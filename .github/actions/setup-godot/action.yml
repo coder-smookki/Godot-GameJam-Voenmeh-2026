@@ -1,0 +1,74 @@
+name: Установка Godot
+description: Ставит редактор Godot версии из файла .godot-version и при необходимости шаблоны экспорта Windows
+
+inputs:
+  templates:
+    description: Установить шаблоны экспорта Windows
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Версия Godot
+      id: version
+      shell: bash
+      run: |
+        version="$(tr -d '[:space:]' < .godot-version)"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        echo "templates_dir=$HOME/.local/share/godot/export_templates/${version/-/.}" >> "$GITHUB_OUTPUT"
+        echo "base_url=https://github.com/godotengine/godot/releases/download/$version" >> "$GITHUB_OUTPUT"
+
+    - name: Кэш редактора
+      id: editor-cache
+      uses: actions/cache@v6
+      with:
+        path: ~/godot-bin
+        key: godot-editor-${{ steps.version.outputs.version }}
+
+    - name: Скачать редактор
+      if: steps.editor-cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        VERSION: ${{ steps.version.outputs.version }}
+        BASE_URL: ${{ steps.version.outputs.base_url }}
+      run: |
+        archive="Godot_v${VERSION}_linux.x86_64.zip"
+        cd "$RUNNER_TEMP"
+        curl -fsSL --retry 3 -o SHA512-SUMS.txt "$BASE_URL/SHA512-SUMS.txt"
+        curl -fsSL --retry 3 -o "$archive" "$BASE_URL/$archive"
+        grep " $archive\$" SHA512-SUMS.txt | sha512sum -c -
+        unzip -q "$archive"
+        mkdir -p "$HOME/godot-bin"
+        mv "Godot_v${VERSION}_linux.x86_64" "$HOME/godot-bin/godot"
+        chmod +x "$HOME/godot-bin/godot"
+
+    - name: Добавить Godot в PATH
+      shell: bash
+      run: echo "$HOME/godot-bin" >> "$GITHUB_PATH"
+
+    - name: Кэш шаблонов экспорта
+      if: inputs.templates == 'true'
+      id: templates-cache
+      uses: actions/cache@v6
+      with:
+        path: ${{ steps.version.outputs.templates_dir }}
+        key: godot-templates-windows-${{ steps.version.outputs.version }}
+
+    - name: Скачать шаблоны экспорта Windows
+      if: inputs.templates == 'true' && steps.templates-cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        VERSION: ${{ steps.version.outputs.version }}
+        BASE_URL: ${{ steps.version.outputs.base_url }}
+        TEMPLATES_DIR: ${{ steps.version.outputs.templates_dir }}
+      run: |
+        archive="Godot_v${VERSION}_export_templates.tpz"
+        cd "$RUNNER_TEMP"
+        curl -fsSL --retry 3 -o SHA512-SUMS.txt "$BASE_URL/SHA512-SUMS.txt"
+        curl -fsSL --retry 3 -o "$archive" "$BASE_URL/$archive"
+        grep " $archive\$" SHA512-SUMS.txt | sha512sum -c -
+        mkdir -p "$TEMPLATES_DIR"
+        unzip -q -j "$archive" "templates/windows_*_x86_64.exe" "templates/version.txt" -d "$TEMPLATES_DIR"
+        ls -la "$TEMPLATES_DIR"
+        rm -f "$archive"

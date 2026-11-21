@@ -1,0 +1,104 @@
+name: Проверки и сборка
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Линтеры
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Установить gdtoolkit
+        run: pip install "gdtoolkit==4.5.0"
+
+      - name: Формат кода
+        run: gdformat --check src tests
+
+      - name: Линтер
+        run: gdlint src tests
+
+      - name: Только docstring-комментарии
+        run: |
+          if grep -rnE "^[[:space:]]*#[^#]" --include="*.gd" src tests; then
+            echo "::error::В коде допускаются только комментарии-docstring (##)"
+            exit 1
+          fi
+
+  test:
+    name: Тесты
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup-godot
+
+      - name: Импорт ресурсов
+        run: |
+          godot --headless --path . --import 2>&1 | tee import.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script" import.log; then
+            echo "::error::Импорт завершился с ошибками скриптов"
+            exit 1
+          fi
+
+      - name: Тесты
+        run: godot --headless --path . res://tests/test_runner.tscn
+
+  build:
+    name: Сборка .exe
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      BUILD_VERSION: dev-${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup-godot
+        with:
+          templates: "true"
+
+      - name: Короткая версия сборки
+        run: echo "BUILD_VERSION=dev-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Импорт ресурсов
+        run: |
+          godot --headless --path . --import 2>&1 | tee import.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script" import.log; then
+            echo "::error::Импорт завершился с ошибками скриптов"
+            exit 1
+          fi
+
+      - name: Экспорт Windows
+        run: |
+          sed -i "s|^config/version=.*|config/version=\"${BUILD_VERSION}\"|" project.godot
+          mkdir -p build
+          godot --headless --path . --export-release "Windows" build/Eksperiment404.exe 2>&1 | tee export.log
+          if [ ! -s build/Eksperiment404.exe ] || [ "$(stat -c%s build/Eksperiment404.exe)" -lt 10000000 ]; then
+            echo "::error::Файл Eksperiment404.exe не собран"
+            exit 1
+          fi
+          ls -la build
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Eksperiment404-windows-${{ env.BUILD_VERSION }}
+          path: build/Eksperiment404.exe
+          if-no-files-found: error
+          retention-days: 14

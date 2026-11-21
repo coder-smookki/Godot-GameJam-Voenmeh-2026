@@ -1,0 +1,69 @@
+name: Релиз
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Релиз из pull request
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    env:
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      PR_BODY: ${{ github.event.pull_request.body }}
+      MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+      BUILD_VERSION: v0.${{ github.event.pull_request.number }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+
+      - uses: ./.github/actions/setup-godot
+        with:
+          templates: "true"
+
+      - name: Импорт ресурсов
+        run: |
+          godot --headless --path . --import 2>&1 | tee import.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script" import.log; then
+            echo "::error::Импорт завершился с ошибками скриптов"
+            exit 1
+          fi
+
+      - name: Экспорт Windows
+        run: |
+          sed -i "s|^config/version=.*|config/version=\"${BUILD_VERSION}\"|" project.godot
+          mkdir -p build
+          godot --headless --path . --export-release "Windows" build/Eksperiment404.exe 2>&1 | tee export.log
+          if [ ! -s build/Eksperiment404.exe ] || [ "$(stat -c%s build/Eksperiment404.exe)" -lt 10000000 ]; then
+            echo "::error::Файл Eksperiment404.exe не собран"
+            exit 1
+          fi
+          ls -la build
+
+      - name: Контрольная сумма
+        working-directory: build
+        run: sha256sum Eksperiment404.exe > Eksperiment404.exe.sha256
+
+      - name: Опубликовать релиз
+        run: |
+          printf '%s\n' "$PR_BODY" > notes.md
+          if [ -z "$(tr -d '[:space:]' < notes.md)" ]; then
+            gh release create "$BUILD_VERSION" build/Eksperiment404.exe build/Eksperiment404.exe.sha256 \
+              --target "$MERGE_SHA" --title "$PR_TITLE" --generate-notes
+          else
+            gh release create "$BUILD_VERSION" build/Eksperiment404.exe build/Eksperiment404.exe.sha256 \
+              --target "$MERGE_SHA" --title "$PR_TITLE" --notes-file notes.md
+          fi
