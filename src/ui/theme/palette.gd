@@ -17,6 +17,7 @@ const PLAYER := Color("ff1fb4")
 const CAPI := Color("a8703a")
 const NPC := Color("6b7280")
 const FONT_SIZE := 8
+const CORNER := 3
 
 
 ## Возвращает цвет для тона варианта развилки.
@@ -31,7 +32,7 @@ static func tone(tone_id: String) -> Color:
 	return NEUTRAL
 
 
-## Собирает плоскую рамку панели в стиле интерфейса.
+## Собирает рамку панели в стиле интерфейса: полупрозрачный тёмный фон и срезанные углы.
 ## [param border] - цвет рамки.
 ## [param width] - толщина рамки в пикселях.
 ## Возвращает новый стиль для панелей и кнопок.
@@ -41,6 +42,9 @@ static func frame(border: Color, width: int = 1) -> StyleBoxFlat:
 	style.border_color = border
 	style.set_border_width_all(width)
 	style.set_content_margin_all(4.0)
+	style.set_corner_radius_all(CORNER)
+	style.corner_detail = 1
+	style.anti_aliasing = false
 	return style
 
 

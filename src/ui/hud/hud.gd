@@ -4,10 +4,14 @@ extends Control
 ##
 ## Ничего не опрашивает каждый кадр: обновляется по сигналам игры и заражения.
 
+const TASK_FLASH := Color(1.6, 1.4, 0.8)
+const TASK_FLASH_SEC := 0.6
+
 @onready var _task_panel: PanelContainer = $TaskPanel
 @onready var _task_text: Label = $TaskPanel/Box/Text
 @onready var _floor_name: Label = $FloorPanel/Box/Name
 @onready var _infection: Label = $FloorPanel/Box/Infection
+@onready var _meter: ProgressBar = $FloorPanel/Box/Meter
 @onready var _dim: ColorRect = $Dim
 @onready var _debugger_label: Label = $DebuggerLabel
 
@@ -31,10 +35,13 @@ func _on_room_entered(_code: String) -> void:
 	_refresh_floor()
 
 
-## Обновляет строку задания.
+## Обновляет строку задания; новое задание коротко подсвечивается.
 ## [param text_key] - ключ текста задания; при пустом ключе панель прячется.
 func _on_task_changed(text_key: String) -> void:
 	_task_panel.visible = not text_key.is_empty()
+	if _task_text.text != tr(text_key):
+		_task_panel.modulate = TASK_FLASH
+		create_tween().tween_property(_task_panel, "modulate", Color.WHITE, TASK_FLASH_SEC)
 	_task_text.text = tr(text_key)
 
 
@@ -53,11 +60,13 @@ func _on_infection_changed(level: int, _percent: int) -> void:
 		_refresh_floor()
 
 
-## Перечитывает название этажа и его заражение.
+## Перечитывает название этажа, его заражение и полоску под ним.
 func _refresh_floor() -> void:
 	var level := Infection.current_floor
 	_floor_name.text = tr(LocationCatalog.floor_key(level))
 	_infection.visible = Infection.is_active(level) or Infection.is_cured(level)
+	_meter.visible = Infection.is_active(level) and not Infection.is_cured(level)
+	_meter.value = Infection.percent(level)
 	if Infection.is_cured(level):
 		_infection.text = tr("HUD_CURED")
 		_infection.modulate = Palette.OK

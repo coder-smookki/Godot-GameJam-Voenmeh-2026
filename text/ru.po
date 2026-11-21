@@ -321,16 +321,22 @@ msgid "ELEVATOR_LOCK_2"
 msgstr "кнопка пропала"
 
 msgid "PULL_TITLE"
-msgstr "ТЯНИ! ЖМИ ПРОБЕЛ"
-
-msgid "PULL_TITLE_HOLD"
-msgstr "ТЯНИ! ДЕРЖИ ПРОБЕЛ"
+msgstr "ТЯНИ!"
 
 msgid "PULL_JERK"
 msgstr "РЫВОК {current} ИЗ {total}"
 
 msgid "PULL_KEY"
 msgstr "ПРОБЕЛ"
+
+msgid "PULL_PRESS"
+msgstr "ЖМИ"
+
+msgid "PULL_HOLD"
+msgstr "ДЕРЖИ"
+
+msgid "PULL_LOST"
+msgstr "Шахматка отбросила вас. Попробуйте ещё раз"
 
 msgid "NAME_VANYA"
 msgstr "Ваня"
@@ -349,6 +355,9 @@ msgstr "болтовня …"
 
 msgid "DIALOGUE_TAG_SIDE"
 msgstr "ПОБОЧНОЕ ★"
+
+msgid "DIALOGUE_PICK"
+msgstr "ЧТО ОТВЕТИТЬ?"
 
 msgid "VANYA_SCREAM_1"
 msgstr "Помогите!"

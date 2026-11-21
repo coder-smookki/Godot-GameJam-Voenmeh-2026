@@ -73,41 +73,88 @@ func test_elevator_needs_every_boss() -> void:
 	equal(Elevator.goal_floor(), 2, "цель осталась на втором этаже")
 
 
-## Мини-игра «Тяни!»: три рывка, шкала утекает всё быстрее и не наказывает за ноль.
+## Мини-игра «Тяни!»: нужная клавиша растит шкалу, чужая уменьшает, рывки идут всё труднее.
 func test_pull_logic() -> void:
-	var pull := PullLogic.new()
+	var pull := PullLogic.new(7)
 	equal(pull.jerk, 0, "первый рывок")
-	check(not pull.press(), "одного нажатия мало")
-	check(pull.level > 0.0, "шкала выросла")
-	pull.advance(60.0, false)
-	equal(pull.level, 0.0, "шкала утекла до нуля")
-	equal(pull.jerk, 0, "за ноль рывок не отнимают")
+	equal(pull.level, PullLogic.START_LEVEL, "шкала начинается не с нуля")
+	equal(pull.pressure(), PullLogic.START_PRESSURE, "шахматка на исходной")
+	var wrong := (pull.key + 1) % PullLogic.KEY_COUNT
+	check(not pull.press(wrong), "чужая клавиша не считается")
+	check(pull.level < PullLogic.START_LEVEL, "чужая клавиша уменьшает шкалу")
+	check(pull.press(pull.key), "нужная клавиша принята")
+	var first_key := pull.key
 	var presses := 0
-	while pull.jerk == 0:
-		pull.press()
+	while pull.jerk == 0 and presses < 50:
+		pull.press(pull.key)
 		presses += 1
-	equal(presses, 9, "девять нажатий подряд заполняют шкалу")
-	equal(pull.level, 0.0, "новый рывок начинается с пустой шкалы")
-	pull.level = 0.5
-	pull.advance(1.0, false)
-	var second := 0.5 - pull.level
+	equal(pull.jerk, 1, "шкала заполнена, рывок засчитан")
+	check(pull.key != first_key, "в новом рывке другая клавиша")
+	equal(pull.level, PullLogic.START_LEVEL, "новый рывок начинается с той же шкалы")
+	equal(pull.pressure(), 1, "шахматка отступила")
+	pull.level = 0.9
+	pull.advance(0.5)
+	var second := 0.9 - pull.level
 	pull.jerk = 2
-	pull.level = 0.5
-	pull.advance(1.0, false)
-	check(0.5 - pull.level > second, "в третьем рывке шкала утекает быстрее")
+	pull.level = 0.9
+	pull.advance(0.5)
+	check(0.9 - pull.level > second, "в третьем рывке шкала утекает быстрее")
 	check(not pull.is_done(), "игра ещё идёт")
 	pull.level = 0.95
-	check(pull.press(), "последнее нажатие завершает рывок")
-	check(pull.is_done(), "три рывка сделаны")
-	check(not pull.press(), "после конца нажатия не считаются")
+	pull.press(pull.key)
+	check(pull.is_won() and pull.is_done() and not pull.is_lost(), "три рывка сделаны")
+	check(not pull.press(pull.key), "после конца нажатия не считаются")
+
+
+## Пустая шкала даёт промах и приближает шахматку, три промаха проигрывают игру.
+func test_pull_misses() -> void:
+	var pull := PullLogic.new(3)
+	var counts: Array[int] = []
+	pull.missed.connect(func(count: int) -> void: counts.append(count))
+	pull.advance(2.1)
+	equal(pull.misses, 1, "шкала утекла до нуля: промах")
+	equal(pull.level, PullLogic.START_LEVEL, "после промаха шкала возвращается к началу")
+	equal(pull.pressure(), PullLogic.START_PRESSURE + 1, "шахматка наступила")
+	check(not pull.is_done(), "один промах игру не заканчивает")
+	pull.advance(2.1)
+	pull.advance(2.1)
+	equal(counts, [1, 2, 3] as Array[int], "о каждом промахе сообщено")
+	check(pull.is_lost() and pull.is_done() and not pull.is_won(), "три промаха: поражение")
+	equal(pull.pressure(), PullLogic.MAX_PRESSURE, "шахматка поглотила героя")
+	pull.advance(5.0)
+	equal(pull.misses, PullLogic.MISSES, "после поражения счёт не растёт")
+
+
+## Клавиша не меняется внутри первого рывка, меняется внутри следующих и не повторяет прежнюю.
+func test_pull_key_switch() -> void:
+	var pull := PullLogic.new(11)
+	var first := pull.key
+	for step: int in 30:
+		pull.level = 0.9
+		pull.advance(0.1)
+	equal(pull.key, first, "в первом рывке клавиша одна")
+	pull.jerk = 1
+	var changes := 0
+	var last := pull.key
+	for step: int in 60:
+		pull.level = 0.9
+		pull.advance(0.1)
+		if pull.key != last:
+			changes += 1
+			last = pull.key
+	check(changes >= 2, "во втором рывке клавиша меняется по ходу")
+	var same := PullLogic.new(11)
+	equal(same.key, first, "одно зерно даёт ту же первую клавишу")
+	equal(PullGame.KEY_CODES.size(), PullLogic.KEY_COUNT, "у каждой клавиши есть код")
+	equal(PullGame.KEY_LABELS.size(), PullLogic.KEY_COUNT, "у каждой клавиши есть подпись")
 
 
 ## Режим «удерживать» позволяет пройти мини-игру без частых нажатий.
 func test_pull_hold_mode() -> void:
-	var pull := PullLogic.new()
+	var pull := PullLogic.new(5)
 	var seconds := 0.0
 	while not pull.is_done() and seconds < 120.0:
-		pull.advance(0.1, true)
+		pull.advance(0.1, pull.key)
 		seconds += 0.1
-	check(pull.is_done(), "удержание проходит все три рывка")
+	check(pull.is_won(), "удержание нужной клавиши проходит все три рывка")
 	check(seconds < 30.0, "удержание занимает меньше полминуты")

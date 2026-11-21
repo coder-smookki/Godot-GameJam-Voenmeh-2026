@@ -64,12 +64,14 @@ func test_vanya_rescue() -> void:
 	vanya.interact(room.player)
 	check(Ui.pull.visible and tree.paused, "мини-игра открыта и мир стоит")
 	check(not room.player.visible, "героя рисует кадр мини-игры")
-	equal(vanya.get_node("Art/Pull").texture, StuckVanya.FRAMES[0], "первый кадр")
+	equal(vanya.get_node("Art/Pull").texture, StuckVanya.FRAMES[1], "шахматка на исходной")
+	check(not Ui.hud.visible, "задание спрятано на время мини-игры")
 	var presses := 0
 	while Ui.pull.visible and presses < 100:
 		Ui.pull.press()
 		presses += 1
-	equal(presses, 27, "три рывка по девять нажатий")
+	equal(presses, 18, "три рывка по шесть нажатий нужной клавиши")
+	check(Ui.hud.visible, "задание вернулось")
 	check(World.is_marked("vanya_saved"), "Ваня спасён")
 	equal(Game.task_key, "TASK_GO_FLOOR_2", "новое задание")
 	check(room.player.visible, "герой снова на ногах")
@@ -84,6 +86,38 @@ func test_vanya_rescue() -> void:
 	check(Elevator.is_working(), "лифт поедет на второй этаж")
 	await Game.goto_room("vestibule", "door")
 	check(not tree.current_scene.get_node("Props/Scream").visible, "крика больше нет")
+
+
+## Три промаха в мини-игре: шахматка отбрасывает героя, Ваня не спасён, можно пробовать снова.
+func test_vanya_rescue_lost() -> void:
+	await start_game()
+	await Game.goto_room("wardrobe", "door")
+	var room := tree.current_scene as Room
+	var vanya: StuckVanya = room.get_node("Actors/Vanya")
+	vanya.interact(room.player)
+	var presses := 0
+	while Ui.pull.visible and presses < 100:
+		Ui.pull.press_key((Ui.pull.current_key() + 1) % PullLogic.KEY_COUNT)
+		presses += 1
+		if presses == 8:
+			equal(
+				vanya.get_node("Art/Pull").texture,
+				StuckVanya.FRAMES[2],
+				"после промаха шахматка ближе"
+			)
+	equal(presses, 24, "по восемь чужих клавиш на промах")
+	check(not tree.paused, "мини-игра закрыта")
+	equal(vanya.get_node("Art/Pull").texture, StuckVanya.FRAMES[3], "шахматка накрыла героя")
+	await tree.create_timer(StuckVanya.SWALLOW_SEC + 0.2).timeout
+	check(not World.is_marked("vanya_saved"), "Ваня не спасён")
+	check(room.player.visible, "герой снова на ногах")
+	equal(room.player.global_position.x, StuckVanya.HERO_THROWN_X, "героя отбросило к двери")
+	check(vanya.get_node("Art/Mass").visible, "ком шахматки на месте")
+	vanya.interact(room.player)
+	check(Ui.pull.visible, "можно попробовать ещё раз")
+	while Ui.pull.visible:
+		Ui.pull.press()
+	check(World.is_marked("vanya_saved"), "со второй попытки Ваня спасён")
 
 
 ## Лифт везёт только на открытые этажи и закрывает выход домой.
@@ -223,11 +257,12 @@ func test_dialogue_choices() -> void:
 		finished.append(await Ui.dialogue.play(DialogueCatalog.talk("vanya_rescue")))
 	listener.call()
 	check(Ui.dialogue.visible and tree.paused, "разговор открыт")
-	var choices: VBoxContainer = Ui.dialogue.get_node("Sheet/Box/Choices")
+	var choices: VBoxContainer = Ui.dialogue.get_node("Pick/Choices")
 	Ui.dialogue.choose(0)
 	equal(choices.get_child_count(), 0, "пока текст печатается, ответов нет")
 	Ui.dialogue.advance()
 	equal(choices.get_child_count(), 2, "предложены два ответа")
+	check(Ui.dialogue.get_node("Pick").visible, "ответы показаны плашками посреди экрана")
 	Ui.dialogue.choose(5)
 	equal(choices.get_child_count(), 2, "ответа с таким номером нет")
 	Ui.dialogue.choose(1)
@@ -238,6 +273,7 @@ func test_dialogue_choices() -> void:
 	equal(choices.get_child_count(), 1, "второй раз о том же не спросить")
 	Ui.dialogue.choose(0)
 	finish_talk()
+	check(not Ui.dialogue.get_node("Pick").visible, "плашки ответов убраны")
 	check(not Ui.dialogue.visible and not tree.paused, "разговор закончен")
 	equal(finished, [true] as Array[bool], "разговор дошёл до конца")
 

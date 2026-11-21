@@ -1,6 +1,7 @@
 [gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://src/ui/dev_menu/dev_menu.gd" id="1"]
+[ext_resource type="Script" path="res://src/ui/theme/trim.gd" id="trim"]
 
 [node name="DevMenu" type="Control"]
 visible = false
@@ -95,3 +96,9 @@ text = "DEV_PLAN"
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.760784, 0.878431, 1)
 autowrap_mode = 3
+
+[node name="Trim" type="Control" parent="Panel"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("trim")
+inset = 5.0

@@ -1,9 +1,10 @@
 class_name DialogueBox
 extends Modal
-## Окно разговора: портрет, имя, печатающийся текст и ответы с метками.
+## Окно разговора: полупрозрачная панель с портретом, именем и печатающимся текстом.
 ##
-## Реплики приходят готовым списком из [DialogueCatalog]. Ответ с меткой «сюжет» ведёт
-## разговор дальше; после остальных ответов игрок возвращается к выбору.
+## Реплики приходят готовым списком из [DialogueCatalog]. Ответы игрока появляются
+## плашками посреди экрана. Ответ с меткой «сюжет» ведёт разговор дальше; после остальных
+## ответов игрок возвращается к выбору.
 
 signal typed
 signal advanced
@@ -12,11 +13,15 @@ signal picked(index: int)
 const CHARS_PER_SEC := 45.0
 const SLIDE_SEC := 0.16
 const BLINK_SEC := 0.35
-const HEIGHT := 98.0
+const REST_OFFSET := 100.0
+const ROW_SIZE := Vector2(320.0, 24.0)
+const ROW_FADE_SEC := 0.14
+const ROW_DELAY_SEC := 0.06
 const MARKER := "▶"
 const NARRATION_COLOR := Color("b9c2d6")
-const ROW_ACTIVE := Color("1a2238")
-const ROW_MARGINS := Vector4(17.0, 3.0, 4.0, 2.0)
+const ROW_BORDER := Color(0.33, 0.39, 0.56)
+const ROW_ACTIVE := Color(0.1, 0.13, 0.23, 0.96)
+const ROW_MARGINS := Vector4(20.0, 7.0, 8.0, 5.0)
 const TAG_COLORS: Dictionary = {
 	DialogueCatalog.TAG_STORY: Palette.GOAL,
 	DialogueCatalog.TAG_CHAT: Palette.NEUTRAL,
@@ -32,9 +37,11 @@ var _offered: Array[int] = []
 @onready var _sheet: Control = $Sheet
 @onready var _frame: Panel = $Sheet/Frame
 @onready var _portrait: Portrait = $Sheet/Frame/Portrait
-@onready var _name: Label = $Sheet/Box/Name
-@onready var _text: Label = $Sheet/Box/Text
-@onready var _choices: VBoxContainer = $Sheet/Box/Choices
+@onready var _tag: PanelContainer = $Sheet/Tag
+@onready var _name: Label = $Sheet/Tag/Name
+@onready var _text: Label = $Sheet/Text
+@onready var _pick: Control = $Pick
+@onready var _choices: VBoxContainer = $Pick/Choices
 @onready var _more: Label = $Sheet/More
 
 
@@ -57,8 +64,15 @@ func _process(delta: float) -> void:
 
 
 ## Пропускает печать или переходит к следующей реплике по клавише или клику.
+## Пока игрок выбирает ответ, клавиша взаимодействия нажимает выбранную плашку.
 ## [param event] - событие ввода.
 func _input(event: InputEvent) -> void:
+	if visible and not _offered.is_empty() and event.is_action_pressed("interact"):
+		var focused := get_viewport().gui_get_focus_owner() as Button
+		if focused != null and focused.get_parent() == _choices:
+			get_viewport().set_input_as_handled()
+			focused.pressed.emit()
+		return
 	if not visible or not (_typing or _waiting):
 		return
 	var pressed := event.is_action_pressed("ui_accept") or event.is_action_pressed("interact")
@@ -105,9 +119,9 @@ func play(lines: Array) -> bool:
 ## Выезжает снизу и очищает прошлый разговор.
 func _opened() -> void:
 	_frame.hide()
-	_name.hide()
+	_tag.hide()
 	_text.text = ""
-	var rest := size.y - HEIGHT
+	var rest := size.y - REST_OFFSET
 	_sheet.position.y = size.y
 	create_tween().tween_property(_sheet, "position:y", rest, SLIDE_SEC)
 
@@ -169,9 +183,10 @@ func _fill_line(line: Dictionary) -> void:
 	var speaker := str(line.get("speaker", ""))
 	var known := SpeakerCatalog.has(speaker)
 	_frame.visible = known
-	_name.visible = known
+	_tag.visible = known
 	if known:
 		_name.text = tr(SpeakerCatalog.name_key(speaker))
+		_tag.reset_size()
 		_portrait.show_speaker(speaker)
 	var color := Palette.TEXT if known else NARRATION_COLOR
 	_text.add_theme_color_override("font_color", color)
@@ -203,7 +218,8 @@ func _set_waiting(waiting: bool) -> void:
 	_more.visible = waiting
 
 
-## Строит строки ответов, о которых игрок ещё не спрашивал, и ставит фокус на первую.
+## Строит посреди экрана плашки ответов, о которых игрок ещё не спрашивал.
+## Плашки проявляются по очереди, фокус стоит на первой; тосты на это время спрятаны.
 ## [param options] - все ответы реплики.
 ## [param asked] - номера ответов, которые игрок уже выбирал.
 func _show_options(options: Array, asked: Array[int]) -> void:
@@ -211,12 +227,19 @@ func _show_options(options: Array, asked: Array[int]) -> void:
 	for index: int in options.size():
 		if index in asked:
 			continue
+		var row := _make_row(index, options[index])
+		row.modulate.a = 0.0
+		var fade := row.create_tween()
+		fade.tween_interval(ROW_DELAY_SEC * _offered.size())
+		fade.tween_property(row, "modulate:a", 1.0, ROW_FADE_SEC)
 		_offered.append(index)
-		_choices.add_child(_make_row(index, options[index]))
+		_choices.add_child(row)
+	_pick.show()
+	Ui.toasts.hide()
 	_choices.get_child(0).grab_focus()
 
 
-## Собирает строку ответа: маркер выбора слева, текст и метка справа.
+## Собирает плашку ответа: маркер выбора слева, текст и метка справа.
 ## [param index] - номер ответа в реплике.
 ## [param option] - словарь ответа.
 ## Возвращает кнопку, готовую к добавлению в список.
@@ -224,13 +247,14 @@ func _make_row(index: int, option: Dictionary) -> Button:
 	var row := Button.new()
 	row.text = tr(str(option.get("text", "")))
 	row.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	row.add_theme_stylebox_override("normal", _row_style(Color.TRANSPARENT))
+	row.custom_minimum_size = ROW_SIZE
+	row.add_theme_stylebox_override("normal", _row_style(Palette.UI_BACKGROUND, ROW_BORDER))
 	for state: String in ["hover", "pressed", "focus"]:
-		row.add_theme_stylebox_override(state, _row_style(ROW_ACTIVE))
+		row.add_theme_stylebox_override(state, _row_style(ROW_ACTIVE, Palette.GOAL))
 	row.pressed.connect(choose.bind(index))
 	row.mouse_entered.connect(row.grab_focus)
 	var marker := _row_label(MARKER, HORIZONTAL_ALIGNMENT_LEFT, Palette.TEXT)
-	marker.offset_left = 4.0
+	marker.offset_left = 7.0
 	marker.hide()
 	row.add_child(marker)
 	row.focus_entered.connect(marker.show)
@@ -240,7 +264,7 @@ func _make_row(index: int, option: Dictionary) -> Button:
 	var tag_label := _row_label(
 		tr(DialogueCatalog.tag_key(tag)), HORIZONTAL_ALIGNMENT_RIGHT, tag_color
 	)
-	tag_label.offset_right = -6.0
+	tag_label.offset_right = -8.0
 	row.add_child(tag_label)
 	return row
 
@@ -261,11 +285,12 @@ func _row_label(value: String, alignment: HorizontalAlignment, color: Color) -> 
 	return label
 
 
-## Собирает фон строки ответа.
-## [param color] - цвет фона; прозрачный для строки без фокуса.
+## Собирает рамку плашки ответа.
+## [param color] - цвет фона.
+## [param border] - цвет рамки; у выбранной плашки он жёлтый.
 ## Возвращает стиль с отступом под маркер выбора.
-func _row_style(color: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
+func _row_style(color: Color, border: Color) -> StyleBoxFlat:
+	var style := Palette.frame(border)
 	style.bg_color = color
 	style.content_margin_left = ROW_MARGINS.x
 	style.content_margin_top = ROW_MARGINS.y
@@ -274,9 +299,11 @@ func _row_style(color: Color) -> StyleBoxFlat:
 	return style
 
 
-## Убирает строки ответов прошлой реплики.
+## Убирает плашки ответов прошлой реплики.
 func _clear_choices() -> void:
 	_offered.clear()
+	_pick.hide()
+	Ui.toasts.show()
 	for child: Node in _choices.get_children():
 		_choices.remove_child(child)
 		child.queue_free()

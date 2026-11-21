@@ -3,8 +3,9 @@ extends Interactable
 ## Ваня в гардеробе: сначала застрял в шахматке, после мини-игры «Тяни!» свободен.
 ##
 ## Сцену спасения показывают кадры художниц: ком шахматки и герой, который тянет.
-## С каждым рывком шахматка отступает на кадр. Слои нарисованы на холсте всей комнаты,
-## поэтому лежат в координатах комнаты и не двигаются вместе с этим узлом.
+## Рывки отодвигают шахматку, промахи приближают, после трёх промахов она отбрасывает героя.
+## Слои нарисованы на холсте всей комнаты, поэтому лежат в координатах комнаты и не двигаются
+## вместе с этим узлом.
 
 const SAVED_MARK := "vanya_saved"
 const RESCUE_TALK := "vanya_rescue"
@@ -12,13 +13,27 @@ const AFTER_TALK := "vanya_after"
 const FREE_X := 660.0
 const HERO_PULL_X := 500.0
 const HERO_FREE_X := 560.0
+const HERO_THROWN_X := 300.0
 const REMNANT_SCALE := 0.55
 const SHRINK_SEC := 0.5
+const SWALLOW_SEC := 0.7
+const ZOOM := 1.2
+const ZOOM_SEC := 0.25
+const PULL_JOLT := 3.0
+const JERK_JOLT := 9.0
+const JOLT_SEC := 0.12
+const SPARKS_SEC := 0.2
+const MISS_TINT := Color(1.6, 0.5, 0.5)
 const FRAMES: Array[Texture2D] = [
-	preload("res://assets/minigames/pull/pull_3.png"),
-	preload("res://assets/minigames/pull/pull_2.png"),
 	preload("res://assets/minigames/pull/pull_1.png"),
+	preload("res://assets/minigames/pull/pull_2.png"),
+	preload("res://assets/minigames/pull/pull_3.png"),
+	preload("res://assets/minigames/pull/mass.png"),
 ]
+
+var _player: Player = null
+var _jolt: Tween = null
+var _sparks_off: Tween = null
 
 @onready var _body: Node2D = $Body
 @onready var _shadow: Node2D = $Shadow
@@ -26,6 +41,8 @@ const FRAMES: Array[Texture2D] = [
 @onready var _mass: Sprite2D = $Art/Mass
 @onready var _pull: Sprite2D = $Art/Pull
 @onready var _remnant: Sprite2D = $Art/Remnant
+@onready var _sparks: CPUParticles2D = $Art/Sparks
+@onready var _burst: CPUParticles2D = $Art/Burst
 @onready var _barrier: CollisionShape2D = $Barrier/Shape
 
 
@@ -42,22 +59,39 @@ func prompt_text() -> String:
 	return super()
 
 
-## Запускает мини-игру спасения, а после неё разговор; спасённый Ваня просто разговаривает.
-## Разговор начинается, когда остаток шахматки сжался и больше не закрывает Ваню.
+## Запускает мини-игру спасения, а после победы разговор; спасённый Ваня просто разговаривает.
+## Камера приближается к герою на время игры. Проигравшего героя шахматка отбрасывает назад.
 ## [param player] - герой, который подошёл к Ване.
 func _interact(player: Player) -> void:
 	if World.is_marked(SAVED_MARK):
 		Ui.dialogue.play(DialogueCatalog.talk(AFTER_TALK))
 		return
+	_player = player
 	set_focused(false)
 	_cry.hide()
 	_mass.hide()
 	player.hide()
 	player.global_position.x = HERO_PULL_X
-	_show_jerk(0)
-	Ui.pull.jerk_done.connect(_show_jerk)
-	await Ui.pull.play()
-	Ui.pull.jerk_done.disconnect(_show_jerk)
+	player.zoom_camera(ZOOM, ZOOM_SEC)
+	_show_pressure()
+	Ui.pull.pulled.connect(_on_pulled)
+	Ui.pull.jerk_done.connect(_on_jerk_done)
+	Ui.pull.missed.connect(_on_missed)
+	var won := await Ui.pull.play()
+	Ui.pull.pulled.disconnect(_on_pulled)
+	Ui.pull.jerk_done.disconnect(_on_jerk_done)
+	Ui.pull.missed.disconnect(_on_missed)
+	_sparks.emitting = false
+	player.zoom_camera(1.0, ZOOM_SEC)
+	if won:
+		await _finish_rescue(player)
+	else:
+		await _throw_back(player)
+
+
+## Освобождает Ваню: остаток шахматки сжимается, потом начинается разговор.
+## [param player] - герой, который вытащил Ваню.
+func _finish_rescue(player: Player) -> void:
 	player.global_position.x = HERO_FREE_X
 	player.show()
 	World.mark(SAVED_MARK)
@@ -70,11 +104,63 @@ func _interact(player: Player) -> void:
 	Ui.dialogue.play(DialogueCatalog.talk(RESCUE_TALK))
 
 
-## Показывает кадр мини-игры: чем больше рывков сделано, тем дальше отступила шахматка.
-## [param index] - сколько рывков уже сделано.
-func _show_jerk(index: int) -> void:
-	_pull.texture = FRAMES[mini(index, FRAMES.size() - 1)]
+## Показывает, как шахматка накрыла героя, и возвращает его к началу комнаты.
+## [param player] - герой, который проиграл мини-игру.
+func _throw_back(player: Player) -> void:
+	_show_pressure()
+	await get_tree().create_timer(SWALLOW_SEC).timeout
+	player.global_position.x = HERO_THROWN_X
+	player.show()
+	_show_state(false)
+	Ui.toast(tr("PULL_LOST"), ToastStack.KIND_LABA)
+
+
+## Показывает кадр мини-игры по тому, насколько шахматка наступила на героя.
+func _show_pressure() -> void:
+	_pull.texture = FRAMES[Ui.pull.pressure() - 1]
 	_pull.show()
+
+
+## Дёргает кадр назад, как будто герой рванул на себя, и возвращает его на место.
+## [param distance] - на сколько пикселей отъезжает кадр.
+func _jolt_frame(distance: float) -> void:
+	if _jolt != null and _jolt.is_valid():
+		_jolt.kill()
+	_pull.position.x = -distance
+	_jolt = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_jolt.tween_property(_pull, "position:x", 0.0, JOLT_SEC)
+
+
+## Отвечает на нажатие нужной клавиши: рывок кадра, дрожь камеры и клетки из-под рук.
+func _on_pulled() -> void:
+	_jolt_frame(PULL_JOLT)
+	_player.shake_camera(1.0, JOLT_SEC)
+	_sparks.emitting = true
+	if _sparks_off != null and _sparks_off.is_valid():
+		_sparks_off.kill()
+	_sparks_off = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_sparks_off.tween_interval(SPARKS_SEC)
+	_sparks_off.tween_callback(_sparks.set_emitting.bind(false))
+
+
+## Отмечает сделанный рывок: шахматка отступает, из неё вылетает сноп клеток.
+## [param _index] - сколько рывков уже сделано; кадр берётся из мини-игры.
+func _on_jerk_done(_index: int) -> void:
+	_show_pressure()
+	_jolt_frame(JERK_JOLT)
+	_player.shake_camera(3.0, JOLT_SEC * 2.0)
+	_burst.restart()
+	_burst.emitting = true
+
+
+## Отмечает промах: шахматка наступает, кадр краснеет, камеру встряхивает.
+## [param _count] - сколько промахов уже было; кадр берётся из мини-игры.
+func _on_missed(_count: int) -> void:
+	_show_pressure()
+	_player.shake_camera(4.0, JOLT_SEC * 2.0)
+	_pull.modulate = MISS_TINT
+	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_property(_pull, "modulate", Color.WHITE, JOLT_SEC * 3.0)
 
 
 ## Расставляет сцену: ком шахматки и преграда до спасения, Ваня и остаток шахматки после.

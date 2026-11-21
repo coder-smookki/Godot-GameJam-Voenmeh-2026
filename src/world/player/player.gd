@@ -76,6 +76,22 @@ func _unhandled_input(event: InputEvent) -> void:
 		_focus.interact(self)
 
 
+## Плавно приближает или отдаляет камеру; работает и когда мир стоит на паузе.
+## [param zoom] - увеличение: 1 обычный вид, больше 1 ближе к герою.
+## [param sec] - длительность перехода в секундах.
+func zoom_camera(zoom: float, sec: float) -> void:
+	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_property(_camera, "zoom", Vector2(zoom, zoom), sec)
+
+
+## Коротко встряхивает камеру; дрожь затухает сама.
+## [param strength] - наибольшее смещение в пикселях.
+## [param sec] - длительность дрожи в секундах.
+func shake_camera(strength: float, sec: float) -> void:
+	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_method(_set_shake, strength, 0.0, sec)
+
+
 ## Ограничивает камеру границами комнаты.
 ## [param width] - ширина комнаты в пикселях.
 ## [param height] - высота комнаты в пикселях.
@@ -85,6 +101,12 @@ func set_camera_limits(width: int, height: int) -> void:
 	_camera.limit_right = width
 	_camera.limit_bottom = height
 	_camera.reset_smoothing()
+
+
+## Смещает камеру на случайный вектор заданной длины.
+## [param strength] - наибольшее смещение в пикселях; ноль возвращает камеру на место.
+func _set_shake(strength: float) -> void:
+	_camera.offset = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * strength
 
 
 ## Поворачивает спрайт по направлению и выбирает анимацию: шаг в движении, стойка на месте.

@@ -1,6 +1,7 @@
 [gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://src/ui/elevator/elevator_panel.gd" id="1"]
+[ext_resource type="Script" path="res://src/ui/theme/trim.gd" id="trim"]
 
 [node name="ElevatorPanel" type="Control"]
 visible = false
@@ -51,3 +52,9 @@ autowrap_mode = 3
 [node name="Back" type="Button" parent="Panel/Box"]
 layout_mode = 2
 text = "ELEVATOR_BACK"
+
+[node name="Trim" type="Control" parent="Panel"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("trim")
+inset = 5.0

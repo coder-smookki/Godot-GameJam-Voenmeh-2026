@@ -1,6 +1,7 @@
 [gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://src/ui/settings/settings_screen.gd" id="1"]
+[ext_resource type="Script" path="res://src/ui/theme/trim.gd" id="trim"]
 
 [node name="SettingsScreen" type="Control"]
 visible = false
@@ -64,3 +65,9 @@ text = "SETTINGS_DEFAULTS"
 [node name="Back" type="Button" parent="Panel/Box/Buttons"]
 layout_mode = 2
 text = "SETTINGS_BACK"
+
+[node name="Trim" type="Control" parent="Panel"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("trim")
+inset = 5.0

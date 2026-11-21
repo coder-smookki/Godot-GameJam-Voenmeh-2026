@@ -2,13 +2,13 @@ class_name Interactable
 extends Area2D
 ## Основа для всего, с чем герой взаимодействует: двери, персонажи, терминалы, предметы.
 ##
-## Когда герой рядом, над объектом появляется подсказка с клавишей.
+## Когда герой рядом, над объектом появляется плашка-подсказка с клавишей.
 ## Наследники переопределяют [method _interact] и при необходимости [method prompt_text].
 
 const ACTION_INTERACT := "interact"
 const ACTION_ENTER := "enter"
 const KEY_HINTS: Dictionary = {ACTION_INTERACT: "E", ACTION_ENTER: "W"}
-const PROMPT_WIDTH := 200.0
+const PROMPT_BORDER := Color(0.33, 0.39, 0.56)
 const LAYER_INTERACTABLE := 4
 
 @export_enum("interact", "enter") var action: String = ACTION_INTERACT
@@ -25,12 +25,10 @@ func _ready() -> void:
 	monitoring = false
 	_prompt = Label.new()
 	_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_prompt.size = Vector2(PROMPT_WIDTH, 10.0)
-	_prompt.position = prompt_offset - Vector2(PROMPT_WIDTH * 0.5, 0.0)
+	_prompt.position = prompt_offset
 	_prompt.z_index = 50
 	_prompt.add_theme_color_override("font_color", Palette.TEXT)
-	_prompt.add_theme_color_override("font_outline_color", Palette.UI_SOLID)
-	_prompt.add_theme_constant_override("outline_size", 4)
+	_prompt.add_theme_stylebox_override("normal", Palette.frame(PROMPT_BORDER))
 	_prompt.hide()
 	add_child(_prompt)
 
@@ -40,7 +38,7 @@ func _ready() -> void:
 func set_focused(focused: bool) -> void:
 	_prompt.visible = focused
 	if focused:
-		_prompt.text = prompt_text()
+		_show_prompt_text()
 
 
 ## Запускает взаимодействие, если оно сейчас доступно.
@@ -49,7 +47,14 @@ func interact(player: Player) -> void:
 	if not Game.is_busy() and not Ui.is_modal_open():
 		_interact(player)
 		if _prompt.visible:
-			_prompt.text = prompt_text()
+			_show_prompt_text()
+
+
+## Пишет текст на плашке подсказки и держит её по центру над объектом.
+func _show_prompt_text() -> void:
+	_prompt.text = prompt_text()
+	_prompt.reset_size()
+	_prompt.position.x = prompt_offset.x - _prompt.size.x * 0.5
 
 
 ## Собирает текст подсказки.

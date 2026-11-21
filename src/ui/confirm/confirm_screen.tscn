@@ -1,6 +1,7 @@
 [gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://src/ui/confirm/confirm_screen.gd" id="1"]
+[ext_resource type="Script" path="res://src/ui/theme/trim.gd" id="trim"]
 
 [node name="ConfirmScreen" type="Control"]
 visible = false
@@ -59,3 +60,9 @@ text = "CONFIRM_YES"
 custom_minimum_size = Vector2(56, 0)
 layout_mode = 2
 text = "CONFIRM_NO"
+
+[node name="Trim" type="Control" parent="Panel"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("trim")
+inset = 5.0
