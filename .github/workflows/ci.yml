@@ -52,6 +52,7 @@ jobs:
 
       - name: Импорт ресурсов
         run: |
+          godot --headless --path . --import > /dev/null 2>&1 || true
           godot --headless --path . --import 2>&1 | tee import.log
           if grep -E "SCRIPT ERROR|Parse Error|Failed to load script" import.log; then
             echo "::error::Импорт завершился с ошибками скриптов"
@@ -79,6 +80,7 @@ jobs:
 
       - name: Импорт ресурсов
         run: |
+          godot --headless --path . --import > /dev/null 2>&1 || true
           godot --headless --path . --import 2>&1 | tee import.log
           if grep -E "SCRIPT ERROR|Parse Error|Failed to load script" import.log; then
             echo "::error::Импорт завершился с ошибками скриптов"
