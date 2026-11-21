@@ -15,6 +15,25 @@ func test_new_game_starts_in_vestibule() -> void:
 	check(SaveSystem.has_save(), "вход в комнату сохранён")
 
 
+## Герой стоит на полу вестибюля и прыгает по нажатию клавиши.
+func test_hero_jumps() -> void:
+	await Game.new_game()
+	var player := (tree.current_scene as Room).player
+	for frame: int in 3:
+		await tree.physics_frame
+	check(player.is_on_floor(), "герой стоит на полу")
+	var press := InputEventAction.new()
+	press.action = "jump"
+	press.pressed = true
+	Input.parse_input_event(press)
+	for frame: int in 3:
+		await tree.physics_frame
+	check(not player.is_on_floor(), "герой в прыжке")
+	var release := InputEventAction.new()
+	release.action = "jump"
+	Input.parse_input_event(release)
+
+
 ## Выход работает один раз и только пока герой не уехал на лифте.
 func test_exit_door() -> void:
 	await Game.new_game()

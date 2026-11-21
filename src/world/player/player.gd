@@ -44,10 +44,7 @@ func _exit_tree() -> void:
 func _physics_process(delta: float) -> void:
 	var direction := Input.get_axis("move_left", "move_right")
 	velocity.x = move_toward(velocity.x, direction * SPEED, ACCELERATION * delta)
-	if is_on_floor():
-		if Input.is_action_just_pressed("jump"):
-			velocity.y = JUMP_VELOCITY
-	else:
+	if not is_on_floor():
 		velocity.y += GRAVITY * delta
 	move_and_slide()
 	if direction != 0.0:
@@ -57,11 +54,15 @@ func _physics_process(delta: float) -> void:
 	_update_debugger(delta)
 
 
-## Обрабатывает клавиши взаимодействия и выстрел.
+## Обрабатывает прыжок, взаимодействие и выстрел.
+## Нажатие, которым игрок закрыл диалог или мини-игру, сюда не доходит: герой от него не прыгает.
 ## [param event] - событие ввода, не обработанное интерфейсом.
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("fire"):
 		_shot_requested = true
+	elif event.is_action_pressed("jump"):
+		if is_on_floor():
+			velocity.y = JUMP_VELOCITY
 	elif _focus != null and event.is_action_pressed(_focus.action):
 		get_viewport().set_input_as_handled()
 		_focus.interact(self)
