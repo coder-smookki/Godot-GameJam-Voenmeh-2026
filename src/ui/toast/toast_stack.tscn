@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/ui/toast/toast_stack.gd" id="1"]
+
+[node name="Toasts" type="VBoxContainer"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -112.0
+offset_top = 54.0
+offset_right = 112.0
+offset_bottom = 54.0
+grow_horizontal = 2
+mouse_filter = 2
+script = ExtResource("1")
