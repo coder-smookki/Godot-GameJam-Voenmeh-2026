@@ -1,12 +1,14 @@
 class_name Room
 extends Node2D
-## Основа комнаты: ставит героя и Капи в точку появления и ограничивает камеру.
+## Основа комнаты: ставит героя и Капи в точку появления, ограничивает камеру, добавляет пыль.
 ##
 ## Точки появления лежат в узле Spawns и называются так же, как их указывают двери.
 ## Сюжетные флаги комната не хранит: всё состояние лежит в мире.
 
 const PLAYER_SCENE: PackedScene = preload("res://src/world/player/player.tscn")
 const CAPI_SCENE: PackedScene = preload("res://src/world/capi/capi.tscn")
+const DUST_SCENE: PackedScene = preload("res://src/world/effects/dust.tscn")
+const DUST_SPACING := 24
 const HEIGHT := 270
 const CAPI_MARK := "capi_joined"
 const CAPI_STAYS := "capy"
@@ -33,6 +35,7 @@ func _ready() -> void:
 	player.set_camera_limits(width, HEIGHT)
 	World.marked.connect(_on_world_marked)
 	_spawn_capi()
+	_add_dust()
 
 
 ## Ставит Капи рядом с героем, если она уже присоединилась и не осталась у рубильника.
@@ -42,6 +45,15 @@ func _spawn_capi() -> void:
 	_capi = CAPI_SCENE.instantiate()
 	_actors.add_child(_capi)
 	_capi.follow(player)
+
+
+## Пускает по комнате редкие пылинки: их число зависит от ширины комнаты.
+func _add_dust() -> void:
+	var dust: CPUParticles2D = DUST_SCENE.instantiate()
+	dust.position = Vector2(width * 0.5, HEIGHT * 0.45)
+	dust.emission_rect_extents = Vector2(width * 0.5, HEIGHT * 0.4)
+	dust.amount = maxi(width / DUST_SPACING, 8)
+	add_child(dust)
 
 
 ## Добавляет Капи в комнату в тот момент, когда она присоединяется к герою.

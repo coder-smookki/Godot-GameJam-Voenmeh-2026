@@ -14,6 +14,7 @@ const ROWS: Array[String] = [
 	"pixel_perfect",
 	"vsync",
 	"hold_to_pull",
+	"screen_effects",
 ]
 const SCALE_KEY := "window_scale"
 const FULLSCREEN_KEY := "fullscreen"

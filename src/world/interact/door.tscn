@@ -8,6 +8,7 @@ size = Vector2(110, 210)
 
 [node name="Door" type="Area2D"]
 script = ExtResource("1")
+prompt_offset = Vector2(0, -206)
 
 [node name="Shape" type="CollisionShape2D" parent="."]
 position = Vector2(0, -105)
@@ -23,7 +24,7 @@ color = Color(0.352941, 0.227451, 0.133333, 1)
 [node name="Plate" type="Label" parent="."]
 script = ExtResource("plate")
 offset_left = -120.0
-offset_top = -210.0
+offset_top = -188.0
 offset_right = 120.0
-offset_bottom = -194.0
+offset_bottom = -172.0
 horizontal_alignment = 1

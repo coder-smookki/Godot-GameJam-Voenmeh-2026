@@ -59,6 +59,9 @@ msgstr "Верт. синхронизация"
 msgid "SETTINGS_HOLD_TO_PULL"
 msgstr "«Тяни!»: удерживать"
 
+msgid "SETTINGS_SCREEN_EFFECTS"
+msgstr "Эффекты экрана"
+
 msgid "SETTINGS_ON"
 msgstr "Да"
 
@@ -203,6 +206,9 @@ msgstr "Заглянуть в монитор"
 msgid "PROMPT_TAKE_DEBUGGER"
 msgstr "Взять отладчик"
 
+msgid "PROMPT_READ"
+msgstr "Прочитать"
+
 msgid "LOCK_DEFAULT"
 msgstr "Заперто"
 
@@ -230,14 +236,20 @@ msgstr "Из монитора вылезла Капи. Теперь она хо�
 msgid "TOAST_DEBUGGER"
 msgstr "Получен отладчик: держите Q и стреляйте ЛКМ"
 
+msgid "TOAST_CAPY"
+msgstr "Найдена капибара: {capy} из 5"
+
 msgid "TASK_FIND_SCREAM"
 msgstr "Узнать, кто кричит · дверь «Гардероб»"
 
 msgid "TASK_GO_FLOOR_2"
 msgstr "Подняться на 2 этаж · лифт"
 
+msgid "TASK_GO_KAFEDRA"
+msgstr "Зайти на кафедру Н2"
+
 msgid "TASK_GET_DEBUGGER"
-msgstr "Взять отладчик · шкаф справа"
+msgstr "Взять отладчик · шкаф на кафедре"
 
 msgid "TASK_BREAK_TOTEM"
 msgstr "Разбить тотем ERROR в коридоре"
@@ -267,7 +279,7 @@ msgid "ELEVATOR_PLATE"
 msgstr "ЛИФТ"
 
 msgid "ELEVATOR_HINT"
-msgstr "Этаж открывается после победы над боссом предыдущего"
+msgstr "Пропавшая кнопка вернётся после победы над боссом этажом ниже"
 
 msgid "ELEVATOR_BACK"
 msgstr "Выйти из лифта"
@@ -297,16 +309,16 @@ msgid "ELEVATOR_FLOOR_1"
 msgstr "1 ЭТАЖ · вестибюль"
 
 msgid "ELEVATOR_LOCK_5"
-msgstr "закрыт: сначала 4 этаж"
+msgstr "кнопка пропала"
 
 msgid "ELEVATOR_LOCK_4"
-msgstr "закрыт: сначала 3 этаж"
+msgstr "кнопка пропала"
 
 msgid "ELEVATOR_LOCK_3"
-msgstr "закрыт: сначала 2 этаж"
+msgstr "кнопка пропала"
 
 msgid "ELEVATOR_LOCK_2"
-msgstr "закрыт: сначала узнайте, кто кричит"
+msgstr "кнопка пропала"
 
 msgid "PULL_TITLE"
 msgstr "ТЯНИ! ЖМИ ПРОБЕЛ"
@@ -323,50 +335,119 @@ msgstr "ПРОБЕЛ"
 msgid "NAME_VANYA"
 msgstr "Ваня"
 
+msgid "NAME_DEMYAN"
+msgstr "Демьян"
+
 msgid "NAME_NAURUSOVA"
 msgstr "Наурусова"
 
-msgid "VANYA_SCREAM"
-msgstr "«Помогите!»"
+msgid "DIALOGUE_TAG_STORY"
+msgstr "СЮЖЕТ →"
 
-msgid "VANYA_CRY"
-msgstr "«Я застрял! Вытащи!»"
+msgid "DIALOGUE_TAG_CHAT"
+msgstr "болтовня …"
 
-msgid "VANYA_RESCUE_1"
-msgstr "Фух. Я думал, меня совсем сотрёт. С меня должок, Найдёнов."
+msgid "DIALOGUE_TAG_SIDE"
+msgstr "ПОБОЧНОЕ ★"
 
-msgid "VANYA_RESCUE_2"
-msgstr "Это всё с кафедры Н2, второй этаж. Лифт выше второго не едет."
+msgid "VANYA_SCREAM_1"
+msgstr "Помогите!"
 
-msgid "VANYA_AFTER"
+msgid "VANYA_SCREAM_2"
+msgstr "Кто-нибудь,\nвытащите меня!"
+
+msgid "VANYA_CRY_1"
+msgstr "Я застрял!"
+
+msgid "VANYA_CRY_2"
+msgstr "Давай быстрее!"
+
+msgid "TALK_VESTIBULE_1"
+msgstr "А где толпа студентов, которые борются у гардероба за куртки?"
+
+msgid "TALK_VESTIBULE_2"
+msgstr "Странно, но приятно."
+
+msgid "TALK_BOARD_1"
+msgstr "«Пересдача, 9:00, кафедра Н2, 2 этаж»."
+
+msgid "TALK_BOARD_2"
+msgstr "На листке нарисована капибара <3"
+
+msgid "TALK_ELEVATOR_1"
+msgstr "Все кнопки лифта пропали, кроме кнопки второго этажа."
+
+msgid "TALK_ELEVATOR_2"
+msgstr "Ну хотя бы так..."
+
+msgid "TALK_VANYA_1"
+msgstr "Фух… Я уже думал, меня совсем унесёт."
+
+msgid "TALK_VANYA_ASK_HOW"
+msgstr "Как ты вообще туда попал?"
+
+msgid "TALK_VANYA_HOW_1"
+msgstr "Долгая история... Сегодня просто день такой... Всё началось на кафедре Н2, на втором этаже."
+
+msgid "TALK_VANYA_HOW_2"
+msgstr "С меня должок, ты ну очень меня выручил."
+
+msgid "TALK_VANYA_ASK_STATE"
+msgstr "Ты как вообще?"
+
+msgid "TALK_VANYA_STATE"
+msgstr "Жить буду. Только рука до сих пор в клеточку."
+
+msgid "TALK_VANYA_AFTER"
 msgstr "Иди на второй этаж. Я пока тут отдышусь."
 
-msgid "TEXT_PENDING"
-msgstr "Текст в работе"
+msgid "TALK_CORRIDOR_2_1"
+msgstr "Надеюсь, здесь я найду ответы на свои вопросы."
+
+msgid "TALK_CORRIDOR_2_2"
+msgstr "Мимо в панике пробегают фигуры. Это преподаватели кафедры."
+
+msgid "TALK_CORRIDOR_2_3"
+msgstr "Извините…"
+
+msgid "TALK_CORRIDOR_2_4"
+msgstr "Нет ответа."
+
+msgid "TALK_CORRIDOR_2_5"
+msgstr "Ну хоть кто-нибудь мне объяснит, что тут происходит?.."
+
+msgid "TALK_CORRIDOR_2_6"
+msgstr "Это всё научный проект кафедры. Похоже, эксперимент вышел из-под контроля. Он во всём виноват..."
+
+msgid "TALK_CORRIDOR_2_7"
+msgstr "Пойдём с нами, нам нужны рабочие руки."
+
+msgid "TALK_NAURUSOVA"
+msgstr "Возьми с собой отладчик. Он поможет разобраться с заражёнными объектами."
 
 msgid "END_EXPELLED"
 msgstr "Отчислен"
 
 msgid "END_EXPELLED_TEXT"
-msgstr "Текст в работе"
+msgstr "Демьян вышел из университета в самом начале игры."
 
 msgid "END_NOT_FOUND"
 msgstr "Мир не найден"
 
 msgid "END_NOT_FOUND_TEXT"
-msgstr "Текст в работе"
+msgstr "Текстуры добрались до куполов Троицкого собора. Вирус захватил город."
 
 msgid "END_RM_RF"
 msgstr "rm -rf"
 
 msgid "END_RM_RF_TEXT"
-msgstr "Вирус исчез. Вместе с ним все лабораторные за семестр. Пересдают все. На фасаде остались заплатки."
+msgstr "Демьян удалил лабу. Вирус исчез, но вместе с ним пропали лабораторные за семестр. Всем пришлось пересдавать."
 
 msgid "END_RETAKE"
 msgstr "Пересдача"
 
 msgid "END_RETAKE_TEXT"
-msgstr "Текст в работе"
+msgstr "Демьян исправил лабу. Она осталась в системе и получила возможность учиться."
 
 msgid "END_CAPYBARA"
 msgstr "Капибара-ассистент"

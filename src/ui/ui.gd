@@ -4,6 +4,7 @@ extends CanvasLayer
 ## Игровые сцены обращаются к интерфейсу только через этот узел.
 
 const FADE_SEC := 0.2
+const FX_SETTING := "screen_effects"
 
 var _modals: Array[Modal] = []
 var _focus_before: Dictionary = {}
@@ -20,12 +21,16 @@ var _fade_tween: Tween = null
 @onready var pull: PullGame = $PullGame
 @onready var settings: SettingsScreen = $SettingsScreen
 @onready var confirm: ConfirmScreen = $ConfirmScreen
+@onready var _screen_fx: ColorRect = $ScreenFx
 @onready var _fade: ColorRect = $Fade
 
 
-## Подписывается на решения мира, чтобы показывать тост «ЛАБА запомнила».
+## Подписывается на решения мира, чтобы показывать тост «ЛАБА запомнила»,
+## и на настройки, чтобы включать и выключать эффекты экрана.
 func _ready() -> void:
 	World.decided.connect(_on_world_decided)
+	Settings.changed.connect(_on_setting_changed)
+	_screen_fx.visible = Settings.value(FX_SETTING)
 
 
 ## Обрабатывает клавиши паузы, телефона и меню разработчика.
@@ -119,6 +124,13 @@ func _toggle_top_or(modal: Modal) -> void:
 			_modals.back().close()
 	elif Game.in_room:
 		modal.open()
+
+
+## Включает или выключает затемнение краёв и зерно, когда меняется настройка.
+## [param key] - имя изменённой настройки.
+func _on_setting_changed(key: String) -> void:
+	if key == FX_SETTING:
+		_screen_fx.visible = Settings.value(FX_SETTING)
 
 
 ## Показывает тост о том, что мир запомнил решение.

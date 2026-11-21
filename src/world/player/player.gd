@@ -3,6 +3,7 @@ extends CharacterBody2D
 ## Герой: ходьба и прыжок с видом сбоку, взаимодействие с объектами и выстрел отладчика.
 ##
 ## Начало координат находится у ног. Ввод обрабатывается только когда мир не на паузе.
+## Тень и отражение остаются на полу, когда герой прыгает.
 
 const SPEED := 150.0
 const ACCELERATION := 1200.0
@@ -13,6 +14,8 @@ const WALK_FROM_SPEED := 8.0
 const SHOT_COOLDOWN_SEC := 0.25
 const SHOT_MASK := 9
 const DEBUGGER_MARK := "ability_debugger"
+const SHADOW_FADE_HEIGHT := 160.0
+const SHADOW_MIN_SCALE := 0.45
 
 var facing: int = 1
 
@@ -20,12 +23,16 @@ var _nearby: Array[Interactable] = []
 var _focus: Interactable = null
 var _cooldown: float = 0.0
 var _shot_requested: bool = false
+var _floor_y: float = 0.0
+var _landed: bool = false
 
 @onready var _zone: Area2D = $InteractZone
 @onready var _muzzle: Marker2D = $Muzzle
 @onready var _aim: Aim = $Aim
 @onready var _camera: Camera2D = $Camera
 @onready var _sprite: AnimatedSprite2D = $Sprite
+@onready var _reflection: AnimatedSprite2D = $Reflection
+@onready var _shadow: Node2D = $Shadow
 
 
 ## Подписывается на объекты, которые входят в зону взаимодействия и выходят из неё.
@@ -50,6 +57,7 @@ func _physics_process(delta: float) -> void:
 	if direction != 0.0:
 		facing = 1 if direction > 0.0 else -1
 	_update_animation()
+	_update_ground_effects()
 	_update_focus()
 	_update_debugger(delta)
 
@@ -86,6 +94,23 @@ func _update_animation() -> void:
 	var animation := &"walk" if walking else &"idle"
 	if _sprite.animation != animation:
 		_sprite.play(animation)
+
+
+## Держит тень и отражение на полу и повторяет в отражении кадр героя.
+## В прыжке тень уменьшается, а отражение уходит ниже.
+func _update_ground_effects() -> void:
+	if is_on_floor() or not _landed:
+		_floor_y = global_position.y
+		_landed = _landed or is_on_floor()
+	var lift := maxf(_floor_y - global_position.y, 0.0)
+	var shrink := clampf(1.0 - lift / SHADOW_FADE_HEIGHT, SHADOW_MIN_SCALE, 1.0)
+	_shadow.global_position.y = _floor_y
+	_shadow.scale = Vector2(shrink, shrink)
+	_reflection.global_position.y = _floor_y + lift * _reflection.scale.y
+	_reflection.flip_h = _sprite.flip_h
+	if _reflection.animation != _sprite.animation:
+		_reflection.animation = _sprite.animation
+	_reflection.frame = _sprite.frame
 
 
 ## Выбирает ближайший объект рядом с героем и переключает подсказки.

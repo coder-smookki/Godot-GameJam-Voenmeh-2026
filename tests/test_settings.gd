@@ -13,6 +13,7 @@ func test_defaults() -> void:
 	equal(Settings.value("master_volume"), 80, "общая громкость")
 	equal(Settings.value("fullscreen"), false, "оконный режим")
 	equal(Settings.value("hold_to_pull"), false, "режим «удерживать» выключен")
+	equal(Settings.value("screen_effects"), true, "эффекты экрана включены")
 	for key: String in Settings.BUSES:
 		check(AudioServer.get_bus_index(Settings.BUSES[key]) >= 0, "шина для %s" % key)
 

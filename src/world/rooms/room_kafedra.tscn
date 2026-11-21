@@ -121,8 +121,7 @@ toast_key = "TOAST_DEBUGGER"
 
 [node name="Naurusova" parent="Actors" instance=ExtResource("npc")]
 position = Vector2(345, 264)
-speaker_key = "NAME_NAURUSOVA"
-line_keys = PackedStringArray("TEXT_PENDING")
+talk_id = "naurusova"
 
 [node name="Spawns" type="Node2D" parent="."]
 

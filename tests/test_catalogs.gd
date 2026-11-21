@@ -2,6 +2,9 @@ extends TestCase
 ## Тесты каталогов: развилки согласованы с миром, у каждого ключа есть текст, сцены загружаются.
 
 const SCENES_DIR := "res://src/"
+const TEXT_WIDTH := 386.0
+const LINES_LIMIT := 3
+const LINE_SPACING := 3.0
 
 
 ## Каждая развилка меняет существующую переменную допустимыми значениями.
@@ -32,6 +35,8 @@ func test_every_key_has_text() -> void:
 	keys.append_array(EndingCatalog.text_keys())
 	keys.append_array(LocationCatalog.text_keys())
 	keys.append_array(Elevator.text_keys())
+	keys.append_array(DialogueCatalog.text_keys())
+	keys.append_array(SpeakerCatalog.text_keys())
 	for key: String in Settings.DEFAULTS:
 		keys.append("SETTINGS_%s" % key.to_upper())
 	for key: String in Story.STEPS:
@@ -40,6 +45,42 @@ func test_every_key_has_text() -> void:
 	for key: String in keys:
 		check(TranslationServer.translate(key) != key, "нет текста для ключа %s" % key)
 	equal(str(TranslationServer.translate("")), "", "пустой ключ даёт пустой текст")
+
+
+## В разговорах говорят известные персонажи, а из каждого выбора есть ровно один сюжетный выход.
+func test_dialogues_are_consistent() -> void:
+	for arrival: String in Story.ARRIVALS.values():
+		check(DialogueCatalog.has(arrival), "разговор %s есть в каталоге" % arrival)
+	for id: String in DialogueCatalog.ids():
+		check(not DialogueCatalog.talk(id).is_empty(), "%s: есть реплики" % id)
+		for line: Dictionary in DialogueCatalog.all_lines(id):
+			var speaker: String = line["speaker"]
+			check(
+				speaker.is_empty() or SpeakerCatalog.has(speaker), "%s: говорит %s" % [id, speaker]
+			)
+			var options: Array = line.get("choices", [])
+			if options.is_empty():
+				continue
+			var story := 0
+			for option: Dictionary in options:
+				check(option["tag"] in DialogueCatalog.TAGS, "%s: метка %s" % [id, option["tag"]])
+				story += int(option["tag"] == DialogueCatalog.TAG_STORY)
+			equal(story, 1, "%s: один сюжетный ответ" % id)
+	check(SpeakerCatalog.portrait("demyan") != null, "портрет героя нарисован")
+	check(SpeakerCatalog.portrait("nobody") == null, "у неизвестного портрета нет")
+
+
+## Каждая реплика помещается в окно разговора: не больше трёх строк текста.
+func test_dialogue_lines_fit() -> void:
+	var font := Palette.font()
+	var limit := font.get_height(Palette.FONT_SIZE) * LINES_LIMIT + LINE_SPACING * (LINES_LIMIT - 1)
+	for id: String in DialogueCatalog.ids():
+		for line: Dictionary in DialogueCatalog.all_lines(id):
+			var text := str(TranslationServer.translate(line["text"]))
+			var size := font.get_multiline_string_size(
+				text, HORIZONTAL_ALIGNMENT_LEFT, TEXT_WIDTH, Palette.FONT_SIZE
+			)
+			check(size.y <= limit + 0.5, "%s: реплика %s длиннее трёх строк" % [id, line["text"]])
 
 
 ## Стартовая комната и крыша собраны, несобранная локация определяется верно.

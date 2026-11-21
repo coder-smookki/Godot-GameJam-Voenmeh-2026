@@ -2,24 +2,37 @@ class_name StuckVanya
 extends Interactable
 ## Ваня в гардеробе: сначала застрял в шахматке, после мини-игры «Тяни!» свободен.
 ##
-## С каждым рывком Ваня выходит из шахматки на треть, а ком шахматки сжимается.
+## Сцену спасения показывают кадры художниц: ком шахматки и герой, который тянет.
+## С каждым рывком шахматка отступает на кадр. Слои нарисованы на холсте всей комнаты,
+## поэтому лежат в координатах комнаты и не двигаются вместе с этим узлом.
 
 const SAVED_MARK := "vanya_saved"
-const SPEAKER := "NAME_VANYA"
-const STUCK_SHIFT := 54.0
-const BLOB_SMALL := 0.35
-const RESCUE_LINES: Array[String] = ["VANYA_RESCUE_1", "VANYA_RESCUE_2"]
-const AFTER_LINES: Array[String] = ["VANYA_AFTER"]
+const RESCUE_TALK := "vanya_rescue"
+const AFTER_TALK := "vanya_after"
+const FREE_X := 660.0
+const HERO_PULL_X := 500.0
+const HERO_FREE_X := 560.0
+const REMNANT_SCALE := 0.55
+const SHRINK_SEC := 0.5
+const FRAMES: Array[Texture2D] = [
+	preload("res://assets/minigames/pull/pull_3.png"),
+	preload("res://assets/minigames/pull/pull_2.png"),
+	preload("res://assets/minigames/pull/pull_1.png"),
+]
 
 @onready var _body: Node2D = $Body
-@onready var _blob: ColorRect = $Blob
-@onready var _cry: Plate = $Cry
+@onready var _shadow: Node2D = $Shadow
+@onready var _cry: SpeechBubble = $Cry
+@onready var _mass: Sprite2D = $Art/Mass
+@onready var _pull: Sprite2D = $Art/Pull
+@onready var _remnant: Sprite2D = $Art/Remnant
+@onready var _barrier: CollisionShape2D = $Barrier/Shape
 
 
 ## Показывает Ваню застрявшим или свободным по состоянию мира.
 func _ready() -> void:
 	super()
-	_show_progress(1.0 if World.is_marked(SAVED_MARK) else 0.0)
+	_show_state(World.is_marked(SAVED_MARK))
 
 
 ## Собирает текст подсказки: схватить за руку или поговорить.
@@ -30,42 +43,50 @@ func prompt_text() -> String:
 
 
 ## Запускает мини-игру спасения, а после неё разговор; спасённый Ваня просто разговаривает.
-## [param _player] - герой, который подошёл к Ване.
-func _interact(_player: Player) -> void:
+## Разговор начинается, когда остаток шахматки сжался и больше не закрывает Ваню.
+## [param player] - герой, который подошёл к Ване.
+func _interact(player: Player) -> void:
 	if World.is_marked(SAVED_MARK):
-		Ui.dialogue.play(_lines(AFTER_LINES))
+		Ui.dialogue.play(DialogueCatalog.talk(AFTER_TALK))
 		return
 	set_focused(false)
 	_cry.hide()
-	Ui.pull.jerk_done.connect(_on_jerk_done)
+	_mass.hide()
+	player.hide()
+	player.global_position.x = HERO_PULL_X
+	_show_jerk(0)
+	Ui.pull.jerk_done.connect(_show_jerk)
 	await Ui.pull.play()
-	Ui.pull.jerk_done.disconnect(_on_jerk_done)
+	Ui.pull.jerk_done.disconnect(_show_jerk)
+	player.global_position.x = HERO_FREE_X
+	player.show()
 	World.mark(SAVED_MARK)
+	_show_state(true)
+	_remnant.scale = Vector2.ONE
 	SaveSystem.save_game()
-	set_focused(true)
-	Ui.dialogue.play(_lines(RESCUE_LINES))
+	var tween := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	tween.tween_property(_remnant, "scale", Vector2(REMNANT_SCALE, REMNANT_SCALE), SHRINK_SEC)
+	await tween.finished
+	Ui.dialogue.play(DialogueCatalog.talk(RESCUE_TALK))
 
 
-## Собирает реплики Вани для окна разговора.
-## [param keys] - ключи текста реплик по порядку.
-## Возвращает массив реплик в формате окна разговора.
-func _lines(keys: Array[String]) -> Array[Dictionary]:
-	var result: Array[Dictionary] = []
-	for key: String in keys:
-		result.append({"speaker": SPEAKER, "text": key})
-	return result
-
-
-## Двигает Ваню и ком шахматки после рывка.
+## Показывает кадр мини-игры: чем больше рывков сделано, тем дальше отступила шахматка.
 ## [param index] - сколько рывков уже сделано.
-func _on_jerk_done(index: int) -> void:
-	_show_progress(float(index) / float(PullLogic.JERKS))
+func _show_jerk(index: int) -> void:
+	_pull.texture = FRAMES[mini(index, FRAMES.size() - 1)]
+	_pull.show()
 
 
-## Показывает, насколько Ваня вышел из шахматки.
-## [param progress] - от 0 (застрял) до 1 (свободен).
-func _show_progress(progress: float) -> void:
-	_body.position.x = STUCK_SHIFT * (1.0 - progress)
-	var blob_scale := lerpf(1.0, BLOB_SMALL, progress)
-	_blob.scale = Vector2(blob_scale, blob_scale)
-	_cry.visible = progress <= 0.0
+## Расставляет сцену: ком шахматки и преграда до спасения, Ваня и остаток шахматки после.
+## [param saved] - true, если Ваня уже свободен.
+func _show_state(saved: bool) -> void:
+	_mass.visible = not saved
+	_pull.hide()
+	_remnant.visible = saved
+	_remnant.scale = Vector2(REMNANT_SCALE, REMNANT_SCALE)
+	_body.visible = saved
+	_shadow.visible = saved
+	_cry.visible = not saved
+	_barrier.set_deferred("disabled", saved)
+	if saved:
+		position.x = FREE_X

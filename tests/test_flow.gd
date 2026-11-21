@@ -2,9 +2,13 @@ extends TestCase
 ## Сквозной тест первых минут: вестибюль, спасение Вани, лифт, второй этаж, концовки.
 
 
-## Новая игра ставит героя в вестибюль и даёт первое задание.
+## Новая игра ставит героя в вестибюль, даёт первое задание и начинает с реплики героя.
 func test_new_game_starts_in_vestibule() -> void:
 	await Game.new_game()
+	check(Ui.dialogue.visible and tree.paused, "герой удивляется пустому вестибюлю")
+	check(not World.is_marked("seen_vestibule_arrival"), "недочитанный разговор не засчитан")
+	finish_talk()
+	check(World.is_marked("seen_vestibule_arrival"), "разговор запомнен")
 	equal(Game.room_code, "vestibule", "стартовая комната")
 	equal(Game.task_key, Story.START_TASK, "первое задание")
 	var room := tree.current_scene as Room
@@ -17,7 +21,7 @@ func test_new_game_starts_in_vestibule() -> void:
 
 ## Герой стоит на полу вестибюля и прыгает по нажатию клавиши.
 func test_hero_jumps() -> void:
-	await Game.new_game()
+	await start_game()
 	var player := (tree.current_scene as Room).player
 	for frame: int in 3:
 		await tree.physics_frame
@@ -36,7 +40,7 @@ func test_hero_jumps() -> void:
 
 ## Выход работает один раз и только пока герой не уехал на лифте.
 func test_exit_door() -> void:
-	await Game.new_game()
+	await start_game()
 	var door: ExitDoor = tree.current_scene.get_node("Props/Exit")
 	check(door.is_open(), "в начале можно уйти домой")
 	equal(door.plate_text(), "", "табличка не нужна, пока дверь работает")
@@ -51,13 +55,16 @@ func test_exit_door() -> void:
 
 ## Мини-игра вытаскивает Ваню: появляется отметка, новое задание и разговор, лифт начинает ездить.
 func test_vanya_rescue() -> void:
-	await Game.new_game()
+	await start_game()
 	await Game.goto_room("wardrobe", "door")
 	var room := tree.current_scene as Room
 	var vanya: StuckVanya = room.get_node("Actors/Vanya")
 	check(not Elevator.is_working(), "до спасения лифт не едет")
+	check(vanya.get_node("Art/Mass").visible, "ком шахматки на месте")
 	vanya.interact(room.player)
 	check(Ui.pull.visible and tree.paused, "мини-игра открыта и мир стоит")
+	check(not room.player.visible, "героя рисует кадр мини-игры")
+	equal(vanya.get_node("Art/Pull").texture, StuckVanya.FRAMES[0], "первый кадр")
 	var presses := 0
 	while Ui.pull.visible and presses < 100:
 		Ui.pull.press()
@@ -65,9 +72,14 @@ func test_vanya_rescue() -> void:
 	equal(presses, 27, "три рывка по девять нажатий")
 	check(World.is_marked("vanya_saved"), "Ваня спасён")
 	equal(Game.task_key, "TASK_GO_FLOOR_2", "новое задание")
+	check(room.player.visible, "герой снова на ногах")
+	check(not vanya.get_node("Art/Mass").visible, "ком шахматки отступил")
+	check(vanya.get_node("Art/Remnant").visible, "остался маленький остаток")
+	equal(vanya.position.x, StuckVanya.FREE_X, "Ваня стоит свободно")
+	check(not Ui.dialogue.visible, "сначала шахматка сжимается")
+	await tree.create_timer(StuckVanya.SHRINK_SEC + 0.2).timeout
 	check(Ui.dialogue.visible, "Ваня говорит спасибо")
-	for step: int in StuckVanya.RESCUE_LINES.size() * 2:
-		Ui.dialogue.advance()
+	finish_talk()
 	check(not Ui.dialogue.visible and not tree.paused, "разговор закончен, мир идёт")
 	check(Elevator.is_working(), "лифт поедет на второй этаж")
 	await Game.goto_room("vestibule", "door")
@@ -76,7 +88,7 @@ func test_vanya_rescue() -> void:
 
 ## Лифт везёт только на открытые этажи и закрывает выход домой.
 func test_elevator_ride() -> void:
-	await Game.new_game()
+	await start_game()
 	Ui.elevator.open()
 	Ui.elevator.ride(2)
 	check(Ui.elevator.visible, "на закрытый этаж лифт не едет")
@@ -89,6 +101,11 @@ func test_elevator_ride() -> void:
 	Ui.elevator.ride(2)
 	await Game.room_entered
 	equal(Game.room_code, "corridor_2", "герой на втором этаже")
+	check(Ui.dialogue.visible, "герой осматривается на этаже")
+	check(not Infection.is_active(2), "до конца разговора этаж не заражается")
+	finish_talk()
+	equal(Game.task_key, "TASK_GO_KAFEDRA", "после разговора задание ведёт на кафедру")
+	check(Infection.is_active(2), "второй этаж заражается")
 	equal(Game.spawn_id, Elevator.SPAWN, "герой вышел из лифта")
 	equal(Infection.current_floor, 2, "этаж сменился")
 	check(World.is_marked(Elevator.USED_MARK), "поездка запомнена")
@@ -97,14 +114,14 @@ func test_elevator_ride() -> void:
 
 ## Пять попаданий разбивают тотем: этаж лечится, кабинет 214 открывается, состояние сохраняется.
 func test_totem_break() -> void:
-	await Game.new_game()
-	World.mark("laba_seen")
+	await start_game()
 	World.mark("ability_debugger")
 	await Game.goto_room("corridor_2", Elevator.SPAWN)
+	finish_talk()
 	var totem: Totem = tree.current_scene.get_node("Actors/Totem")
 	var door: Door = tree.current_scene.get_node("Props/Room214")
 	check(not door.is_open(), "кабинет 214 заражён")
-	check(Infection.is_active(2), "второй этаж заражается после катсцены ЛАБЫ")
+	check(Infection.is_active(2), "второй этаж заражается после разговора в коридоре")
 	var before := Infection.percent(2)
 	for shot: int in 4:
 		totem.hit()
@@ -122,7 +139,7 @@ func test_totem_break() -> void:
 
 ## Капи появляется в момент, когда присоединяется, и остаётся у рубильника, если так решено.
 func test_capi_joins() -> void:
-	await Game.new_game()
+	await start_game()
 	await Game.goto_room("kafedra", "door")
 	var actors := tree.current_scene.get_node("Actors")
 	var before := actors.get_child_count()
@@ -139,7 +156,7 @@ func test_capi_joins() -> void:
 
 ## Шуточная концовка возвращает в комнату, основная ведёт в главное меню.
 func test_endings_route() -> void:
-	await Game.new_game()
+	await start_game()
 	await Game.show_ending("expelled")
 	check(SaveSystem.is_ending_unlocked("expelled"), "концовка открыта в профиле")
 	check(not Game.in_room, "экран концовки вне комнаты")
@@ -154,7 +171,7 @@ func test_endings_route() -> void:
 
 ## «Загрузить» возвращает в сохранённую комнату с прежним состоянием.
 func test_continue_restores_room() -> void:
-	await Game.new_game()
+	await start_game()
 	World.mark("vanya_saved")
 	await Game.goto_room("corridor_2", Elevator.SPAWN)
 	World.reset()
@@ -167,7 +184,7 @@ func test_continue_restores_room() -> void:
 
 ## Экраны поверх игры ставят мир на паузу и снимают её при закрытии.
 func test_modals_pause_world() -> void:
-	await Game.new_game()
+	await start_game()
 	Ui.phone.open()
 	check(tree.paused and Ui.is_modal_open(), "телефон ставит паузу")
 	Ui.phone.close()
@@ -196,3 +213,82 @@ func test_menu_screens() -> void:
 	Ui.close_all_modals()
 	Ui.confirm.answered.disconnect(listener)
 	equal(answers, [false] as Array[bool], "закрытие без выбора означает «нет»")
+
+
+## Ответ с меткой «болтовня» возвращает к выбору, ответ «сюжет» ведёт разговор дальше.
+func test_dialogue_choices() -> void:
+	await start_game()
+	var finished: Array[bool] = []
+	var listener := func() -> void:
+		finished.append(await Ui.dialogue.play(DialogueCatalog.talk("vanya_rescue")))
+	listener.call()
+	check(Ui.dialogue.visible and tree.paused, "разговор открыт")
+	var choices: VBoxContainer = Ui.dialogue.get_node("Sheet/Box/Choices")
+	Ui.dialogue.choose(0)
+	equal(choices.get_child_count(), 0, "пока текст печатается, ответов нет")
+	Ui.dialogue.advance()
+	equal(choices.get_child_count(), 2, "предложены два ответа")
+	Ui.dialogue.choose(5)
+	equal(choices.get_child_count(), 2, "ответа с таким номером нет")
+	Ui.dialogue.choose(1)
+	Ui.dialogue.advance()
+	Ui.dialogue.advance()
+	equal(choices.get_child_count(), 1, "после болтовни остался сюжетный ответ")
+	Ui.dialogue.choose(1)
+	equal(choices.get_child_count(), 1, "второй раз о том же не спросить")
+	Ui.dialogue.choose(0)
+	finish_talk()
+	check(not Ui.dialogue.visible and not tree.paused, "разговор закончен")
+	equal(finished, [true] as Array[bool], "разговор дошёл до конца")
+
+
+## Закрытый раньше времени разговор не считается оконченным и не мешает следующему.
+func test_dialogue_interrupted() -> void:
+	await start_game()
+	var finished: Array[bool] = []
+	var listener := func() -> void:
+		finished.append(await Ui.dialogue.play(DialogueCatalog.talk("vanya_after")))
+	listener.call()
+	Ui.close_all_modals()
+	listener.call()
+	finish_talk()
+	equal(
+		finished,
+		[false, true] as Array[bool],
+		"прерванный разговор вернул false, новый дошёл до конца"
+	)
+
+
+## Доска объявлений читается сколько угодно раз, а капибара на листке находится один раз.
+func test_notice_board() -> void:
+	await start_game()
+	var room := tree.current_scene as Room
+	var board: Npc = room.get_node("Props/Board")
+	board.interact(room.player)
+	check(Ui.dialogue.visible, "герой читает объявление")
+	equal(World.f["capy"], 0, "до конца чтения капибара не засчитана")
+	finish_talk()
+	equal(World.f["capy"], 1, "капибара найдена")
+	check(World.is_marked("capy_board"), "находка запомнена")
+	board.interact(room.player)
+	finish_talk()
+	equal(World.f["capy"], 1, "второй раз та же капибара не считается")
+
+
+## В первый раз у лифта герой замечает пропавшие кнопки, потом панель открывается сразу.
+func test_elevator_first_look() -> void:
+	await start_game()
+	var room := tree.current_scene as Room
+	var doors: ElevatorDoor = room.get_node("Props/Elevator")
+	doors.interact(room.player)
+	check(
+		not Ui.dialogue.visible and not Ui.elevator.visible, "пока Ваня не спасён, лифт не работает"
+	)
+	World.mark("vanya_saved")
+	doors.interact(room.player)
+	check(Ui.dialogue.visible and not Ui.elevator.visible, "сначала реплика о кнопках")
+	finish_talk()
+	check(Ui.elevator.visible, "после реплики открылась панель")
+	Ui.elevator.close()
+	doors.interact(room.player)
+	check(Ui.elevator.visible and not Ui.dialogue.visible, "во второй раз панель открывается сразу")
