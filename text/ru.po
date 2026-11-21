@@ -1,0 +1,702 @@
+msgid ""
+msgstr ""
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "ЭКСПЕРИМЕНТ №404"
+
+msgid "GAME_SUBTITLE"
+msgstr "ЗАРАЖЕНИЕ"
+
+msgid "MENU_NEW_GAME"
+msgstr "Новая игра"
+
+msgid "MENU_CONTINUE"
+msgstr "Продолжить"
+
+msgid "MENU_QUIT"
+msgstr "Выход"
+
+msgid "PAUSE_TITLE"
+msgstr "ПАУЗА"
+
+msgid "PAUSE_RESUME"
+msgstr "Продолжить"
+
+msgid "PAUSE_TO_MENU"
+msgstr "В главное меню"
+
+msgid "PAUSE_QUIT"
+msgstr "Выйти из игры"
+
+msgid "HUD_TASK"
+msgstr "ЗАДАНИЕ"
+
+msgid "HUD_INFECTION"
+msgstr "заражение {percent}%"
+
+msgid "HUD_CURED"
+msgstr "вылечен"
+
+msgid "HUD_DEBUGGER"
+msgstr "ОТЛАДЧИК · время x0,5"
+
+msgid "HUD_HINT"
+msgstr "[Tab] телефон · [Q]+ЛКМ отладчик · [F1] разработка"
+
+msgid "FORK_CAPTION"
+msgstr "РАЗВИЛКА"
+
+msgid "FORK_FOOTER"
+msgstr "Игра сохранена. Решение можно будет переиграть в «Выборе главы»"
+
+msgid "PHONE_JOURNAL"
+msgstr "Журнал"
+
+msgid "PHONE_ENDINGS"
+msgstr "Концовки"
+
+msgid "PHONE_COLLECTIONS"
+msgstr "Коллекции"
+
+msgid "PHONE_METHOD"
+msgstr "МЕТОД: {value} (удалять <-> чинить)"
+
+msgid "PHONE_JOURNAL_EMPTY"
+msgstr "Решений пока нет"
+
+msgid "COLLECTION_CAPY"
+msgstr "Капибары"
+
+msgid "COLLECTION_CATS"
+msgstr "Коты"
+
+msgid "COLLECTION_MESSAGES"
+msgstr "Послания ЛАБЫ"
+
+msgid "COLLECTION_STUDENTS"
+msgstr "Одногруппники"
+
+msgid "COLLECTION_NOTES"
+msgstr "Записки Лестенко"
+
+msgid "DEV_TITLE"
+msgstr "МЕНЮ РАЗРАБОТЧИКА · РАЗВИЛКИ"
+
+msgid "DEV_OPEN_FORK"
+msgstr "Открыть развилку"
+
+msgid "DEV_SHOW_ENDING"
+msgstr "Показать концовку"
+
+msgid "DEV_TO_ROOF"
+msgstr "К терминалам"
+
+msgid "DEV_PLAN"
+msgstr "Сводка финала"
+
+msgid "EPILOGUE_HEADER"
+msgstr "Концовка №{number} из 8 · «{title}»"
+
+msgid "EPILOGUE_BECAUSE"
+msgstr "ПОТОМУ ЧТО"
+
+msgid "EPILOGUE_NEXT"
+msgstr "[Пробел] дальше"
+
+msgid "PROMPT_ENTER"
+msgstr "Войти"
+
+msgid "PROMPT_TALK"
+msgstr "Говорить"
+
+msgid "PROMPT_CHOOSE"
+msgstr "Выбрать"
+
+msgid "PROMPT_LAUNCH_LABA"
+msgstr "Запустить ЛАБУ"
+
+msgid "PROMPT_TAKE_DEBUGGER"
+msgstr "Взять отладчик"
+
+msgid "LOCK_DEFAULT"
+msgstr "Заперто"
+
+msgid "LOCK_NOT_BUILT"
+msgstr "Эта локация ещё не собрана"
+
+msgid "LOCK_NEED_DEBUGGER"
+msgstr "Заперто. Нужен отладчик из аудитории Н2"
+
+msgid "LOCK_NEED_TOTEM"
+msgstr "Карантин. Сначала разбейте тотем ERROR"
+
+msgid "LOCK_EXIT_404"
+msgstr "Дверь не найдена: 404"
+
+msgid "LOCK_EXIT_EARLY"
+msgstr "Пары ещё не закончились"
+
+msgid "DOOR_404"
+msgstr "404 · не найдено"
+
+msgid "TOAST_LABA_LAUNCHED"
+msgstr "ЛАБА запущена. Выход заразится через 60 секунд"
+
+msgid "TOAST_DEBUGGER"
+msgstr "Получен отладчик: держите Q и стреляйте ЛКМ"
+
+msgid "TASK_GO_AUDITORIUM"
+msgstr "Успеть в аудиторию Н2"
+
+msgid "TASK_GET_DEBUGGER"
+msgstr "Взять отладчик в шкафу"
+
+msgid "TASK_BREAK_TOTEM"
+msgstr "Разбить тотем ERROR в коридоре 1 этажа"
+
+msgid "TASK_FIND_STAIRS"
+msgstr "Подняться на 2 этаж по лестнице А"
+
+msgid "TERMINAL_DELETE"
+msgstr "УДАЛИТЬ"
+
+msgid "TERMINAL_DELETE_STATUS"
+msgstr "доступно всегда"
+
+msgid "TERMINAL_FIX"
+msgstr "ИСПРАВИТЬ"
+
+msgid "TERMINAL_FIX_STATUS"
+msgstr "послания {messages}/{total}"
+
+msgid "TERMINAL_RESET"
+msgstr "ОТКАТИТЬ"
+
+msgid "TERMINAL_RESET_STATUS"
+msgstr "никто не вспомнит"
+
+msgid "TERMINAL_LOCKED"
+msgstr "Нужно 3 послания ЛАБЫ из 5. Ищите послания"
+
+msgid "NAME_MOZHAYTSEV"
+msgstr "Можайцев"
+
+msgid "TEXT_PENDING"
+msgstr "Текст в работе"
+
+msgid "FORK_P1_TOAST"
+msgstr "ЛАБА запомнила: вы пробовали уйти"
+
+msgid "FORK_P4_TITLE"
+msgstr "Компилятор побеждён. Что с ним сделать?"
+
+msgid "FORK_P4_FIXED"
+msgstr "ПОЧИНИТЬ"
+
+msgid "FORK_P4_FIXED_NOW"
+msgstr "+ ещё одна фаза (~2 мин)\n+ лифт заработает сразу\n+ лечение быстрее на 25%"
+
+msgid "FORK_P4_FIXED_LATER"
+msgstr "ЛАБА увидит: ошибки можно исправлять"
+
+msgid "FORK_P4_FIXED_TOAST"
+msgstr "ЛАБА запомнила: вы чините ошибки"
+
+msgid "FORK_P4_DELETED"
+msgstr "УДАЛИТЬ"
+
+msgid "FORK_P4_DELETED_NOW"
+msgstr "+ победа прямо сейчас\n- лифт чинить вручную"
+
+msgid "FORK_P4_DELETED_LATER"
+msgstr "ЛАБА увидит: ошибки можно удалять"
+
+msgid "FORK_P4_DELETED_TOAST"
+msgstr "ЛАБА запомнила: вы удаляете ошибки"
+
+msgid "FORK_P5_TITLE"
+msgstr "ЛАБА: ошибка или студент?"
+
+msgid "FORK_P5_ERROR"
+msgstr "«Ошибка»"
+
+msgid "FORK_P5_ERROR_NOW"
+msgstr "Метод -1"
+
+msgid "FORK_P5_ERROR_LATER"
+msgstr "В эпилоге отчёт называется «Об устранении»"
+
+msgid "FORK_P5_ERROR_TOAST"
+msgstr "ЛАБА запомнила: её считают ошибкой"
+
+msgid "FORK_P5_STUDENT"
+msgstr "«Студент»"
+
+msgid "FORK_P5_STUDENT_NOW"
+msgstr "Метод +1"
+
+msgid "FORK_P5_STUDENT_LATER"
+msgstr "В эпилоге отчёт называется «О пересдаче»"
+
+msgid "FORK_P5_STUDENT_TOAST"
+msgstr "ЛАБА запомнила: её считают студентом"
+
+msgid "FORK_P5_UNKNOWN"
+msgstr "«Не знаю»"
+
+msgid "FORK_P5_UNKNOWN_NOW"
+msgstr "Метод не меняется"
+
+msgid "FORK_P5_UNKNOWN_LATER"
+msgstr "Перед крышей вопрос зададут ещё раз, и ответ засчитается"
+
+msgid "FORK_P5_UNKNOWN_TOAST"
+msgstr "ЛАБА запомнила: вы пока не решили"
+
+msgid "FORK_P6_TITLE"
+msgstr "Какой этаж первым?"
+
+msgid "FORK_P6_3"
+msgstr "Сначала 3 этаж"
+
+msgid "FORK_P6_3_NOW"
+msgstr "3 этаж в обычной версии"
+
+msgid "FORK_P6_3_LATER"
+msgstr "4 этаж станет тяжелее: +25% заражения"
+
+msgid "FORK_P6_3_TOAST"
+msgstr "ЛАБА запомнила: сначала 3 этаж"
+
+msgid "FORK_P6_4"
+msgstr "Сначала 4 этаж"
+
+msgid "FORK_P6_4_NOW"
+msgstr "4 этаж в обычной версии"
+
+msgid "FORK_P6_4_LATER"
+msgstr "3 этаж станет тяжелее: +25% заражения"
+
+msgid "FORK_P6_4_TOAST"
+msgstr "ЛАБА запомнила: сначала 4 этаж"
+
+msgid "FORK_P9_TITLE"
+msgstr "Последний кристалл"
+
+msgid "FORK_P9_KIND"
+msgstr "ПЕРЕУБЕДИТЬ"
+
+msgid "FORK_P9_KIND_NOW"
+msgstr "Мини-игра на 1 минуту"
+
+msgid "FORK_P9_KIND_LATER"
+msgstr "Метод +1. В финале коты защищают вас"
+
+msgid "FORK_P9_KIND_TOAST"
+msgstr "ЛАБА запомнила: вы переубеждаете"
+
+msgid "FORK_P9_STRICT"
+msgstr "РАЗБИТЬ"
+
+msgid "FORK_P9_STRICT_NOW"
+msgstr "Быстро и громко"
+
+msgid "FORK_P9_STRICT_LATER"
+msgstr "Метод -1. В финале штампы «НЕЗАЧЁТ» бьют по ЛАБЕ"
+
+msgid "FORK_P9_STRICT_TOAST"
+msgstr "ЛАБА запомнила: вы разбиваете"
+
+msgid "FORK_P11_TITLE"
+msgstr "Туча «Гнев»"
+
+msgid "FORK_P11_CALM"
+msgstr "УСПОКОИТЬ"
+
+msgid "FORK_P11_CALM_NOW"
+msgstr "Починить 5 ламп-тестов под молниями"
+
+msgid "FORK_P11_CALM_LATER"
+msgstr "Метод +1. На этаже появляются цветы"
+
+msgid "FORK_P11_CALM_TOAST"
+msgstr "ЛАБА запомнила: вы успокаиваете"
+
+msgid "FORK_P11_STORM"
+msgstr "РАССЕЯТЬ"
+
+msgid "FORK_P11_STORM_NOW"
+msgstr "Отразить молнию обратно в ядро. Быстро"
+
+msgid "FORK_P11_STORM_LATER"
+msgstr "Метод -1. На стенах остаются подпалины"
+
+msgid "FORK_P11_STORM_TOAST"
+msgstr "ЛАБА запомнила: вы рассеиваете"
+
+msgid "FORK_P12_TITLE"
+msgstr "Рубильник карантина"
+
+msgid "FORK_P12_CLONE"
+msgstr "Подменить клоном"
+
+msgid "FORK_P12_CLONE_NOW"
+msgstr "Головоломка на 3 минуты"
+
+msgid "FORK_P12_CLONE_LATER"
+msgstr "Метод +1. Карантин держится, первая фаза финала вдвое короче"
+
+msgid "FORK_P12_CLONE_TOAST"
+msgstr "ЛАБА запомнила: вы оставили клона"
+
+msgid "FORK_P12_STAY"
+msgstr "Уйти"
+
+msgid "FORK_P12_STAY_NOW"
+msgstr "Сразу на крышу"
+
+msgid "FORK_P12_STAY_LATER"
+msgstr "В третьей фазе карантин падает, таймер идёт вдвое быстрее"
+
+msgid "FORK_P12_STAY_TOAST"
+msgstr "ЛАБА запомнила: вы ушли"
+
+msgid "FORK_P12_OFF"
+msgstr "Выключить карантин"
+
+msgid "FORK_P12_OFF_NOW"
+msgstr "Заражение корпуса +20%"
+
+msgid "FORK_P12_OFF_LATER"
+msgstr "Метод -1. Финал 5 минут вместо 10, зато ЛАБА теряет 50 уверенности"
+
+msgid "FORK_P12_OFF_TOAST"
+msgstr "ЛАБА запомнила: вы выключили карантин"
+
+msgid "END_EXPELLED"
+msgstr "Отчислен"
+
+msgid "END_EXPELLED_TEXT"
+msgstr "Текст концовки «Отчислен» в работе"
+
+msgid "END_EXCELLENT"
+msgstr "Отлично"
+
+msgid "END_EXCELLENT_TEXT"
+msgstr "Текст концовки «Отлично» в работе"
+
+msgid "END_NOT_FOUND"
+msgstr "Мир не найден"
+
+msgid "END_NOT_FOUND_TEXT"
+msgstr "Текст концовки «Мир не найден» в работе"
+
+msgid "END_RM_RF"
+msgstr "rm -rf"
+
+msgid "END_RM_RF_TEXT"
+msgstr "Текст концовки «rm -rf» в работе"
+
+msgid "END_LOOP"
+msgstr "Петля"
+
+msgid "END_LOOP_TEXT"
+msgstr "Текст концовки «Петля» в работе"
+
+msgid "END_RETAKE"
+msgstr "Пересдача"
+
+msgid "END_RETAKE_TEXT"
+msgstr "Текст концовки «Пересдача» в работе"
+
+msgid "END_CAPYBARA"
+msgstr "Капибара-ассистент"
+
+msgid "END_CAPYBARA_TEXT"
+msgstr "Текст концовки «Капибара-ассистент» в работе"
+
+msgid "END_EXPERIMENT_405"
+msgstr "Эксперимент №405"
+
+msgid "END_EXPERIMENT_405_TEXT"
+msgstr "Текст концовки «Эксперимент №405» в работе"
+
+msgid "LOC_1_01"
+msgstr "Вестибюль"
+
+msgid "LOC_1_02"
+msgstr "Аудитория Н2"
+
+msgid "LOC_1_03"
+msgstr "Выход на улицу"
+
+msgid "LOC_1_04"
+msgstr "Гардероб"
+
+msgid "LOC_1_05"
+msgstr "Коридор 1 этажа"
+
+msgid "LOC_1_06"
+msgstr "Кабинет Лестенко"
+
+msgid "LOC_1_07"
+msgstr "Туалет"
+
+msgid "LOC_1_08"
+msgstr "Музей"
+
+msgid "LOC_1_09"
+msgstr "Столовая"
+
+msgid "LOC_1_10"
+msgstr "Лифт"
+
+msgid "LOC_1_11"
+msgstr "Научная часть"
+
+msgid "LOC_1_12"
+msgstr "Лестница А"
+
+msgid "LOC_1_13"
+msgstr "Лестница Б"
+
+msgid "LOC_214"
+msgstr "Кабинет Вальштейна"
+
+msgid "LOC_201"
+msgstr "Компьютерный класс"
+
+msgid "LOC_203"
+msgstr "Лекционная"
+
+msgid "LOC_205"
+msgstr "«Магия»"
+
+msgid "LOC_207"
+msgstr "«Переполнение»"
+
+msgid "LOC_209"
+msgstr "«Утечка памяти»"
+
+msgid "LOC_211"
+msgstr "«Друзья класса»"
+
+msgid "LOC_216"
+msgstr "Поточная аудитория"
+
+msgid "LOC_2_K"
+msgstr "Кладовая"
+
+msgid "LOC_218"
+msgstr "Преподавательская"
+
+msgid "LOC_301"
+msgstr "Читальный зал"
+
+msgid "LOC_303"
+msgstr "Кошачий суд I"
+
+msgid "LOC_302"
+msgstr "Лабиринт дедлайнов"
+
+msgid "LOC_305"
+msgstr "Кошачий суд II"
+
+msgid "LOC_304"
+msgstr "Тихий заражённый зал"
+
+msgid "LOC_307"
+msgstr "Котоприют"
+
+msgid "LOC_309"
+msgstr "Комната страданий"
+
+msgid "LOC_311"
+msgstr "Кабинет Логуновой"
+
+msgid "LOC_411"
+msgstr "Кабинет Землянской"
+
+msgid "LOC_401"
+msgstr "Зелёные тесты"
+
+msgid "LOC_403"
+msgstr "Ваза «Не трогать»"
+
+msgid "LOC_405"
+msgstr "Архив отчётов"
+
+msgid "LOC_407"
+msgstr "Бюро находок"
+
+msgid "LOC_409"
+msgstr "«Буря»"
+
+msgid "LOC_402"
+msgstr "Два мира"
+
+msgid "LOC_P_0"
+msgstr "Шлюз"
+
+msgid "LOC_P_1"
+msgstr "«Ветки»"
+
+msgid "LOC_P_2"
+msgstr "«Конфликт слияния»"
+
+msgid "LOC_P_3"
+msgstr "Код-ревью"
+
+msgid "LOC_P_4"
+msgstr "Архив"
+
+msgid "LOC_P_5"
+msgstr "Цикл 40,4 с"
+
+msgid "LOC_P_6"
+msgstr "Серверная"
+
+msgid "LOC_K_1"
+msgstr "Крыша"
+
+msgid "FLOOR_0"
+msgstr "ПОДВАЛ · «ПРОД»"
+
+msgid "FLOOR_1"
+msgstr "1 ЭТАЖ · ХАБ"
+
+msgid "FLOOR_2"
+msgstr "2 ЭТАЖ · «ПЛЮСЫ»"
+
+msgid "FLOOR_3"
+msgstr "3 ЭТАЖ · «ТИШИНА»"
+
+msgid "FLOOR_4"
+msgstr "4 ЭТАЖ · «НАСТРОЕНИЕ»"
+
+msgid "FLOOR_5"
+msgstr "КРЫША"
+
+msgid "EPI_VALSHTEIN"
+msgstr "ВАЛЬШТЕЙН"
+
+msgid "EPI_VALSHTEIN_A"
+msgstr "Текст слайда «ВАЛЬШТЕЙН», вариант А, в работе"
+
+msgid "EPI_VALSHTEIN_A_WHY"
+msgstr "вы починили Компилятор (P4)"
+
+msgid "EPI_VALSHTEIN_B"
+msgstr "Текст слайда «ВАЛЬШТЕЙН», вариант Б, в работе"
+
+msgid "EPI_VALSHTEIN_B_WHY"
+msgstr "вы удалили Компилятор (P4)"
+
+msgid "EPI_LOGUNOVA"
+msgstr "ЛОГУНОВА"
+
+msgid "EPI_LOGUNOVA_A"
+msgstr "Текст слайда «ЛОГУНОВА», вариант А, в работе"
+
+msgid "EPI_LOGUNOVA_A_WHY"
+msgstr "вы переубедили её и нашли 4-5 котов (P7, P9)"
+
+msgid "EPI_LOGUNOVA_B"
+msgstr "Текст слайда «ЛОГУНОВА», вариант Б, в работе"
+
+msgid "EPI_LOGUNOVA_B_WHY"
+msgstr "вы разбили кристалл или нашли мало котов (P7, P9)"
+
+msgid "EPI_ZEMLYANSKAYA"
+msgstr "ЗЕМЛЯНСКАЯ"
+
+msgid "EPI_ZEMLYANSKAYA_A"
+msgstr "Текст слайда «ЗЕМЛЯНСКАЯ», вариант А, в работе"
+
+msgid "EPI_ZEMLYANSKAYA_A_WHY"
+msgstr "вы злили её 0-2 раза (P10)"
+
+msgid "EPI_ZEMLYANSKAYA_B"
+msgstr "Текст слайда «ЗЕМЛЯНСКАЯ», вариант Б, в работе"
+
+msgid "EPI_ZEMLYANSKAYA_B_WHY"
+msgstr "вы злили её 3 раза и больше (P10)"
+
+msgid "EPI_MOZHAYTSEV"
+msgstr "МОЖАЙЦЕВ"
+
+msgid "EPI_MOZHAYTSEV_A"
+msgstr "Текст слайда «МОЖАЙЦЕВ», вариант А, в работе"
+
+msgid "EPI_MOZHAYTSEV_A_WHY"
+msgstr "вы подменили его клоном (P12)"
+
+msgid "EPI_MOZHAYTSEV_B"
+msgstr "Текст слайда «МОЖАЙЦЕВ», вариант Б, в работе"
+
+msgid "EPI_MOZHAYTSEV_B_WHY"
+msgstr "вы ушли или выключили карантин (P12)"
+
+msgid "EPI_NAURUSOVA"
+msgstr "НАУРУСОВА"
+
+msgid "EPI_NAURUSOVA_A"
+msgstr "Текст слайда «НАУРУСОВА», вариант А, в работе"
+
+msgid "EPI_NAURUSOVA_A_WHY"
+msgstr "вы ответили «студент» (P5)"
+
+msgid "EPI_NAURUSOVA_B"
+msgstr "Текст слайда «НАУРУСОВА», вариант Б, в работе"
+
+msgid "EPI_NAURUSOVA_B_WHY"
+msgstr "вы не ответили «студент» (P5)"
+
+msgid "EPI_LESTENKO"
+msgstr "ЛЕСТЕНКО"
+
+msgid "EPI_LESTENKO_A"
+msgstr "Текст слайда «ЛЕСТЕНКО», вариант А, в работе"
+
+msgid "EPI_LESTENKO_A_WHY"
+msgstr "вы нашли все 6 записок"
+
+msgid "EPI_LESTENKO_B"
+msgstr "Текст слайда «ЛЕСТЕНКО», вариант Б, в работе"
+
+msgid "EPI_LESTENKO_B_WHY"
+msgstr "вы нашли не все записки"
+
+msgid "EPI_GROUP"
+msgstr "ГРУППА"
+
+msgid "EPI_GROUP_A"
+msgstr "Текст слайда «ГРУППА», вариант А, в работе"
+
+msgid "EPI_GROUP_A_WHY"
+msgstr "вы спасли всех шестерых"
+
+msgid "EPI_GROUP_B"
+msgstr "Текст слайда «ГРУППА», вариант Б, в работе"
+
+msgid "EPI_GROUP_B_WHY"
+msgstr "вы спасли не всех"
+
+msgid "EPI_LABA"
+msgstr "ЛАБА"
+
+msgid "EPI_LABA_A"
+msgstr "Текст слайда «ЛАБА», вариант А, в работе"
+
+msgid "EPI_LABA_A_WHY"
+msgstr "вы выбрали терминал «ИСПРАВИТЬ»"
+
+msgid "EPI_LABA_B"
+msgstr "Текст слайда «ЛАБА», вариант Б, в работе"
+
+msgid "EPI_LABA_B_WHY"
+msgstr "вы выбрали терминал «УДАЛИТЬ»"
