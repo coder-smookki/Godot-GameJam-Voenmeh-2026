@@ -2,18 +2,11 @@ class_name Cat
 extends Node2D
 ## Кот: сидит на месте, а когда герой подходит, мяукает, спрыгивает и скачет к выходу.
 ##
-## Кадры художниц смотрят влево; при беге вправо спрайт отражается. Весь побег собран
-## в одну цепочку движений, поэтому он останавливается вместе с миром на паузе.
-## Убежавший кот ставит отметку мира и больше в комнате не появляется.
+## Весь побег собран в одну цепочку движений, поэтому он останавливается вместе с миром
+## на паузе. Убежавший кот ставит отметку мира и больше в комнате не появляется.
 
 signal ran_away
 
-const POSES: Dictionary = {
-	&"sit": preload("res://assets/characters/cat/sit.png"),
-	&"crouch": preload("res://assets/characters/cat/crouch.png"),
-	&"leap": preload("res://assets/characters/cat/leap.png"),
-	&"land": preload("res://assets/characters/cat/land.png"),
-}
 const NOTICE_SEC := 0.45
 const HOP_LENGTH := 56.0
 const HOP_HEIGHT := 18.0
@@ -22,8 +15,6 @@ const DROP_SEC_PER_PX := 0.0016
 const LAND_SEC := 0.09
 const GATHER_SEC := 0.06
 const FADE_SEC := 0.2
-const SHADOW_FADE_HEIGHT := 120.0
-const SHADOW_MIN_SCALE := 0.4
 
 @export var gone_mark: String = ""
 @export var floor_y: float = 264.0
@@ -31,8 +22,7 @@ const SHADOW_MIN_SCALE := 0.4
 
 var _running: bool = false
 
-@onready var _sprite: Sprite2D = $Sprite
-@onready var _shadow: Node2D = $Shadow
+@onready var _body: CatSprite = $Body
 @onready var _notice: Area2D = $Notice
 @onready var _meow: Node2D = $Meow
 
@@ -57,10 +47,9 @@ func run_away() -> void:
 	if _running:
 		return
 	_running = true
-	var direction := 1.0 if exit_x >= global_position.x else -1.0
-	_sprite.flip_h = direction > 0.0
+	_body.face(1.0 if exit_x >= global_position.x else -1.0)
 	_meow.show()
-	_pose(&"crouch")
+	_body.pose(CatSprite.CROUCH)
 	var tween := create_tween()
 	tween.tween_interval(NOTICE_SEC)
 	tween.tween_callback(_meow.hide)
@@ -79,40 +68,30 @@ func run_away() -> void:
 ## [param to] - точка приземления на полу.
 func _add_hop(tween: Tween, from: Vector2, to: Vector2) -> void:
 	var sec := HOP_SEC + absf(to.y - from.y) * DROP_SEC_PER_PX
-	tween.tween_callback(_pose.bind(&"leap"))
+	tween.tween_callback(_body.pose.bind(CatSprite.LEAP))
 	tween.tween_method(_fly.bind(from, to), 0.0, 1.0, sec)
 	tween.tween_callback(_touch_down)
 	tween.tween_interval(LAND_SEC)
-	tween.tween_callback(_pose.bind(&"crouch"))
+	tween.tween_callback(_body.pose.bind(CatSprite.CROUCH))
 	tween.tween_interval(GATHER_SEC)
 
 
-## Ставит кота в точку дуги и держит тень на полу под ним.
+## Ведёт кота по дуге: сам узел идёт по полу под котом, а рисунок поднят на высоту дуги.
 ## [param progress] - доля скачка от 0 до 1.
 ## [param from] - точка толчка.
 ## [param to] - точка приземления.
 func _fly(progress: float, from: Vector2, to: Vector2) -> void:
-	var point := Vector2(lerpf(from.x, to.x, progress), lerpf(from.y, to.y, progress * progress))
-	point.y -= HOP_HEIGHT * 4.0 * progress * (1.0 - progress)
-	global_position = point
-	var lift := maxf(to.y - point.y, 0.0)
-	var shrink := clampf(1.0 - lift / SHADOW_FADE_HEIGHT, SHADOW_MIN_SCALE, 1.0)
-	_shadow.global_position = Vector2(point.x, to.y)
-	_shadow.scale = Vector2(shrink, shrink)
+	var height := lerpf(to.y - from.y, 0.0, progress * progress)
+	height += HOP_HEIGHT * 4.0 * progress * (1.0 - progress)
+	global_position = Vector2(lerpf(from.x, to.x, progress), to.y)
+	_body.lift(height)
 
 
 ## Показывает кадр приземления и выбивает пыль из-под лап.
 func _touch_down() -> void:
-	_pose(&"land")
-	_shadow.position = Vector2.ZERO
-	_shadow.scale = Vector2.ONE
+	_body.pose(CatSprite.LAND)
+	_body.lift(0.0)
 	Puff.spawn(get_parent(), global_position, Puff.STEP_AMOUNT + 1)
-
-
-## Меняет кадр кота.
-## [param pose] - имя кадра: sit, crouch, leap или land.
-func _pose(pose: StringName) -> void:
-	_sprite.texture = POSES[pose]
 
 
 ## Запоминает, что кот убежал, и убирает его из комнаты.

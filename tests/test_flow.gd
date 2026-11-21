@@ -202,6 +202,20 @@ func test_capi_joins() -> void:
 	equal(Game.task_key, "TASK_GET_DEBUGGER", "после катсцены нужно взять отладчик")
 	World.mark("capi_joined")
 	equal(actors.get_child_count(), before + 1, "Капи вылезла из монитора")
+	var room := tree.current_scene as Room
+	var capi: Capi = actors.get_child(actors.get_child_count() - 1)
+	var body: CatSprite = capi.get_node("Body")
+	await tree.create_timer(0.1).timeout
+	check(capi.is_resting(), "рядом с героем Капи сидит")
+	equal(body.current_pose(), CatSprite.SIT, "сидящая Капи показана кадром «сидит»")
+	room.player.global_position.x += 180.0
+	await tree.create_timer(0.15).timeout
+	check(not capi.is_resting(), "герой ушёл, Капи скачет следом")
+	equal(body.current_pose(), CatSprite.LEAP, "в скачке кадр полёта")
+	await tree.create_timer(1.6).timeout
+	check(capi.is_resting(), "Капи догнала героя и села")
+	var gap := absf(room.player.global_position.x - Capi.FOLLOW_DISTANCE - capi.global_position.x)
+	check(gap <= Capi.REST_DISTANCE, "Капи сидит за спиной героя")
 	World.set_value("mozh", "capy")
 	await Game.goto_room("corridor_2", "from_kafedra")
 	var corridor := tree.current_scene.get_node("Actors")

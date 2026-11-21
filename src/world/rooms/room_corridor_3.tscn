@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
 [ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
@@ -7,6 +7,10 @@
 [ext_resource type="PackedScene" path="res://src/world/effects/leak.tscn" id="leak"]
 [ext_resource type="Script" path="res://src/world/effects/glint.gd" id="glint"]
 [ext_resource type="Material" path="res://src/world/virus/virus_material.tres" id="virus"]
+[ext_resource type="Shader" path="res://src/world/cat/gray.gdshader" id="gray"]
+
+[sub_resource type="ShaderMaterial" id="gray_cat"]
+shader = ExtResource("gray")
 
 [sub_resource type="RectangleShape2D" id="floor"]
 size = Vector2(1160, 60)
@@ -173,6 +177,7 @@ target_spawn = "door"
 [node name="Actors" type="Node2D" parent="."]
 
 [node name="Cat" parent="Actors" instance=ExtResource("cat")]
+material = SubResource("gray_cat")
 position = Vector2(490, 150)
 gone_mark = "cat_316"
 exit_x = 790.0
