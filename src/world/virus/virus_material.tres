@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+
+[ext_resource type="Shader" path="res://src/world/virus/checker.gdshader" id="1"]
+
+[resource]
+shader = ExtResource("1")
+shader_parameter/color_a = Color(1, 0.121569, 0.705882, 1)
+shader_parameter/color_b = Color(0, 0, 0, 1)
+shader_parameter/cell = 4.0

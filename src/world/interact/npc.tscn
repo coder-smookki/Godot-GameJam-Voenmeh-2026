@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/world/interact/npc.gd" id="1"]
+[ext_resource type="Script" path="res://src/world/placeholder/pill.gd" id="2"]
+
+[sub_resource type="RectangleShape2D" id="shape"]
+size = Vector2(28, 44)
+
+[node name="Npc" type="Area2D"]
+script = ExtResource("1")
+prompt_offset = Vector2(0, -56)
+
+[node name="Shape" type="CollisionShape2D" parent="."]
+position = Vector2(0, -22)
+shape = SubResource("shape")
+
+[node name="Body" type="Node2D" parent="."]
+script = ExtResource("2")
+size = Vector2(12, 38)
+color = Color(0.419608, 0.447059, 0.501961, 1)

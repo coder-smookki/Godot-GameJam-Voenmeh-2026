@@ -1,0 +1,79 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
+[ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
+[ext_resource type="PackedScene" path="res://src/world/interact/ending_terminal.tscn" id="terminal"]
+
+[sub_resource type="RectangleShape2D" id="floor"]
+size = Vector2(840, 60)
+
+[sub_resource type="RectangleShape2D" id="wall"]
+size = Vector2(20, 400)
+
+[node name="Room" type="Node2D"]
+script = ExtResource("room")
+width = 640
+
+[node name="Backdrop" type="Node2D" parent="."]
+z_index = -30
+
+[node name="Wall" type="ColorRect" parent="Backdrop"]
+offset_right = 640.0
+offset_bottom = 216.0
+mouse_filter = 2
+color = Color(0.36, 0.3, 0.42, 1)
+
+[node name="Baseboard" type="ColorRect" parent="Backdrop"]
+offset_top = 206.0
+offset_right = 640.0
+offset_bottom = 216.0
+mouse_filter = 2
+color = Color(0.36, 0.25, 0.17, 1)
+
+[node name="Floor" type="ColorRect" parent="Backdrop"]
+offset_top = 216.0
+offset_right = 640.0
+offset_bottom = 270.0
+mouse_filter = 2
+color = Color(0.2, 0.22, 0.28, 1)
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+
+[node name="Floor" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(320, 246)
+shape = SubResource("floor")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-10, 135)
+shape = SubResource("wall")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(650, 135)
+shape = SubResource("wall")
+
+[node name="Props" type="Node2D" parent="."]
+z_index = -10
+
+[node name="Down" parent="Props" instance=ExtResource("door")]
+position = Vector2(90, 216)
+target_room = "1-01"
+target_spawn = "start"
+
+[node name="Delete" parent="Props" instance=ExtResource("terminal")]
+position = Vector2(200, 216)
+terminal = "delete"
+
+[node name="Fix" parent="Props" instance=ExtResource("terminal")]
+position = Vector2(360, 216)
+terminal = "fix"
+
+[node name="Reset" parent="Props" instance=ExtResource("terminal")]
+position = Vector2(520, 216)
+terminal = "reset"
+
+[node name="Actors" type="Node2D" parent="."]
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="start" type="Marker2D" parent="Spawns"]
+position = Vector2(90, 216)

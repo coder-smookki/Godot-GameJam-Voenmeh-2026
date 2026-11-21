@@ -1,0 +1,106 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
+[ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
+[ext_resource type="PackedScene" path="res://src/world/virus/totem.tscn" id="totem"]
+[ext_resource type="Material" path="res://src/world/virus/virus_material.tres" id="virus"]
+
+[sub_resource type="RectangleShape2D" id="floor"]
+size = Vector2(1160, 60)
+
+[sub_resource type="RectangleShape2D" id="wall"]
+size = Vector2(20, 400)
+
+[node name="Room" type="Node2D"]
+script = ExtResource("room")
+width = 960
+
+[node name="Backdrop" type="Node2D" parent="."]
+z_index = -30
+
+[node name="Wall" type="ColorRect" parent="Backdrop"]
+offset_right = 960.0
+offset_bottom = 216.0
+mouse_filter = 2
+color = Color(0.91, 0.87, 0.78, 1)
+
+[node name="Baseboard" type="ColorRect" parent="Backdrop"]
+offset_top = 206.0
+offset_right = 960.0
+offset_bottom = 216.0
+mouse_filter = 2
+color = Color(0.36, 0.25, 0.17, 1)
+
+[node name="Floor" type="ColorRect" parent="Backdrop"]
+offset_top = 216.0
+offset_right = 960.0
+offset_bottom = 270.0
+mouse_filter = 2
+color = Color(0.5, 0.36, 0.23, 1)
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+
+[node name="Floor" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(480, 246)
+shape = SubResource("floor")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-10, 135)
+shape = SubResource("wall")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(970, 135)
+shape = SubResource("wall")
+
+[node name="Props" type="Node2D" parent="."]
+z_index = -10
+
+[node name="Back" parent="Props" instance=ExtResource("door")]
+position = Vector2(90, 216)
+target_room = "1-01"
+target_spawn = "from_1_05"
+
+[node name="Wardrobe" parent="Props" instance=ExtResource("door")]
+position = Vector2(240, 216)
+target_room = "1-04"
+target_spawn = "start"
+
+[node name="Lestenko" parent="Props" instance=ExtResource("door")]
+position = Vector2(420, 216)
+target_room = "1-06"
+target_spawn = "start"
+
+[node name="Stairs" parent="Props" instance=ExtResource("door")]
+position = Vector2(900, 216)
+target_room = "1-12"
+target_spawn = "start"
+open_when = "is_marked('first_totem')"
+locked_text_key = "LOCK_NEED_TOTEM"
+
+[node name="Actors" type="Node2D" parent="."]
+
+[node name="Totem" parent="Actors" instance=ExtResource("totem")]
+position = Vector2(660, 216)
+totem_id = "1_05"
+
+[node name="Patch" type="ColorRect" parent="Actors/Totem"]
+z_index = -5
+material = ExtResource("virus")
+offset_left = 30.0
+offset_top = -180.0
+offset_right = 190.0
+mouse_filter = 2
+
+[node name="PatchTop" type="ColorRect" parent="Actors/Totem"]
+z_index = -5
+material = ExtResource("virus")
+offset_left = -20.0
+offset_top = -216.0
+offset_right = 150.0
+offset_bottom = -150.0
+mouse_filter = 2
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="from_1_01" type="Marker2D" parent="Spawns"]
+position = Vector2(90, 216)
