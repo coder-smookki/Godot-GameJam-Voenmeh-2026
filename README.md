@@ -42,7 +42,6 @@
 | Тексты | [text/ru.po](text/ru.po): все строки игры в одном файле |
 | Арт, звук, шрифты | [assets/](assets) |
 | Тесты | [tests/](tests) |
-| Документация для разработки | [docs/PROJECT.md](docs/PROJECT.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/LOGIC.md](docs/LOGIC.md), [docs/CHANGES.md](docs/CHANGES.md) |
 | Сборка и релизы | [.github/workflows/ci.yml](.github/workflows/ci.yml), [.github/workflows/release.yml](.github/workflows/release.yml) |
 
 ## Команда
