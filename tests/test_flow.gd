@@ -33,7 +33,9 @@ func test_hero_jumps() -> void:
 	for frame: int in 3:
 		await tree.physics_frame
 	check(not player.is_on_floor(), "герой в прыжке")
+	equal(_puffs(player.get_parent()), 1, "от толчка поднялась пыль")
 	var sprite: AnimatedSprite2D = player.get_node("Sprite")
+	check(sprite.scale.y > 1.0, "в толчке герой вытянулся")
 	equal(sprite.animation, &"jump", "в воздухе кадр прыжка")
 	var frames := 0
 	while not player.is_on_floor() and frames < 240:
@@ -41,9 +43,12 @@ func test_hero_jumps() -> void:
 		frames += 1
 	await tree.physics_frame
 	equal(sprite.animation, &"land", "после приземления кадр приседа")
+	check(_puffs(player.get_parent()) >= 1, "от приземления поднялась пыль")
+	check(sprite.scale.y < 1.0, "при посадке герой сплющился")
 	for frame: int in 30:
 		await tree.physics_frame
 	equal(sprite.animation, &"idle", "потом обычная стойка")
+	equal(sprite.scale, Vector2.ONE, "пропорции вернулись")
 	var release := InputEventAction.new()
 	release.action = "jump"
 	Input.parse_input_event(release)
@@ -90,7 +95,12 @@ func test_vanya_rescue() -> void:
 	check(vanya.get_node("Art/Remnant").visible, "остался маленький остаток")
 	equal(vanya.position.x, StuckVanya.FREE_X, "Ваня стоит свободно")
 	check(not Ui.dialogue.visible, "сначала шахматка сжимается")
+	var body: Sprite2D = vanya.get_node("Body")
+	check(body.visible and body.texture != null, "Ваня нарисован")
+	check(body.position.x > 0.0, "Ваня вылетает из шахматки")
 	await tree.create_timer(StuckVanya.SHRINK_SEC + 0.2).timeout
+	equal(body.position, Vector2.ZERO, "Ваня приземлился на своё место")
+	check(body.flip_h, "Ваня повернулся к герою")
 	check(Ui.dialogue.visible, "Ваня говорит спасибо")
 	finish_talk()
 	check(not Ui.dialogue.visible and not tree.paused, "разговор закончен, мир идёт")
@@ -339,3 +349,37 @@ func test_elevator_first_look() -> void:
 	Ui.elevator.close()
 	doors.interact(room.player)
 	check(Ui.elevator.visible and not Ui.dialogue.visible, "во второй раз панель открывается сразу")
+
+
+## Кот на третьем этаже замечает героя, убегает к кабинету 316 и больше не появляется.
+func test_cat_runs_away() -> void:
+	await start_game()
+	await Game.goto_room("corridor_3", Elevator.SPAWN)
+	var room := tree.current_scene as Room
+	var cat: Cat = room.get_node("Actors/Cat")
+	for frame: int in 3:
+		await tree.physics_frame
+	check(not cat.is_running(), "кот сидит, пока герой далеко")
+	cat.exit_x = cat.global_position.x + 60.0
+	room.player.global_position.x = cat.global_position.x - 60.0
+	for frame: int in 4:
+		await tree.physics_frame
+	check(cat.is_running(), "кот заметил героя")
+	check(cat.get_node("Meow").visible, "кот мяукнул")
+	await cat.ran_away
+	check(World.is_marked("cat_316"), "побег запомнен")
+	equal(cat.global_position.y, cat.floor_y, "кот спрыгнул на пол")
+	await Game.goto_room("vestibule", "elevator")
+	await Game.goto_room("corridor_3", Elevator.SPAWN)
+	check(tree.current_scene.get_node_or_null("Actors/Cat") == null, "убежавший кот не вернулся")
+
+
+## Считает облачка пыли, которые сейчас висят в комнате.
+## [param actors] - узел с персонажами комнаты.
+## Возвращает число узлов [Puff].
+func _puffs(actors: Node) -> int:
+	var count := 0
+	for child: Node in actors.get_children():
+		if child is Puff:
+			count += 1
+	return count

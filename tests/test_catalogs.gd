@@ -88,6 +88,7 @@ func test_built_rooms() -> void:
 	check(LocationCatalog.is_built(Game.START_ROOM), "стартовая комната")
 	check(LocationCatalog.is_built(DevMenu.ROOF), "крыша")
 	check(LocationCatalog.is_built(Elevator.room(2)), "коридор второго этажа")
+	check(LocationCatalog.is_built(Elevator.room(3)), "коридор третьего этажа")
 	check(not LocationCatalog.is_built("server"), "серверная ещё не собрана")
 	check(not LocationCatalog.is_built("9-99"), "чужой код")
 	equal(LocationCatalog.floor_of("wardrobe"), 1, "гардероб на первом этаже")

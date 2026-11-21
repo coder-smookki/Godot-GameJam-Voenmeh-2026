@@ -1,10 +1,13 @@
 extends Control
 ## Главное меню: играть, загрузить сохранение, настройки и выход.
 ##
-## Фон, логотип и кнопки нарисованы художником; меню только расставляет их и оживляет.
+## Фон, логотип и кнопки нарисованы художником; меню только расставляет их и оживляет:
+## логотип покачивается, кнопки проявляются по очереди, снизу поднимаются клетки шахматки.
 
 const LOGO_FLOAT := 2.0
 const LOGO_FLOAT_SEC := 1.8
+const BUTTON_FADE_SEC := 0.25
+const BUTTON_STAGGER_SEC := 0.08
 
 @onready var _play: PaperButton = $Buttons/Play
 @onready var _load: PaperButton = $Buttons/Load
@@ -15,7 +18,8 @@ const LOGO_FLOAT_SEC := 1.8
 @onready var _version: Label = $Version
 
 
-## Привязывает кнопки, показывает счёт концовок и версию, запускает покачивание логотипа.
+## Привязывает кнопки, показывает счёт концовок и версию, запускает появление кнопок
+## и покачивание логотипа.
 func _ready() -> void:
 	_play.pressed.connect(_on_play_pressed)
 	_load.pressed.connect(_on_load_pressed)
@@ -29,6 +33,12 @@ func _ready() -> void:
 	_version.text = str(ProjectSettings.get_setting("application/config/version", ""))
 	_set_locked(false)
 	_play.grab_focus()
+	var buttons: Array[PaperButton] = [_play, _load, _settings, _quit]
+	for index: int in buttons.size():
+		buttons[index].modulate.a = 0.0
+		var fade := create_tween()
+		fade.tween_interval(BUTTON_STAGGER_SEC * index)
+		fade.tween_property(buttons[index], "modulate:a", 1.0, BUTTON_FADE_SEC)
 	var tween := create_tween().set_loops().set_trans(Tween.TRANS_SINE)
 	tween.tween_property(_logo, "position:y", _logo.position.y - LOGO_FLOAT, LOGO_FLOAT_SEC)
 	tween.tween_property(_logo, "position:y", _logo.position.y, LOGO_FLOAT_SEC)

@@ -5,7 +5,7 @@ extends Interactable
 ## Сцену спасения показывают кадры художниц: ком шахматки и герой, который тянет.
 ## Рывки отодвигают шахматку, промахи приближают, после трёх промахов она отбрасывает героя.
 ## Слои нарисованы на холсте всей комнаты, поэтому лежат в координатах комнаты и не двигаются
-## вместе с этим узлом.
+## вместе с этим узлом. Освобождённый Ваня вылетает из шахматки по дуге и встаёт лицом к герою.
 
 const SAVED_MARK := "vanya_saved"
 const RESCUE_TALK := "vanya_rescue"
@@ -24,6 +24,12 @@ const JERK_JOLT := 9.0
 const JOLT_SEC := 0.12
 const SPARKS_SEC := 0.2
 const MISS_TINT := Color(1.6, 0.5, 0.5)
+const FLY_FROM := Vector2(86.0, -8.0)
+const FLY_HEIGHT := 30.0
+const FLY_SEC := 0.42
+const FLY_SHADOW_SCALE := 0.5
+const STUCK_TINT := Color(1.0, 0.35, 1.0)
+const FLY_Z := 3
 const FRAMES: Array[Texture2D] = [
 	preload("res://assets/minigames/pull/pull_1.png"),
 	preload("res://assets/minigames/pull/pull_2.png"),
@@ -35,7 +41,7 @@ var _player: Player = null
 var _jolt: Tween = null
 var _sparks_off: Tween = null
 
-@onready var _body: Node2D = $Body
+@onready var _body: Sprite2D = $Body
 @onready var _shadow: Node2D = $Shadow
 @onready var _cry: SpeechBubble = $Cry
 @onready var _mass: Sprite2D = $Art/Mass
@@ -64,6 +70,7 @@ func prompt_text() -> String:
 ## [param player] - герой, который подошёл к Ване.
 func _interact(player: Player) -> void:
 	if World.is_marked(SAVED_MARK):
+		_face(player)
 		Ui.dialogue.play(DialogueCatalog.talk(AFTER_TALK))
 		return
 	_player = player
@@ -89,19 +96,52 @@ func _interact(player: Player) -> void:
 		await _throw_back(player)
 
 
-## Освобождает Ваню: остаток шахматки сжимается, потом начинается разговор.
+## Освобождает Ваню: он вылетает из шахматки, её остаток сжимается, потом начинается разговор.
 ## [param player] - герой, который вытащил Ваню.
 func _finish_rescue(player: Player) -> void:
 	player.global_position.x = HERO_FREE_X
 	player.show()
 	World.mark(SAVED_MARK)
 	_show_state(true)
+	_face(player)
 	_remnant.scale = Vector2.ONE
 	SaveSystem.save_game()
-	var tween := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-	tween.tween_property(_remnant, "scale", Vector2(REMNANT_SCALE, REMNANT_SCALE), SHRINK_SEC)
+	_fly_out(0.0)
+	_body.modulate = STUCK_TINT
+	_body.z_index = FLY_Z
+	var small := Vector2(REMNANT_SCALE, REMNANT_SCALE)
+	var tween := create_tween().set_parallel()
+	tween.tween_property(_remnant, "scale", small, SHRINK_SEC).set_trans(Tween.TRANS_BACK).set_ease(
+		Tween.EASE_IN
+	)
+	tween.tween_method(_fly_out, 0.0, 1.0, FLY_SEC)
+	tween.tween_property(_body, "modulate", Color.WHITE, FLY_SEC)
+	tween.tween_callback(_land).set_delay(FLY_SEC)
 	await tween.finished
 	Ui.dialogue.play(DialogueCatalog.talk(RESCUE_TALK))
+
+
+## Ведёт Ваню по дуге из шахматки к месту, где он встанет; тень растёт по мере приземления.
+## В полёте Ваня рисуется поверх шахматки и ещё окрашен в её цвет.
+## [param progress] - доля полёта от 0 до 1.
+func _fly_out(progress: float) -> void:
+	_body.position = FLY_FROM.lerp(Vector2.ZERO, progress)
+	_body.position.y -= FLY_HEIGHT * 4.0 * progress * (1.0 - progress)
+	var grow := lerpf(FLY_SHADOW_SCALE, 1.0, progress)
+	_shadow.scale = Vector2(grow, grow)
+
+
+## Отмечает приземление Вани пылью из-под ног и коротким толчком камеры.
+func _land() -> void:
+	_body.z_index = 0
+	Puff.spawn(get_parent(), global_position)
+	_player.shake_camera(2.0, JOLT_SEC)
+
+
+## Поворачивает Ваню лицом к герою; на кадре художниц он смотрит вправо.
+## [param player] - герой, на которого смотрит Ваня.
+func _face(player: Player) -> void:
+	_body.flip_h = player.global_position.x < global_position.x
 
 
 ## Показывает, как шахматка накрыла героя, и возвращает его к началу комнаты.

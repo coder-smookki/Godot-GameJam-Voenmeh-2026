@@ -1,7 +1,8 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://src/world/interact/stuck_vanya.gd" id="1"]
-[ext_resource type="Script" path="res://src/world/placeholder/pill.gd" id="2"]
+[ext_resource type="Texture2D" path="res://assets/characters/vanya/stand.png" id="stand"]
+[ext_resource type="PackedScene" path="res://src/world/effects/leak.tscn" id="leak"]
 [ext_resource type="Script" path="res://src/world/interact/speech_bubble.gd" id="bubble"]
 [ext_resource type="Script" path="res://src/world/effects/shadow.gd" id="shadow"]
 [ext_resource type="Shader" path="res://src/world/virus/glitch.gdshader" id="glitch"]
@@ -35,7 +36,7 @@ colors = PackedColorArray(1, 0, 1, 1, 1, 0, 1, 1, 0, 0.07, 0, 1, 0, 0.07, 0, 1)
 
 [node name="StuckVanya" type="Area2D"]
 script = ExtResource("1")
-prompt_offset = Vector2(0, -182)
+prompt_offset = Vector2(0, -192)
 
 [node name="Shape" type="CollisionShape2D" parent="."]
 position = Vector2(0, -80)
@@ -45,10 +46,11 @@ shape = SubResource("shape")
 script = ExtResource("shadow")
 radius = Vector2(26, 4)
 
-[node name="Body" type="Node2D" parent="."]
-script = ExtResource("2")
-size = Vector2(44, 160)
-color = Color(0.192157, 0.407843, 0.847059, 1)
+[node name="Body" type="Sprite2D" parent="."]
+texture = ExtResource("stand")
+centered = false
+offset = Vector2(-24, -172)
+flip_h = true
 
 [node name="Art" type="Node2D" parent="."]
 top_level = true
@@ -58,6 +60,11 @@ z_index = 2
 material = SubResource("mass_material")
 texture = ExtResource("mass")
 centered = false
+
+[node name="Leak" parent="Art/Mass" instance=ExtResource("leak")]
+position = Vector2(650, 140)
+amount = 18
+emission_rect_extents = Vector2(250, 110)
 
 [node name="Pull" type="Sprite2D" parent="Art"]
 visible = false
@@ -73,6 +80,11 @@ centered = false
 offset = Vector2(-344, -262)
 region_enabled = true
 region_rect = Rect2(588, 0, 344, 270)
+
+[node name="Leak" parent="Art/Remnant" instance=ExtResource("leak")]
+position = Vector2(-150, -120)
+amount = 8
+emission_rect_extents = Vector2(140, 110)
 
 [node name="Sparks" type="CPUParticles2D" parent="Art"]
 process_mode = 3

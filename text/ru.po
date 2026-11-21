@@ -371,6 +371,9 @@ msgstr "Я застрял!"
 msgid "VANYA_CRY_2"
 msgstr "Давай быстрее!"
 
+msgid "CAT_MEOW"
+msgstr "Мяу!"
+
 msgid "TALK_VESTIBULE_1"
 msgstr "А где толпа студентов, которые борются у гардероба за куртки?"
 

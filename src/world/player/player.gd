@@ -3,7 +3,8 @@ extends CharacterBody2D
 ## Герой: ходьба и прыжок с видом сбоку, взаимодействие с объектами и выстрел отладчика.
 ##
 ## Начало координат находится у ног. Ввод обрабатывается только когда мир не на паузе.
-## Тень и отражение остаются на полу, когда герой прыгает.
+## Тень и отражение остаются на полу, когда герой прыгает. Толчок, приземление и шаги
+## поднимают пыль, а спрайт на мгновение вытягивается и сплющивается.
 
 const SPEED := 150.0
 const ACCELERATION := 1200.0
@@ -17,6 +18,12 @@ const DEBUGGER_MARK := "ability_debugger"
 const SHADOW_FADE_HEIGHT := 160.0
 const SHADOW_MIN_SCALE := 0.45
 const LAND_SEC := 0.12
+const LAND_PUFF_FROM_SEC := 0.15
+const JUMP_STRETCH := Vector2(0.9, 1.08)
+const LAND_SQUASH := Vector2(1.1, 0.9)
+const SQUASH_SEC := 0.2
+const STEP_BACK := 10.0
+const WALK := &"walk"
 
 var facing: int = 1
 
@@ -28,6 +35,8 @@ var _floor_y: float = 0.0
 var _landed: bool = false
 var _airborne: bool = false
 var _land_left: float = 0.0
+var _air_sec: float = 0.0
+var _squash: Tween = null
 
 @onready var _zone: Area2D = $InteractZone
 @onready var _muzzle: Marker2D = $Muzzle
@@ -42,6 +51,7 @@ var _land_left: float = 0.0
 func _ready() -> void:
 	_zone.area_entered.connect(_on_zone_area_entered)
 	_zone.area_exited.connect(_on_zone_area_exited)
+	_sprite.frame_changed.connect(_on_sprite_frame_changed)
 
 
 ## Возвращает обычную скорость времени, если герой исчезает во время прицеливания.
@@ -74,6 +84,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("jump"):
 		if is_on_floor():
 			velocity.y = JUMP_VELOCITY
+			_kick_up_dust(JUMP_STRETCH)
 	elif _focus != null and event.is_action_pressed(_focus.action):
 		get_viewport().set_input_as_handled()
 		_focus.interact(self)
@@ -119,7 +130,10 @@ func _update_animation(delta: float) -> void:
 	_sprite.flip_h = facing < 0
 	if is_on_floor() and _airborne:
 		_land_left = LAND_SEC
+		if _air_sec > LAND_PUFF_FROM_SEC:
+			_kick_up_dust(LAND_SQUASH)
 	_airborne = not is_on_floor()
+	_air_sec = _air_sec + delta if _airborne else 0.0
 	_land_left = maxf(_land_left - delta, 0.0)
 	var animation := &"idle"
 	if _airborne:
@@ -127,9 +141,27 @@ func _update_animation(delta: float) -> void:
 	elif _land_left > 0.0:
 		animation = &"land"
 	elif absf(velocity.x) > WALK_FROM_SPEED:
-		animation = &"walk"
+		animation = WALK
 	if _sprite.animation != animation:
 		_sprite.play(animation)
+
+
+## Поднимает облачко пыли у ног и на мгновение меняет пропорции спрайта.
+## [param shape] - масштаб спрайта в первый момент: вытянутый при толчке, сплющенный при посадке.
+func _kick_up_dust(shape: Vector2) -> void:
+	Puff.spawn(get_parent(), global_position)
+	if _squash != null and _squash.is_valid():
+		_squash.kill()
+	_sprite.scale = shape
+	_squash = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_squash.tween_property(_sprite, "scale", Vector2.ONE, SQUASH_SEC)
+
+
+## Пускает пару пылинок из-под ноги на каждом втором кадре шага.
+func _on_sprite_frame_changed() -> void:
+	if _sprite.animation == WALK and _sprite.frame % 2 == 0 and is_on_floor():
+		var heel := global_position - Vector2(STEP_BACK * facing, 0.0)
+		Puff.spawn(get_parent(), heel, Puff.STEP_AMOUNT)
 
 
 ## Держит тень и отражение на полу и повторяет в отражении кадр героя.

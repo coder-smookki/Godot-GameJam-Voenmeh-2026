@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
 [ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
 [ext_resource type="PackedScene" path="res://src/world/interact/elevator_door.tscn" id="elevator"]
 [ext_resource type="PackedScene" path="res://src/world/virus/totem.tscn" id="totem"]
 [ext_resource type="Material" path="res://src/world/virus/virus_material.tres" id="virus"]
+[ext_resource type="PackedScene" path="res://src/world/effects/leak.tscn" id="leak"]
 
 [sub_resource type="RectangleShape2D" id="floor"]
 size = Vector2(1160, 60)
@@ -89,6 +90,10 @@ offset_top = -250.0
 offset_right = 90.0
 offset_bottom = -40.0
 mouse_filter = 2
+
+[node name="Leak" parent="Actors/Totem/Patch" instance=ExtResource("leak")]
+position = Vector2(95, 105)
+emission_rect_extents = Vector2(95, 105)
 
 [node name="PatchDoor" type="ColorRect" parent="Actors/Totem"]
 z_index = -5

@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
 [ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
@@ -11,6 +11,7 @@
 [ext_resource type="Shader" path="res://src/world/virus/glitch.gdshader" id="glitch"]
 [ext_resource type="Script" path="res://src/world/interact/conditional.gd" id="conditional"]
 [ext_resource type="Texture2D" path="res://assets/rooms/vestibule.png" id="vestibule"]
+[ext_resource type="PackedScene" path="res://src/world/effects/leak.tscn" id="leak"]
 
 [sub_resource type="RectangleShape2D" id="floor"]
 size = Vector2(2600, 60)
@@ -203,6 +204,10 @@ prompt_key = "PROMPT_READ"
 position = Vector2(1262, 100)
 script = ExtResource("conditional")
 visible_when = "not is_marked('vanya_saved')"
+
+[node name="Leak" parent="Props/Scream" instance=ExtResource("leak")]
+position = Vector2(-57, 58)
+emission_rect_extents = Vector2(50, 96)
 
 [node name="Bubble" type="Node2D" parent="Props/Scream"]
 z_index = 40
