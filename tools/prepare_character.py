@@ -2,7 +2,8 @@
 
 Художник рисует кадры крупно и на холстах разного размера. Скрипт уменьшает их
 до игрового роста, выравнивает по корпусу и ступням и сохраняет на одинаковых холстах,
-чтобы анимация не дёргалась.
+чтобы анимация не дёргалась. Кадры должны быть нарисованы в одном масштабе: поля вокруг
+персонажа могут быть любыми, а сам персонаж одного размера.
 
 Запуск:
     python tools/prepare_character.py <папка для результата> <рост в пикселях> <кадр 1> <кадр 2> ...
@@ -21,6 +22,17 @@ TORSO_TOP = 0.28
 TORSO_BOTTOM = 0.46
 
 
+def content_box(image: Image.Image) -> tuple[int, int, int, int]:
+    """Находит границы персонажа на кадре.
+
+    image: кадр с прозрачным фоном.
+    Возвращает левую, верхнюю, правую и нижнюю границы плотных пикселей; полупрозрачный
+    мусор по краям не учитывается.
+    """
+    solid = image.getchannel("A").point(lambda value: 255 if value > ALPHA_SOLID else 0)
+    return solid.getbbox()
+
+
 def torso_center(image: Image.Image) -> float:
     """Находит середину корпуса по горизонтали.
 
@@ -29,7 +41,7 @@ def torso_center(image: Image.Image) -> float:
     совмещаются друг с другом.
     """
     alpha = image.getchannel("A")
-    left, top, right, bottom = alpha.getbbox()
+    left, top, right, bottom = content_box(image)
     band = alpha.crop((left, int(top + (bottom - top) * TORSO_TOP), right, int(top + (bottom - top) * TORSO_BOTTOM)))
     columns = [x for x in range(band.width) for y in range(band.height) if band.getpixel((x, y)) > ALPHA_SOLID]
     return left + statistics.fmean(columns)
@@ -44,20 +56,19 @@ def prepare(output_dir: Path, height: int, sources: list[Path]) -> None:
     Ничего не возвращает; печатает размер готового холста.
     """
     frames = [Image.open(path).convert("RGBA") for path in sources]
-    boxes = [frame.getchannel("A").getbbox() for frame in frames]
+    boxes = [content_box(frame) for frame in frames]
     scale = height / statistics.median(box[3] - box[1] for box in boxes)
     centers = [torso_center(frame) for frame in frames]
-    baseline = max(box[3] for box in boxes)
     reach = max(max(center - box[0], box[2] - center) for center, box in zip(centers, boxes))
-    rise = max(baseline - box[1] for box in boxes)
+    rise = max(box[3] - box[1] for box in boxes)
     half_width = int(reach * scale) + 2
     canvas_size = (half_width * 2, int(rise * scale) + 2)
     output_dir.mkdir(parents=True, exist_ok=True)
-    for index, (frame, center) in enumerate(zip(frames, centers), start=1):
+    for index, (frame, center, box) in enumerate(zip(frames, centers, boxes), start=1):
         size = (max(round(frame.width * scale), 1), max(round(frame.height * scale), 1))
         small = frame.resize(size, Image.LANCZOS)
         canvas = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
-        canvas.alpha_composite(small, (half_width - round(center * scale), canvas_size[1] - round(baseline * scale)))
+        canvas.alpha_composite(small, (half_width - round(center * scale), canvas_size[1] - round(box[3] * scale)))
         canvas.save(output_dir / f"walk_{index}.png")
     print(f"Кадров: {len(frames)}, холст {canvas_size[0]}x{canvas_size[1]}")
 
