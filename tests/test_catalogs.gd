@@ -17,10 +17,10 @@ func test_forks_match_schema() -> void:
 		equal(ForkCatalog.id_by_key(fork["key"]), fork_id, "%s находится по переменной" % fork_id)
 
 
-## В каталогах 46 локаций и 8 концовок, как в документе.
+## В каталогах 12 локаций и 5 концовок, как в раскадровке.
 func test_catalog_sizes() -> void:
-	equal(LocationCatalog.codes().size(), 46, "локации")
-	equal(EndingCatalog.ids().size(), 8, "концовки")
+	equal(LocationCatalog.codes().size(), 12, "локации")
+	equal(EndingCatalog.total(), 5, "концовки")
 	for index: int in EndingCatalog.ids().size():
 		equal(EndingCatalog.number(EndingCatalog.ids()[index]), index + 1, "номера по порядку")
 
@@ -31,7 +31,12 @@ func test_every_key_has_text() -> void:
 	keys.append_array(ForkCatalog.text_keys())
 	keys.append_array(EndingCatalog.text_keys())
 	keys.append_array(LocationCatalog.text_keys())
-	keys.append_array(Epilogue.text_keys())
+	keys.append_array(Elevator.text_keys())
+	for key: String in Settings.DEFAULTS:
+		keys.append("SETTINGS_%s" % key.to_upper())
+	for key: String in Story.STEPS:
+		keys.append(Story.STEPS[key]["task"])
+	keys.append(Story.START_TASK)
 	for key: String in keys:
 		check(TranslationServer.translate(key) != key, "нет текста для ключа %s" % key)
 	equal(str(TranslationServer.translate("")), "", "пустой ключ даёт пустой текст")
@@ -41,10 +46,17 @@ func test_every_key_has_text() -> void:
 func test_built_rooms() -> void:
 	check(LocationCatalog.is_built(Game.START_ROOM), "стартовая комната")
 	check(LocationCatalog.is_built(DevMenu.ROOF), "крыша")
-	check(not LocationCatalog.is_built("P-6"), "серверная ещё не собрана")
+	check(LocationCatalog.is_built(Elevator.room(2)), "коридор второго этажа")
+	check(not LocationCatalog.is_built("server"), "серверная ещё не собрана")
 	check(not LocationCatalog.is_built("9-99"), "чужой код")
-	equal(LocationCatalog.floor_of("P-3"), 0, "подвал")
-	equal(LocationCatalog.floor_of("K-1"), 5, "крыша")
+	equal(LocationCatalog.floor_of("wardrobe"), 1, "гардероб на первом этаже")
+	equal(LocationCatalog.floor_of("roof"), LocationCatalog.FLOOR_ROOF, "крыша")
+	for level: int in Elevator.FLOORS:
+		equal(
+			LocationCatalog.floor_of(Elevator.room(level)),
+			level,
+			"лифт привозит на %d этаж" % level
+		)
 
 
 ## Каждая сцена проекта загружается и создаётся без ошибок.

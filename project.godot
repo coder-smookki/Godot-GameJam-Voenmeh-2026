@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Эксперимент №404: Заражение"
-config/description="2D-приключение с видом сбоку: вирус 404 в корпусе, 15 развилок и 8 концовок."
+config/description="2D-приключение с видом сбоку: вирус 404 в корпусе, боссы на этажах, 3 развилки и 5 концовок."
 config/version="0.1.0"
 run/main_scene="res://src/ui/main_menu/main_menu.tscn"
 config/use_custom_user_dir=true
@@ -26,6 +26,7 @@ World="*res://src/core/world.gd"
 Journal="*res://src/core/journal.gd"
 Infection="*res://src/core/infection.gd"
 SaveSystem="*res://src/core/save_system.gd"
+Settings="*res://src/core/settings.gd"
 Game="*res://src/core/game.gd"
 Story="*res://src/core/story.gd"
 Ui="*res://src/ui/ui.tscn"

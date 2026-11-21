@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://src/ui/ui.gd" id="1"]
 [ext_resource type="PackedScene" path="res://src/ui/hud/hud.tscn" id="2"]
@@ -8,6 +8,10 @@
 [ext_resource type="PackedScene" path="res://src/ui/phone/phone.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://src/ui/pause_menu/pause_menu.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://src/ui/dev_menu/dev_menu.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://src/ui/elevator/elevator_panel.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://src/ui/pull/pull_game.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://src/ui/settings/settings_screen.tscn" id="11"]
+[ext_resource type="PackedScene" path="res://src/ui/confirm/confirm_screen.tscn" id="12"]
 
 [node name="Ui" type="CanvasLayer"]
 process_mode = 3
@@ -27,6 +31,14 @@ script = ExtResource("1")
 [node name="PauseMenu" parent="." instance=ExtResource("7")]
 
 [node name="DevMenu" parent="." instance=ExtResource("8")]
+
+[node name="ElevatorPanel" parent="." instance=ExtResource("9")]
+
+[node name="PullGame" parent="." instance=ExtResource("10")]
+
+[node name="SettingsScreen" parent="." instance=ExtResource("11")]
+
+[node name="ConfirmScreen" parent="." instance=ExtResource("12")]
 
 [node name="Fade" type="ColorRect" parent="."]
 anchors_preset = 15

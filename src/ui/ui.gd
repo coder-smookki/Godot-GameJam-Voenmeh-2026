@@ -1,11 +1,12 @@
 extends CanvasLayer
-## Весь интерфейс поверх игры: полоса заданий, тосты, диалоги, развилки, телефон, меню.
+## Весь интерфейс поверх игры: задания, тосты, диалоги, развилки, лифт, настройки, меню.
 ##
 ## Игровые сцены обращаются к интерфейсу только через этот узел.
 
 const FADE_SEC := 0.2
 
 var _modals: Array[Modal] = []
+var _focus_before: Dictionary = {}
 var _fade_tween: Tween = null
 
 @onready var hud: Hud = $Hud
@@ -15,6 +16,10 @@ var _fade_tween: Tween = null
 @onready var phone: Phone = $Phone
 @onready var pause_menu: PauseMenu = $PauseMenu
 @onready var dev_menu: DevMenu = $DevMenu
+@onready var elevator: ElevatorPanel = $ElevatorPanel
+@onready var pull: PullGame = $PullGame
+@onready var settings: SettingsScreen = $SettingsScreen
+@onready var confirm: ConfirmScreen = $ConfirmScreen
 @onready var _fade: ColorRect = $Fade
 
 
@@ -50,17 +55,23 @@ func open_modal(modal: Modal) -> void:
 	if modal in _modals:
 		return
 	_modals.append(modal)
+	_focus_before[modal] = get_viewport().gui_get_focus_owner()
 	Game.set_slow_motion(false)
 	modal.show()
 	get_tree().paused = true
 
 
-## Прячет экран и снимает паузу, если других экранов не осталось.
+## Прячет экран, возвращает фокус туда, где он был, и снимает паузу после последнего экрана.
 ## [param modal] - экран, который нужно закрыть.
 func close_modal(modal: Modal) -> void:
 	_modals.erase(modal)
 	modal.hide()
 	get_tree().paused = not _modals.is_empty()
+	var previous: Variant = _focus_before.get(modal)
+	_focus_before.erase(modal)
+	if is_instance_valid(previous) and previous.is_visible_in_tree():
+		if previous.focus_mode != Control.FOCUS_NONE:
+			previous.grab_focus()
 
 
 ## Закрывает все открытые экраны, например перед сменой сцены.
@@ -101,12 +112,13 @@ func _fade_to(alpha: float) -> void:
 ## Закрывает верхний экран, если его можно закрыть, иначе открывает указанный.
 ## [param modal] - экран, который открывается, когда других экранов нет.
 func _toggle_top_or(modal: Modal) -> void:
-	if Game.is_busy() or not Game.in_room:
+	if Game.is_busy():
 		return
-	if _modals.is_empty():
+	if not _modals.is_empty():
+		if _modals.back().closable:
+			_modals.back().close()
+	elif Game.in_room:
 		modal.open()
-	elif _modals.back().closable:
-		_modals.back().close()
 
 
 ## Показывает тост о том, что мир запомнил решение.

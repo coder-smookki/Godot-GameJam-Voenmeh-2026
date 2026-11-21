@@ -1,9 +1,9 @@
 class_name EndingCatalog
 extends RefCounted
-## Каталог восьми концовок.
+## Каталог пяти концовок.
 ##
 ## Хранит номер и вид каждой концовки. Вид определяет, что происходит после слайда:
-## шуточная и плохая возвращают в игру, основная и секретная ведут к эпилогу.
+## шуточная и плохая возвращают в игру, основная и секретная ведут в главное меню.
 
 const KIND_JOKE := "joke"
 const KIND_BAD := "bad"
@@ -12,13 +12,10 @@ const KIND_SECRET := "secret"
 
 const ENDINGS: Dictionary = {
 	"expelled": {"number": 1, "kind": KIND_JOKE},
-	"excellent": {"number": 2, "kind": KIND_JOKE},
-	"not_found": {"number": 3, "kind": KIND_BAD},
-	"rm_rf": {"number": 4, "kind": KIND_MAIN},
-	"loop": {"number": 5, "kind": KIND_MAIN},
-	"retake": {"number": 6, "kind": KIND_MAIN},
-	"capybara": {"number": 7, "kind": KIND_SECRET},
-	"experiment_405": {"number": 8, "kind": KIND_SECRET},
+	"not_found": {"number": 2, "kind": KIND_BAD},
+	"rm_rf": {"number": 3, "kind": KIND_MAIN},
+	"retake": {"number": 4, "kind": KIND_MAIN},
+	"capybara": {"number": 5, "kind": KIND_SECRET},
 }
 
 
@@ -30,21 +27,27 @@ static func has(ending_id: String) -> bool:
 
 
 ## Перечисляет коды концовок по порядку номеров.
-## Возвращает массив из восьми строк.
+## Возвращает массив из пяти строк.
 static func ids() -> Array[String]:
 	var result: Array[String] = []
 	result.assign(ENDINGS.keys())
 	return result
 
 
+## Возвращает число концовок в игре.
+## Возвращает 5; нужно для подписей вида «Концовка №3 из 5».
+static func total() -> int:
+	return ENDINGS.size()
+
+
 ## Возвращает номер концовки для интерфейса.
 ## [param ending_id] - код концовки.
-## Возвращает число от 1 до 8 или 0, если кода нет.
+## Возвращает число от 1 до 5 или 0, если кода нет.
 static func number(ending_id: String) -> int:
 	return int(ENDINGS.get(ending_id, {}).get("number", 0))
 
 
-## Сообщает, ведёт ли концовка к эпилогу и главному меню.
+## Сообщает, заканчивает ли концовка прохождение.
 ## [param ending_id] - код концовки.
 ## Возвращает true для основных и секретных концовок, false для шуточных и плохой.
 static func is_final(ending_id: String) -> bool:

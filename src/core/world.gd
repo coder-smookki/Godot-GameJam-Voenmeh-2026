@@ -1,5 +1,5 @@
 extends Node
-## Сюжетное состояние игры: все переменные развилок, счётчики манеры игры и разовые отметки.
+## Сюжетное состояние игры: переменные развилок, счётчики находок и разовые отметки.
 ##
 ## Единственное место, где хранятся сюжетные флаги. Сцены читают состояние отсюда
 ## и меняют его только через [method choose], [method bump] и [method mark].
@@ -13,38 +13,14 @@ signal reloaded
 
 const SCHEMA: Dictionary = {
 	"escape_tried": {"default": false},
-	"gosha": {"default": "", "values": ["", "saved", "lost"]},
-	"unsafe": {"default": 0, "max": 3},
-	"compiler": {"default": "", "values": ["", "fixed", "deleted"]},
-	"naurusova": {"default": "", "values": ["", "error", "student", "unknown"]},
-	"first_floor": {"default": 0, "values": [0, 3, 4]},
-	"cats": {"default": 0, "max": 5},
-	"alarms": {"default": 0, "max": 99},
-	"logunova": {"default": "", "values": ["", "kind", "strict"]},
-	"rage": {"default": 0, "max": 99},
-	"zeml": {"default": "", "values": ["", "calm", "storm"]},
-	"mozh": {"default": "", "values": ["", "clone", "stay", "off"]},
-	"messages": {"default": 0, "max": 5},
-	"students": {"default": 0, "max": 6},
-	"capy": {"default": 0, "max": 44},
-	"notes": {"default": 0, "max": 6},
+	"mozh": {"default": "", "values": ["", "capy", "stay", "off"]},
+	"messages": {"default": 0, "max": 3},
+	"capy": {"default": 0, "max": 5},
 }
-const METHOD_WEIGHTS: Dictionary = {
-	"compiler": {"fixed": 1, "deleted": -1},
-	"naurusova": {"student": 1, "error": -1},
-	"logunova": {"kind": 1, "strict": -1},
-	"zeml": {"calm": 1, "storm": -1},
-	"mozh": {"clone": 1, "off": -1},
-}
-const UNSAFE_PENALTY_FROM := 3
-const LINE_STUDENT_FROM := 2
-const LINE_AUDITOR_FROM := -2
-const MESSAGES_FOR_FIX := 3
-const CAPY_TOTAL := 44
-const FINAL_TIMER_SEC := 600.0
-const FINAL_TIMER_OFF_SEC := 300.0
-const STUDENT_BONUS_SEC := 20.0
-const STUDENTS_COUNTED := 6
+const MESSAGES_FOR_FIX := 2
+const CAPY_TOTAL := 5
+const FINAL_TIMER_SEC := 300.0
+const FINAL_TIMER_OFF_SEC := 180.0
 
 var f: Dictionary = {}
 var clock: float = 0.0
@@ -96,7 +72,7 @@ func choose(key: String, value: Variant, toast_key: String = "") -> bool:
 
 
 ## Проводит решение развилки из каталога: сначала даёт сделать снимок, потом записывает выбор.
-## [param fork_id] - код развилки, например "P4".
+## [param fork_id] - код развилки, например "P2".
 ## [param value] - выбранное значение из вариантов этой развилки.
 ## Возвращает true, если развилка найдена и значение принято.
 func decide(fork_id: String, value: Variant) -> bool:
@@ -121,7 +97,7 @@ func set_value(key: String, value: Variant) -> bool:
 	return true
 
 
-## Меняет числовой счётчик манеры игры и удерживает его в границах схемы.
+## Меняет числовой счётчик находок и удерживает его в границах схемы.
 ## [param key] - имя числовой переменной.
 ## [param amount] - на сколько изменить, по умолчанию +1.
 ## Возвращает новое значение счётчика (или 0, если переменная не числовая).
@@ -155,37 +131,13 @@ func is_valid(key: String, value: Variant) -> bool:
 	return typeof(value) == TYPE_BOOL
 
 
-## Считает «метод» игрока: чинил он (+) или удалял (-).
-## Возвращает целое от -6 до +5, от него зависит характер ЛАБЫ.
-func method() -> int:
-	var total := 0
-	for key: String in METHOD_WEIGHTS:
-		total += int(METHOD_WEIGHTS[key].get(f[key], 0))
-	if int(f["unsafe"]) >= UNSAFE_PENALTY_FROM:
-		total -= 1
-	return total
-
-
-## Определяет линию ЛАБЫ по методу игрока.
-## Возвращает "student" (ученица), "auditor" (ревизор) или "system" (система).
-func laba_line() -> String:
-	var value := method()
-	if value >= LINE_STUDENT_FROM:
-		return "student"
-	if value <= LINE_AUDITOR_FROM:
-		return "auditor"
-	return "system"
-
-
 ## Определяет концовку по выбранному терминалу на крыше.
-## [param terminal] - "delete", "reset" или "fix".
+## [param terminal] - "delete" или "fix".
 ## Возвращает код концовки из каталога или пустую строку, если терминал закрыт.
 func ending(terminal: String) -> String:
 	match terminal:
 		"delete":
 			return "rm_rf"
-		"reset":
-			return "loop"
 		"fix":
 			if int(f["messages"]) < MESSAGES_FOR_FIX:
 				return ""
@@ -194,13 +146,12 @@ func ending(terminal: String) -> String:
 
 
 ## Считает длительность таймера города в финальном бою.
-## Возвращает секунды: 5 или 10 минут плюс 20 секунд за каждого спасённого одногруппника.
+## Возвращает секунды: 5 минут или 3, если игрок выключил карантин.
 func final_timer_sec() -> float:
-	var base := FINAL_TIMER_OFF_SEC if f["mozh"] == "off" else FINAL_TIMER_SEC
-	return base + minf(float(f["students"]), float(STUDENTS_COUNTED)) * STUDENT_BONUS_SEC
+	return FINAL_TIMER_OFF_SEC if f["mozh"] == "off" else FINAL_TIMER_SEC
 
 
-## Ставит разовую отметку (разбит тотем, взят предмет, запущена ЛАБА) и запоминает её время.
+## Ставит разовую отметку (спасён Ваня, побеждён босс, разбит тотем) и запоминает её время.
 ## [param id] - уникальное имя отметки.
 ## Возвращает true, если отметка поставлена сейчас, и false, если она уже была.
 func mark(id: String) -> bool:

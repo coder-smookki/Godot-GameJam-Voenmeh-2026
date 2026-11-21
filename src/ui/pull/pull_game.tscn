@@ -1,0 +1,90 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/ui/pull/pull_game.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="fill"]
+bg_color = Color(0.180392, 0.627451, 0.262745, 1)
+
+[node name="PullGame" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+closable = false
+
+[node name="Shade" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.3)
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 0
+offset_top = 52.0
+offset_right = 480.0
+offset_bottom = 70.0
+theme_override_colors/font_color = Color(1, 0.776471, 0.180392, 1)
+theme_override_colors/font_outline_color = Color(0.047059, 0.070588, 0.12549, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="Bar" type="ProgressBar" parent="."]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 78.0
+offset_right = 360.0
+offset_bottom = 92.0
+theme_override_styles/fill = SubResource("fill")
+max_value = 1.0
+step = 0.001
+show_percentage = false
+
+[node name="Jerks" type="Label" parent="."]
+layout_mode = 0
+offset_top = 98.0
+offset_right = 480.0
+offset_bottom = 108.0
+theme_override_colors/font_outline_color = Color(0.047059, 0.070588, 0.12549, 1)
+theme_override_constants/outline_size = 4
+horizontal_alignment = 1
+
+[node name="Dots" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 216.0
+offset_top = 114.0
+offset_right = 264.0
+offset_bottom = 124.0
+theme_override_constants/separation = 9
+alignment = 1
+
+[node name="First" type="ColorRect" parent="Dots"]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
+
+[node name="Second" type="ColorRect" parent="Dots"]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
+
+[node name="Third" type="ColorRect" parent="Dots"]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
+
+[node name="Key" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_left = 196.0
+offset_top = 236.0
+offset_right = 284.0
+offset_bottom = 258.0
+
+[node name="Text" type="Label" parent="Key"]
+layout_mode = 2
+text = "PULL_KEY"
+horizontal_alignment = 1

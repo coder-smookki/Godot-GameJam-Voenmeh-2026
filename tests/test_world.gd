@@ -1,101 +1,59 @@
 extends TestCase
-## Тесты сюжетного состояния: метод, линия ЛАБЫ, концовки, таймер, отметки, проверка значений.
+## Тесты сюжетного состояния: концовки, таймер финала, отметки, проверка значений.
 
 
-## Новая игра начинается со значений схемы и нейтральной ЛАБЫ.
+## Новая игра начинается со значений схемы.
 func test_defaults() -> void:
 	equal(World.f.size(), World.SCHEMA.size(), "все переменные схемы на месте")
-	equal(World.method(), 0, "метод в начале")
-	equal(World.laba_line(), "system", "линия в начале")
+	equal(World.f, World.defaults(), "значения по умолчанию")
+	equal(World.f["mozh"], "", "рубильник ещё не решён")
 
 
-## Метод лежит в границах от -6 до +5 из документа.
-func test_method_bounds() -> void:
-	for pair: Array in [
-		["compiler", "fixed"],
-		["naurusova", "student"],
-		["logunova", "kind"],
-		["zeml", "calm"],
-		["mozh", "clone"],
-	]:
-		World.set_value(pair[0], pair[1])
-	equal(World.method(), 5, "все починил")
-	equal(World.laba_line(), "student", "линия ученицы")
-	for pair: Array in [
-		["compiler", "deleted"],
-		["naurusova", "error"],
-		["logunova", "strict"],
-		["zeml", "storm"],
-		["mozh", "off"],
-		["unsafe", 3],
-	]:
-		World.set_value(pair[0], pair[1])
-	equal(World.method(), -6, "всё удалил и три хака")
-	equal(World.laba_line(), "auditor", "линия ревизора")
-
-
-## Линия ЛАБЫ меняется ровно на порогах +2 и -2.
-func test_laba_line_thresholds() -> void:
-	World.set_value("compiler", "fixed")
-	equal(World.laba_line(), "system", "метод +1")
-	World.set_value("zeml", "calm")
-	equal(World.laba_line(), "student", "метод +2")
-	World.reset()
-	World.set_value("compiler", "deleted")
-	equal(World.laba_line(), "system", "метод -1")
-	World.set_value("zeml", "storm")
-	equal(World.laba_line(), "auditor", "метод -2")
-
-
-## Два хака метод не меняют, а «уйти» у рубильника нейтрально.
-func test_method_neutral_choices() -> void:
-	World.set_value("unsafe", 2)
-	World.set_value("mozh", "stay")
-	World.set_value("naurusova", "unknown")
-	equal(World.method(), 0, "нейтральные выборы")
-
-
-## Терминалы дают концовки по правилам документа.
+## Терминалы дают концовки по правилам раскадровки.
 func test_endings_by_terminal() -> void:
-	equal(World.ending("delete"), "rm_rf", "удалить")
-	equal(World.ending("reset"), "loop", "откатить")
+	equal(World.ending("delete"), "rm_rf", "удалить доступно всегда")
+	World.set_value("messages", 1)
+	equal(World.ending("fix"), "", "исправить закрыт при одном послании")
 	World.set_value("messages", 2)
-	equal(World.ending("fix"), "", "исправить закрыт при 2 посланиях")
-	World.set_value("messages", 3)
-	equal(World.ending("fix"), "retake", "исправить при 3 посланиях")
-	World.set_value("capy", 44)
-	equal(World.ending("fix"), "capybara", "исправить и 44 капибары")
-	equal(World.ending("other"), "", "неизвестный терминал")
+	equal(World.ending("fix"), "retake", "исправить при двух посланиях из трёх")
+	World.set_value("capy", 4)
+	equal(World.ending("fix"), "retake", "четырёх капибар мало для секретной концовки")
+	World.set_value("capy", 5)
+	equal(World.ending("fix"), "capybara", "исправить и все пять капибар")
+	equal(World.ending("delete"), "rm_rf", "удалить не зависит от находок")
+	equal(World.ending("reset"), "", "терминала «откатить» больше нет")
 
 
-## Таймер финала: 10 минут, 5 без карантина, +20 секунд за одногруппника.
+## Таймер финала: 5 минут и 3 минуты, если карантин выключен.
 func test_final_timer() -> void:
-	equal(World.final_timer_sec(), 600.0, "обычный таймер")
-	World.set_value("students", 6)
-	equal(World.final_timer_sec(), 720.0, "шесть спасённых")
+	equal(World.final_timer_sec(), 300.0, "обычный таймер")
+	World.set_value("mozh", "capy")
+	equal(World.final_timer_sec(), 300.0, "Капи держит рубильник")
+	World.set_value("mozh", "stay")
+	equal(World.final_timer_sec(), 300.0, "Можайцев держит рубильник")
 	World.set_value("mozh", "off")
-	equal(World.final_timer_sec(), 420.0, "карантин выключен")
+	equal(World.final_timer_sec(), 180.0, "карантин выключен")
 
 
 ## Недопустимые значения и неизвестные переменные отклоняются.
 func test_validation() -> void:
-	check(not World.is_valid("compiler", "broken"), "чужое значение")
-	check(not World.is_valid("compiler", 1), "чужой тип")
+	check(not World.is_valid("mozh", "broken"), "чужое значение")
+	check(not World.is_valid("mozh", 1), "чужой тип")
 	check(not World.is_valid("nope", 1), "неизвестная переменная")
-	check(not World.is_valid("cats", 6), "счётчик выше предела")
-	check(not World.is_valid("cats", -1), "отрицательный счётчик")
-	check(World.is_valid("first_floor", 3.0), "число из JSON")
+	check(not World.is_valid("messages", 4), "счётчик выше предела")
+	check(not World.is_valid("messages", -1), "отрицательный счётчик")
+	check(World.is_valid("capy", 3.0), "число из JSON")
 	check(World.is_valid("escape_tried", true), "флаг")
-	check(not World.set_value("gosha", "maybe"), "тихая запись отклоняет мусор")
-	equal(World.f["gosha"], "", "значение не изменилось")
+	check(not World.set_value("mozh", "maybe"), "тихая запись отклоняет мусор")
+	equal(World.f["mozh"], "", "значение не изменилось")
 
 
 ## Счётчики не выходят за границы схемы.
 func test_bump_clamps() -> void:
-	equal(World.bump("cats", 3), 3, "плюс три")
-	equal(World.bump("cats", 9), 5, "упор в предел")
-	equal(World.bump("cats", -99), 0, "упор в ноль")
-	equal(World.bump("compiler"), 0, "не счётчик")
+	equal(World.bump("capy", 3), 3, "плюс три")
+	equal(World.bump("capy", 9), 5, "упор в предел")
+	equal(World.bump("capy", -99), 0, "упор в ноль")
+	equal(World.bump("mozh"), 0, "не счётчик")
 
 
 ## Отметка ставится один раз и помнит своё время.
@@ -111,15 +69,15 @@ func test_marks() -> void:
 ## Загрузка чинит типы из JSON и отбрасывает мусор.
 func test_from_dict_sanitizes() -> void:
 	var saved: Dictionary = {
-		"f": {"first_floor": 4.0, "compiler": "hacked", "cats": 99, "extra": 1, "capy": 7.0},
+		"f": {"capy": 4.0, "mozh": "hacked", "messages": 99, "extra": 1, "escape_tried": true},
 		"marks": {"a": 3.0, "b": "bad"},
 		"clock": 50.0,
 	}
 	World.from_dict(saved)
-	equal(World.f["first_floor"], 4, "дробное число стало целым")
-	equal(World.f["compiler"], "", "мусор заменён значением по умолчанию")
-	equal(World.f["cats"], 0, "счётчик вне границ отброшен")
-	equal(World.f["capy"], 7, "счётчик восстановлен")
+	equal(World.f["capy"], 4, "дробное число стало целым")
+	equal(World.f["mozh"], "", "мусор заменён значением по умолчанию")
+	equal(World.f["messages"], 0, "счётчик вне границ отброшен")
+	equal(World.f["escape_tried"], true, "флаг восстановлен")
 	check(not World.f.has("extra"), "лишний ключ не попал в состояние")
 	check(World.is_marked("a") and not World.is_marked("b"), "отметки отфильтрованы")
 	equal(World.marked_ago("a"), 47.0, "часы и время отметки восстановлены")
@@ -129,12 +87,12 @@ func test_from_dict_sanitizes() -> void:
 
 ## Решение развилки меняет мир, пишется в журнал, сохраняется и оставляет снимок.
 func test_decide_records_everything() -> void:
-	check(World.decide("P4", "fixed"), "решение принято")
-	equal(World.f["compiler"], "fixed", "переменная записана")
+	check(World.decide("P2", "capy"), "решение принято")
+	equal(World.f["mozh"], "capy", "переменная записана")
 	equal(Journal.entries().size(), 1, "запись в журнале")
-	equal(Journal.entries()[0], {"key": "compiler", "value": "fixed"}, "содержимое записи")
+	equal(Journal.entries()[0], {"key": "mozh", "value": "capy"}, "содержимое записи")
 	check(SaveSystem.has_save(), "автосохранение сделано")
-	check(SaveSystem.has_snapshot("P4"), "снимок перед развилкой сделан")
-	check(not World.decide("P4", "nonsense"), "чужой вариант отклонён")
-	check(not World.decide("P99", "fixed"), "чужая развилка отклонена")
+	check(SaveSystem.has_snapshot("P2"), "снимок перед развилкой сделан")
+	check(not World.decide("P2", "nonsense"), "чужой вариант отклонён")
+	check(not World.decide("P99", "capy"), "чужая развилка отклонена")
 	equal(Journal.entries().size(), 1, "отклонённые решения в журнал не попали")

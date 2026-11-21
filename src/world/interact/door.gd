@@ -3,7 +3,8 @@ extends Interactable
 ## Дверь между комнатами с условием открытия.
 ##
 ## Условие записывается одной строкой в инспекторе. Закрытая дверь всегда объясняет,
-## что нужно сделать, чтобы она открылась.
+## что нужно сделать, чтобы она открылась. Если дверь уже нарисована на фоне комнаты,
+## заглушка двери отключается флажком drawn.
 
 const COLOR_OPEN := Color("5a3a22")
 const COLOR_LOCKED := Color("33261c")
@@ -12,6 +13,7 @@ const COLOR_LOCKED := Color("33261c")
 @export var target_spawn: String = "start"
 @export var open_when: String = ""
 @export var locked_text_key: String = "LOCK_DEFAULT"
+@export var drawn: bool = true
 
 var _condition: Condition = null
 
@@ -25,6 +27,7 @@ func _ready() -> void:
 	action = ACTION_ENTER
 	if prompt_key.is_empty():
 		prompt_key = "PROMPT_ENTER"
+	_body.visible = drawn
 	_condition = Condition.new(open_when)
 	World.changed.connect(_on_world_changed)
 	World.marked.connect(_on_world_marked)
@@ -45,11 +48,11 @@ func refresh() -> void:
 
 
 ## Собирает подпись таблички.
-## Возвращает строку вида «214 · Кабинет».
+## Возвращает название комнаты за дверью, например «214 · Вальштейн», или пустую строку.
 func plate_text() -> String:
 	if not LocationCatalog.has(target_room):
 		return ""
-	return "%s · %s" % [target_room, tr(LocationCatalog.title_key(target_room))]
+	return tr(LocationCatalog.title_key(target_room))
 
 
 ## Переводит героя в комнату за дверью или объясняет, почему дверь закрыта.

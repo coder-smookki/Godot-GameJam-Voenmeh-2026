@@ -2,7 +2,7 @@ class_name Capi
 extends Node2D
 ## Капи: спутник, который идёт за героем и держится у него за спиной.
 
-const FOLLOW_DISTANCE := 16.0
+const FOLLOW_DISTANCE := 70.0
 const FOLLOW_SPEED := 4.0
 
 var _target: Player = null

@@ -13,7 +13,7 @@ const LAYER_INTERACTABLE := 4
 
 @export_enum("interact", "enter") var action: String = ACTION_INTERACT
 @export var prompt_key: String = ""
-@export var prompt_offset: Vector2 = Vector2(0.0, -106.0)
+@export var prompt_offset: Vector2 = Vector2(0.0, -188.0)
 
 var _prompt: Label = null
 

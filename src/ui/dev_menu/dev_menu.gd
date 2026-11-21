@@ -2,10 +2,11 @@ class_name DevMenu
 extends Modal
 ## Меню разработчика (F1): страница «Развилки» для проверки логики без прохождения игры.
 ##
-## Позволяет выставить любую переменную мира, открыть экран развилки, перейти
-## к терминалам на крыше, посмотреть любую концовку и сводку финального боя.
+## Позволяет выставить любую переменную мира, открыть экран развилки, открыть все этажи
+## лифта, перейти к терминалам на крыше, посмотреть любую концовку и сводку финального боя.
 
-const ROOF := "K-1"
+const ROOF := "roof"
+const FLOOR_MARKS: Array[String] = ["vanya_saved", "boss_2", "boss_3", "boss_4", "boss_5"]
 
 var _controls: Dictionary = {}
 
@@ -15,6 +16,7 @@ var _controls: Dictionary = {}
 @onready var _ending_select: OptionButton = $Panel/Box/Endings/Select
 @onready var _ending_open: Button = $Panel/Box/Endings/Open
 @onready var _to_roof: Button = $Panel/Box/Jumps/ToRoof
+@onready var _open_floors: Button = $Panel/Box/Jumps/OpenFloors
 @onready var _plan_button: Button = $Panel/Box/Jumps/Plan
 @onready var _plan: Label = $Panel/Box/PlanText
 
@@ -30,6 +32,7 @@ func _ready() -> void:
 	_fork_open.pressed.connect(_on_fork_open_pressed)
 	_ending_open.pressed.connect(_on_ending_open_pressed)
 	_to_roof.pressed.connect(_on_to_roof_pressed)
+	_open_floors.pressed.connect(_on_open_floors_pressed)
 	_plan_button.pressed.connect(_show_plan)
 
 
@@ -126,15 +129,21 @@ func _on_to_roof_pressed() -> void:
 	Game.goto_room(ROOF)
 
 
+## Ставит отметки спасения Вани и побед над боссами: лифт открывает все этажи.
+func _on_open_floors_pressed() -> void:
+	for mark: String in FLOOR_MARKS:
+		World.mark(mark)
+	Ui.toast(tr("DEV_FLOORS_OPENED"), ToastStack.KIND_HINT)
+
+
 ## Показывает сводку финального боя и концовки для каждого терминала.
 func _show_plan() -> void:
 	var plan := FinalPlan.build()
 	var lines: Array[String] = [
-		"method %d · %s" % [World.method(), plan["line"]],
-		"timer %d s · confidence %d" % [int(plan["timer_sec"]), plan["confidence"]],
-		"helpers: %s" % ", ".join(plan["helpers"]),
+		"timer %d s" % int(plan["timer_sec"]),
+		"capi %s · mozhaitsev %s" % [plan["capi_present"], plan["mozhaitsev_present"]],
 	]
-	for terminal: String in ["delete", "fix", "reset"]:
+	for terminal: String in ["delete", "fix"]:
 		var ending_id := World.ending(terminal)
 		lines.append("%s -> %s" % [terminal, ending_id if ending_id != "" else "???"])
 	_plan.text = "\n".join(lines)

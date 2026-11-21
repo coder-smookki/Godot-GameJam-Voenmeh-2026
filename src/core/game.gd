@@ -10,10 +10,10 @@ signal game_started
 signal task_changed(text_key: String)
 signal slow_motion_changed(active: bool)
 
-const START_ROOM := "1-01"
+const START_ROOM := "vestibule"
 const START_SPAWN := "start"
 const MAIN_MENU_SCENE := "res://src/ui/main_menu/main_menu.tscn"
-const EPILOGUE_SCENE := "res://src/ui/epilogue/epilogue_screen.tscn"
+const ENDING_SCENE := "res://src/ui/ending/ending_screen.tscn"
 const SLOW_SCALE := 0.5
 
 var room_code: String = ""
@@ -98,7 +98,7 @@ func show_ending(ending_id: String) -> void:
 	pending_ending = ending_id
 	in_room = false
 	rooms_left.emit()
-	await _switch_scene(EPILOGUE_SCENE, room_code, spawn_id)
+	await _switch_scene(ENDING_SCENE, room_code, spawn_id)
 	_busy = false
 
 

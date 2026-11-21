@@ -1,0 +1,79 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
+[ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
+[ext_resource type="PackedScene" path="res://src/world/interact/ending_terminal.tscn" id="terminal"]
+
+[sub_resource type="RectangleShape2D" id="floor"]
+size = Vector2(840, 60)
+
+[sub_resource type="RectangleShape2D" id="wall"]
+size = Vector2(20, 400)
+
+[node name="Room" type="Node2D"]
+script = ExtResource("room")
+width = 640
+
+[node name="Backdrop" type="Node2D" parent="."]
+z_index = -30
+
+[node name="Wall" type="ColorRect" parent="Backdrop"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 640.0
+offset_bottom = 258.0
+mouse_filter = 2
+color = Color(0.25, 0.2, 0.32, 1)
+
+[node name="Baseboard" type="ColorRect" parent="Backdrop"]
+offset_left = 0.0
+offset_top = 257.0
+offset_right = 640.0
+offset_bottom = 262.0
+mouse_filter = 2
+color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="Floor" type="ColorRect" parent="Backdrop"]
+offset_left = 0.0
+offset_top = 262.0
+offset_right = 640.0
+offset_bottom = 270.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.3, 1)
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+
+[node name="Floor" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(320, 294)
+shape = SubResource("floor")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-10, 135)
+shape = SubResource("wall")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(650, 135)
+shape = SubResource("wall")
+
+[node name="Props" type="Node2D" parent="."]
+z_index = -10
+
+[node name="Back" parent="Props" instance=ExtResource("door")]
+position = Vector2(66, 264)
+target_room = "corridor_5"
+target_spawn = "from_roof"
+
+[node name="Delete" parent="Props" instance=ExtResource("terminal")]
+position = Vector2(330, 264)
+terminal = "delete"
+
+[node name="Fix" parent="Props" instance=ExtResource("terminal")]
+position = Vector2(520, 264)
+terminal = "fix"
+
+[node name="Actors" type="Node2D" parent="."]
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="start" type="Marker2D" parent="Spawns"]
+position = Vector2(160, 264)

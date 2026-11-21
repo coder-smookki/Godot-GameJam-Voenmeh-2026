@@ -8,7 +8,7 @@ const TESTS_DIR := "res://tests/"
 const SAVE_DIR := "user://tests/"
 
 
-## Готовит отдельную папку сохранений и запускает тесты.
+## Готовит отдельную папку сохранений и настроек и запускает тесты.
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	SaveSystem.dir = SAVE_DIR
@@ -17,6 +17,8 @@ func _ready() -> void:
 		if FileAccess.file_exists(SAVE_DIR + file):
 			DirAccess.remove_absolute(SAVE_DIR + file)
 	SaveSystem.load_profile()
+	Settings.dir = SAVE_DIR
+	Settings.reset()
 	var failed := await _run_all()
 	await Game.to_main_menu()
 	get_tree().quit(1 if failed > 0 else 0)

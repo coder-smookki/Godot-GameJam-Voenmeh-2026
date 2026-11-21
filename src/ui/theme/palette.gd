@@ -10,7 +10,6 @@ const DEBUGGER := Color("00c2e0")
 const DANGER := Color("d81e1e")
 const OK := Color("2ea043")
 const NEUTRAL := Color("8a93a8")
-const ORDER := Color("e08a00")
 const TEXT := Color("e8ecf4")
 const UI_BACKGROUND := Color(0.047, 0.071, 0.125, 0.92)
 const UI_SOLID := Color("0c1220")
@@ -21,7 +20,7 @@ const FONT_SIZE := 8
 
 
 ## Возвращает цвет для тона варианта развилки.
-## [param tone_id] - тон из каталога развилок: fix, delete, neutral или order.
+## [param tone_id] - тон из каталога развилок: fix, delete или neutral.
 ## Возвращает цвет рамки и заголовка карточки.
 static func tone(tone_id: String) -> Color:
 	match tone_id:
@@ -29,8 +28,6 @@ static func tone(tone_id: String) -> Color:
 			return DEBUGGER
 		ForkCatalog.TONE_DELETE:
 			return VIRUS
-		ForkCatalog.TONE_ORDER:
-			return ORDER
 	return NEUTRAL
 
 

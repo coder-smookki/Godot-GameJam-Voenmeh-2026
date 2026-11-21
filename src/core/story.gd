@@ -4,11 +4,12 @@ extends Node
 ## Реагирует на отметки мира. Комнаты и объекты только ставят отметки,
 ## а что из этого следует, описано здесь в одной таблице.
 
-const START_TASK := "TASK_GO_AUDITORIUM"
+const START_TASK := "TASK_FIND_SCREAM"
 const STEPS: Dictionary = {
-	"laba_launched": {"task": "TASK_GET_DEBUGGER", "infect_floor": 1, "infection": 10.0},
+	"vanya_saved": {"task": "TASK_GO_FLOOR_2"},
+	"laba_seen": {"task": "TASK_GET_DEBUGGER", "infect_floor": 2, "infection": 10.0},
 	"ability_debugger": {"task": "TASK_BREAK_TOTEM"},
-	"first_totem": {"task": "TASK_FIND_STAIRS"},
+	"first_totem": {"task": "TASK_TALK_VALSHTEIN"},
 }
 
 

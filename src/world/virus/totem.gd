@@ -8,7 +8,9 @@ extends StaticBody2D
 signal destroyed
 
 const LAYER_SHOOTABLE := 8
-const BLOCK := 12.0
+const BLOCK := 32.0
+const LETTER_SIZE := 16
+const LETTER_BASELINE := 8.0
 const WAVE_SEC := 0.6
 const WAVE_WIDTH := 960.0
 const WAVE_HEIGHT := 270.0
@@ -42,11 +44,11 @@ func _draw() -> void:
 		var letter := letters[letters.length() - 1 - index]
 		draw_string(
 			font,
-			Vector2(-BLOCK * 0.5, top + BLOCK - 3.0),
+			Vector2(-BLOCK * 0.5, top + BLOCK - LETTER_BASELINE),
 			letter,
 			HORIZONTAL_ALIGNMENT_CENTER,
 			BLOCK,
-			Palette.FONT_SIZE,
+			LETTER_SIZE,
 			Palette.TEXT
 		)
 
@@ -80,7 +82,7 @@ func _destroy() -> void:
 	var wave := ColorRect.new()
 	wave.color = Color(1.0, 1.0, 1.0, 0.85)
 	wave.size = Vector2(4.0, WAVE_HEIGHT)
-	wave.position = Vector2(-2.0, -WAVE_HEIGHT + 60.0)
+	wave.position = Vector2(-2.0, -WAVE_HEIGHT + 6.0)
 	wave.z_index = 20
 	add_child(wave)
 	var tween := create_tween().set_parallel(true)

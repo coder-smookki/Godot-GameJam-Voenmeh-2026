@@ -4,9 +4,7 @@ extends Modal
 ##
 ## Делает логику игры прозрачной: игрок видит, что выбрал и к чему это привело.
 
-const METHOD_MIN := -6
-const METHOD_MAX := 5
-const COLLECTIONS: Array[String] = ["capy", "cats", "messages", "students", "notes"]
+const COLLECTIONS: Array[String] = ["messages", "capy"]
 
 @onready var _tabs: TabContainer = $Panel/Tabs
 @onready var _journal: VBoxContainer = $Panel/Tabs/Journal/List
@@ -29,12 +27,9 @@ func _opened() -> void:
 	_tabs.get_tab_bar().grab_focus()
 
 
-## Заполняет журнал решений и шкалу метода.
+## Заполняет журнал решений.
 func _fill_journal() -> void:
 	_clear(_journal)
-	var method := World.method()
-	_journal.add_child(_make_label(tr("PHONE_METHOD").format({"value": method}), Palette.GOAL))
-	_journal.add_child(_make_bar(method - METHOD_MIN, METHOD_MAX - METHOD_MIN))
 	var entries := Journal.entries()
 	if entries.is_empty():
 		_journal.add_child(_make_label(tr("PHONE_JOURNAL_EMPTY"), Palette.NEUTRAL))
@@ -44,7 +39,7 @@ func _fill_journal() -> void:
 
 ## Собирает строку журнала для решения.
 ## [param entry] - запись журнала {key, value}.
-## Возвращает текст вида «P4 · вопрос развилки: выбранный вариант».
+## Возвращает текст вида «P2 · вопрос развилки: выбранный вариант».
 func _entry_text(entry: Dictionary) -> String:
 	var fork_id := ForkCatalog.id_by_key(entry["key"])
 	if fork_id.is_empty():

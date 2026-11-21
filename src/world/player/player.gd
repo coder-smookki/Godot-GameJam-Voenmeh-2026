@@ -4,11 +4,12 @@ extends CharacterBody2D
 ##
 ## Начало координат находится у ног. Ввод обрабатывается только когда мир не на паузе.
 
-const SPEED := 80.0
-const ACCELERATION := 640.0
-const JUMP_VELOCITY := -215.0
-const GRAVITY := 640.0
-const SHOT_RANGE := 280.0
+const SPEED := 150.0
+const ACCELERATION := 1200.0
+const JUMP_VELOCITY := -400.0
+const GRAVITY := 1300.0
+const SHOT_RANGE := 420.0
+const WALK_FROM_SPEED := 8.0
 const SHOT_COOLDOWN_SEC := 0.25
 const SHOT_MASK := 9
 const DEBUGGER_MARK := "ability_debugger"
@@ -24,6 +25,7 @@ var _shot_requested: bool = false
 @onready var _muzzle: Marker2D = $Muzzle
 @onready var _aim: Aim = $Aim
 @onready var _camera: Camera2D = $Camera
+@onready var _sprite: AnimatedSprite2D = $Sprite
 
 
 ## Подписывается на объекты, которые входят в зону взаимодействия и выходят из неё.
@@ -50,6 +52,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if direction != 0.0:
 		facing = 1 if direction > 0.0 else -1
+	_update_animation()
 	_update_focus()
 	_update_debugger(delta)
 
@@ -73,6 +76,15 @@ func set_camera_limits(width: int, height: int) -> void:
 	_camera.limit_right = width
 	_camera.limit_bottom = height
 	_camera.reset_smoothing()
+
+
+## Поворачивает спрайт по направлению и выбирает анимацию: шаг в движении, стойка на месте.
+func _update_animation() -> void:
+	_sprite.flip_h = facing < 0
+	var walking := is_on_floor() and absf(velocity.x) > WALK_FROM_SPEED
+	var animation := &"walk" if walking else &"idle"
+	if _sprite.animation != animation:
+		_sprite.play(animation)
 
 
 ## Выбирает ближайший объект рядом с героем и переключает подсказки.

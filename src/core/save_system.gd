@@ -2,13 +2,14 @@ extends Node
 ## Сохранения и профиль игрока.
 ##
 ## Сохранение хранит одно прохождение: мир, журнал, заражение и место героя.
-## Профиль переживает новые игры: открытые концовки и доступ к «Новой игре+».
+## Сохранения от прежней версии сюжета не загружаются: в них другие комнаты и переменные.
+## Профиль переживает новые игры: в нём лежат открытые концовки.
 ## Перед каждой развилкой делается снимок, чтобы решение можно было переиграть.
 
 signal saved
 signal profile_changed
 
-const VERSION := 1
+const VERSION := 2
 const SAVE_FILE := "save.json"
 const PROFILE_FILE := "profile.json"
 const CHAPTERS_DIR := "chapters"
@@ -46,7 +47,7 @@ func save_game() -> bool:
 ## Загружает прохождение с диска и применяет его к миру, журналу и заражению.
 ## Возвращает true, если сохранение найдено и прочитано.
 func load_game() -> bool:
-	var data := _read(SAVE_FILE)
+	var data := _read_run(SAVE_FILE)
 	if data.is_empty():
 		return false
 	_apply(data)
@@ -80,14 +81,14 @@ func has_snapshot(fork_id: String) -> bool:
 ## [param fork_id] - код развилки.
 ## Возвращает true, если снимок найден и применён.
 func load_snapshot(fork_id: String) -> bool:
-	var data := _read(_chapter_file(fork_id))
+	var data := _read_run(_chapter_file(fork_id))
 	if data.is_empty():
 		return false
 	_apply(data)
 	return true
 
 
-## Открывает концовку в профиле и запоминает лучший счёт посланий.
+## Открывает концовку в профиле.
 ## [param ending_id] - код концовки из каталога.
 func unlock_ending(ending_id: String) -> void:
 	if not EndingCatalog.has(ending_id):
@@ -96,9 +97,6 @@ func unlock_ending(ending_id: String) -> void:
 	var endings: Array = _profile["endings"]
 	if ending_id not in endings:
 		endings.append(ending_id)
-	if ending_id == "loop":
-		_profile["ng_plus"] = true
-	_profile["best_messages"] = maxi(int(_profile["best_messages"]), int(World.f["messages"]))
 	_write(PROFILE_FILE, _profile)
 	profile_changed.emit()
 
@@ -116,18 +114,6 @@ func unlocked_endings() -> Array:
 	return _profile["endings"].duplicate()
 
 
-## Сообщает, открыта ли «Новая игра+».
-## Возвращает true после концовки «Петля».
-func is_ng_plus_unlocked() -> bool:
-	return bool(_profile["ng_plus"])
-
-
-## Возвращает наибольшее число посланий ЛАБЫ, собранных за одно прохождение.
-## Возвращает число от 0 до 5; нужно для истинной концовки.
-func best_messages() -> int:
-	return int(_profile["best_messages"])
-
-
 ## Загружает профиль с диска, если он есть.
 func load_profile() -> void:
 	_profile = _default_profile()
@@ -138,17 +124,13 @@ func load_profile() -> void:
 			if ending_id is String and EndingCatalog.has(ending_id):
 				if ending_id not in _profile["endings"]:
 					_profile["endings"].append(ending_id)
-	_profile["ng_plus"] = data.get("ng_plus", false) == true
-	var best: Variant = data.get("best_messages", 0)
-	if typeof(best) == TYPE_INT or typeof(best) == TYPE_FLOAT:
-		_profile["best_messages"] = clampi(int(best), 0, int(World.SCHEMA["messages"]["max"]))
 	profile_changed.emit()
 
 
 ## Собирает пустой профиль.
 ## Возвращает словарь профиля без открытых концовок.
 func _default_profile() -> Dictionary:
-	return {"version": VERSION, "endings": [], "ng_plus": false, "best_messages": 0}
+	return {"version": VERSION, "endings": []}
 
 
 ## Собирает данные прохождения из всех систем.
@@ -208,6 +190,17 @@ func _read(file: String) -> Dictionary:
 			return json.data
 		push_warning("SaveSystem: файл %s испорчен и пропущен" % path)
 	return {}
+
+
+## Читает файл прохождения и отбрасывает его, если он записан другой версией игры.
+## [param file] - имя файла внутри папки сохранений.
+## Возвращает словарь прохождения или пустой словарь, если файл не подходит.
+func _read_run(file: String) -> Dictionary:
+	var data := _read(file)
+	var version: Variant = data.get("version", 0)
+	if typeof(version) != TYPE_INT and typeof(version) != TYPE_FLOAT:
+		return {}
+	return data if int(version) == VERSION else {}
 
 
 ## Удаляет файл и его временную копию.

@@ -1,0 +1,39 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/world/interact/stuck_vanya.gd" id="1"]
+[ext_resource type="Script" path="res://src/world/placeholder/pill.gd" id="2"]
+[ext_resource type="Script" path="res://src/world/interact/plate.gd" id="plate"]
+[ext_resource type="Material" path="res://src/world/virus/virus_material.tres" id="virus"]
+
+[sub_resource type="RectangleShape2D" id="shape"]
+size = Vector2(90, 160)
+
+[node name="StuckVanya" type="Area2D"]
+script = ExtResource("1")
+prompt_offset = Vector2(0, -214)
+
+[node name="Shape" type="CollisionShape2D" parent="."]
+position = Vector2(0, -80)
+shape = SubResource("shape")
+
+[node name="Body" type="Node2D" parent="."]
+script = ExtResource("2")
+size = Vector2(44, 160)
+color = Color(0.25098, 0.47451, 0.92549, 1)
+
+[node name="Blob" type="ColorRect" parent="."]
+material = ExtResource("virus")
+offset_left = 26.0
+offset_top = -216.0
+offset_right = 130.0
+pivot_offset = Vector2(52, 216)
+mouse_filter = 2
+
+[node name="Cry" type="Label" parent="."]
+script = ExtResource("plate")
+text_key = "VANYA_CRY"
+offset_left = -80.0
+offset_top = -190.0
+offset_right = 80.0
+offset_bottom = -174.0
+horizontal_alignment = 1

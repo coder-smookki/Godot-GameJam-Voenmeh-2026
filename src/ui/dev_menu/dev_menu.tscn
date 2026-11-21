@@ -81,6 +81,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "DEV_TO_ROOF"
 
+[node name="OpenFloors" type="Button" parent="Panel/Box/Jumps"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "DEV_OPEN_FLOORS"
+
 [node name="Plan" type="Button" parent="Panel/Box/Jumps"]
 layout_mode = 2
 size_flags_horizontal = 3

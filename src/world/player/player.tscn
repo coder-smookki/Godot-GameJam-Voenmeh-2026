@@ -1,14 +1,45 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://src/world/player/player.gd" id="1"]
-[ext_resource type="Script" path="res://src/world/placeholder/pill.gd" id="2"]
 [ext_resource type="Script" path="res://src/world/player/aim.gd" id="3"]
+[ext_resource type="Texture2D" path="res://assets/characters/dima/walk_1.png" id="w1"]
+[ext_resource type="Texture2D" path="res://assets/characters/dima/walk_2.png" id="w2"]
+[ext_resource type="Texture2D" path="res://assets/characters/dima/walk_3.png" id="w3"]
+[ext_resource type="Texture2D" path="res://assets/characters/dima/walk_4.png" id="w4"]
 
 [sub_resource type="RectangleShape2D" id="body"]
-size = Vector2(10, 36)
+size = Vector2(36, 150)
 
 [sub_resource type="RectangleShape2D" id="zone"]
-size = Vector2(30, 40)
+size = Vector2(84, 150)
+
+[sub_resource type="SpriteFrames" id="frames"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("w3")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("w1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("w2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("w3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("w4")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 7.0
+}]
 
 [node name="Player" type="CharacterBody2D"]
 collision_layer = 2
@@ -16,13 +47,14 @@ collision_mask = 1
 script = ExtResource("1")
 
 [node name="Shape" type="CollisionShape2D" parent="."]
-position = Vector2(0, -18)
+position = Vector2(0, -75)
 shape = SubResource("body")
 
-[node name="Body" type="Node2D" parent="."]
-script = ExtResource("2")
-size = Vector2(12, 38)
-color = Color(1, 0.121569, 0.705882, 1)
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("frames")
+animation = &"idle"
+centered = false
+offset = Vector2(-56, -175)
 
 [node name="InteractZone" type="Area2D" parent="."]
 collision_layer = 0
@@ -30,14 +62,14 @@ collision_mask = 4
 monitorable = false
 
 [node name="Shape" type="CollisionShape2D" parent="InteractZone"]
-position = Vector2(0, -20)
+position = Vector2(0, -75)
 shape = SubResource("zone")
 
 [node name="Muzzle" type="Marker2D" parent="."]
-position = Vector2(0, -24)
+position = Vector2(0, -108)
 
 [node name="Aim" type="Node2D" parent="."]
 script = ExtResource("3")
 
 [node name="Camera" type="Camera2D" parent="."]
-position = Vector2(0, -80)
+position = Vector2(0, -130)

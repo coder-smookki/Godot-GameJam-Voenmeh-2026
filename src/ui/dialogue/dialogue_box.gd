@@ -45,9 +45,14 @@ func _input(event: InputEvent) -> void:
 	if not pressed:
 		return
 	get_viewport().set_input_as_handled()
+	advance()
+
+
+## Допечатывает реплику целиком или переходит к следующей, если она уже напечатана.
+func advance() -> void:
 	if _typing:
 		_finish_typing()
-	else:
+	elif _waiting:
 		_waiting = false
 		advanced.emit()
 

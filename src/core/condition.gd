@@ -1,9 +1,9 @@
 class_name Condition
 extends RefCounted
-## Условие, записанное одной строкой, например "logunova != '' and zeml != ''".
+## Условие, записанное одной строкой, например "mozh != '' and is_marked('boss_5')".
 ##
 ## Двери и объекты задают условия текстом в инспекторе. В выражении доступны
-## все переменные мира по именам и функции мира: is_marked('id'), method(), laba_line().
+## все переменные мира по именам и функции мира: is_marked('id'), ending('fix').
 
 var _expression: Expression = null
 var _source: String = ""

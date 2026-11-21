@@ -1,11 +1,11 @@
 class_name EndingTerminal
 extends Interactable
-## Терминал на крыше: развилка P14 «Три терминала».
+## Терминал на крыше: развилка P3 «Два терминала».
 ##
 ## Концовку определяет мир по выбранному терминалу. Закрытый терминал
 ## объясняет, чего не хватило.
 
-@export_enum("delete", "fix", "reset") var terminal: String = "delete"
+@export_enum("delete", "fix") var terminal: String = "delete"
 
 @onready var _plate: Plate = $Plate
 @onready var _status: Plate = $Status
@@ -25,7 +25,7 @@ func refresh() -> void:
 	_plate.show_text(tr("TERMINAL_%s" % terminal.to_upper()) if available else "???")
 	var counts: Dictionary = {
 		"messages": World.f["messages"],
-		"total": World.SCHEMA["messages"]["max"],
+		"needed": World.MESSAGES_FOR_FIX,
 	}
 	_status.show_text(tr("TERMINAL_%s_STATUS" % terminal.to_upper()).format(counts))
 
