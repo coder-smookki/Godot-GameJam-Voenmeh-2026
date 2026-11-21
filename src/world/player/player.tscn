@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://src/world/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://src/world/player/aim.gd" id="3"]
@@ -7,6 +7,8 @@
 [ext_resource type="Texture2D" path="res://assets/characters/dima/walk_2.png" id="w2"]
 [ext_resource type="Texture2D" path="res://assets/characters/dima/walk_3.png" id="w3"]
 [ext_resource type="Texture2D" path="res://assets/characters/dima/walk_4.png" id="w4"]
+[ext_resource type="Texture2D" path="res://assets/characters/dima/jump_1.png" id="j1"]
+[ext_resource type="Texture2D" path="res://assets/characters/dima/jump_2.png" id="j2"]
 
 [sub_resource type="RectangleShape2D" id="body"]
 size = Vector2(36, 150)
@@ -22,6 +24,22 @@ animations = [{
 }],
 "loop": true,
 "name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("j2")
+}],
+"loop": true,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("j1")
+}],
+"loop": true,
+"name": &"land",
 "speed": 5.0
 }, {
 "frames": [{
@@ -68,7 +86,7 @@ flip_v = true
 sprite_frames = SubResource("frames")
 animation = &"idle"
 centered = false
-offset = Vector2(-55, -175)
+offset = Vector2(-55, -176)
 
 [node name="InteractZone" type="Area2D" parent="."]
 collision_layer = 0

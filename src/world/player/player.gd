@@ -16,6 +16,7 @@ const SHOT_MASK := 9
 const DEBUGGER_MARK := "ability_debugger"
 const SHADOW_FADE_HEIGHT := 160.0
 const SHADOW_MIN_SCALE := 0.45
+const LAND_SEC := 0.12
 
 var facing: int = 1
 
@@ -25,6 +26,8 @@ var _cooldown: float = 0.0
 var _shot_requested: bool = false
 var _floor_y: float = 0.0
 var _landed: bool = false
+var _airborne: bool = false
+var _land_left: float = 0.0
 
 @onready var _zone: Area2D = $InteractZone
 @onready var _muzzle: Marker2D = $Muzzle
@@ -56,7 +59,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if direction != 0.0:
 		facing = 1 if direction > 0.0 else -1
-	_update_animation()
+	_update_animation(delta)
 	_update_ground_effects()
 	_update_focus()
 	_update_debugger(delta)
@@ -109,11 +112,22 @@ func _set_shake(strength: float) -> void:
 	_camera.offset = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * strength
 
 
-## Поворачивает спрайт по направлению и выбирает анимацию: шаг в движении, стойка на месте.
-func _update_animation() -> void:
+## Поворачивает спрайт по направлению и выбирает анимацию: полёт в прыжке, присед сразу
+## после приземления, шаг в движении, стойка на месте.
+## [param delta] - шаг физики в секундах.
+func _update_animation(delta: float) -> void:
 	_sprite.flip_h = facing < 0
-	var walking := is_on_floor() and absf(velocity.x) > WALK_FROM_SPEED
-	var animation := &"walk" if walking else &"idle"
+	if is_on_floor() and _airborne:
+		_land_left = LAND_SEC
+	_airborne = not is_on_floor()
+	_land_left = maxf(_land_left - delta, 0.0)
+	var animation := &"idle"
+	if _airborne:
+		animation = &"jump"
+	elif _land_left > 0.0:
+		animation = &"land"
+	elif absf(velocity.x) > WALK_FROM_SPEED:
+		animation = &"walk"
 	if _sprite.animation != animation:
 		_sprite.play(animation)
 

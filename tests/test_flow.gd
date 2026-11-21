@@ -19,7 +19,7 @@ func test_new_game_starts_in_vestibule() -> void:
 	check(SaveSystem.has_save(), "вход в комнату сохранён")
 
 
-## Герой стоит на полу вестибюля и прыгает по нажатию клавиши.
+## Герой стоит на полу вестибюля, прыгает по нажатию клавиши и меняет кадры в прыжке.
 func test_hero_jumps() -> void:
 	await start_game()
 	var player := (tree.current_scene as Room).player
@@ -33,6 +33,17 @@ func test_hero_jumps() -> void:
 	for frame: int in 3:
 		await tree.physics_frame
 	check(not player.is_on_floor(), "герой в прыжке")
+	var sprite: AnimatedSprite2D = player.get_node("Sprite")
+	equal(sprite.animation, &"jump", "в воздухе кадр прыжка")
+	var frames := 0
+	while not player.is_on_floor() and frames < 240:
+		await tree.physics_frame
+		frames += 1
+	await tree.physics_frame
+	equal(sprite.animation, &"land", "после приземления кадр приседа")
+	for frame: int in 30:
+		await tree.physics_frame
+	equal(sprite.animation, &"idle", "потом обычная стойка")
 	var release := InputEventAction.new()
 	release.action = "jump"
 	Input.parse_input_event(release)

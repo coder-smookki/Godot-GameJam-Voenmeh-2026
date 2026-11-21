@@ -8,7 +8,9 @@
 Запуск:
     python tools/prepare_character.py <папка для результата> <рост в пикселях> <кадр 1> <кадр 2> ...
 
-Нужна библиотека Pillow. Результат: файлы walk_1.png, walk_2.png и так далее.
+Кадр можно записать как «имя=файл», тогда результат получит это имя: jump_1=прыжок.png.
+Кадры без имени сохраняются как walk_1.png, walk_2.png и так далее.
+Нужна библиотека Pillow.
 """
 
 import statistics
@@ -47,15 +49,28 @@ def torso_center(image: Image.Image) -> float:
     return left + statistics.fmean(columns)
 
 
-def prepare(output_dir: Path, height: int, sources: list[Path]) -> None:
+def split_name(value: str, index: int) -> tuple[str, Path]:
+    """Разбирает аргумент с кадром.
+
+    value: путь к файлу или запись «имя=файл».
+    index: номер кадра по порядку, с единицы; нужен для имени по умолчанию.
+    Возвращает имя результата без расширения и путь к исходному файлу.
+    """
+    if "=" in value:
+        name, path = value.split("=", 1)
+        return name, Path(path)
+    return f"walk_{index}", Path(value)
+
+
+def prepare(output_dir: Path, height: int, sources: list[tuple[str, Path]]) -> None:
     """Уменьшает и выравнивает кадры и сохраняет их в папку.
 
     output_dir: папка, куда записать готовые кадры.
     height: рост персонажа в игре в пикселях.
-    sources: исходные кадры по порядку анимации.
+    sources: пары «имя результата, исходный файл» по порядку анимации.
     Ничего не возвращает; печатает размер готового холста.
     """
-    frames = [Image.open(path).convert("RGBA") for path in sources]
+    frames = [Image.open(path).convert("RGBA") for _, path in sources]
     boxes = [content_box(frame) for frame in frames]
     scale = height / statistics.median(box[3] - box[1] for box in boxes)
     centers = [torso_center(frame) for frame in frames]
@@ -64,16 +79,16 @@ def prepare(output_dir: Path, height: int, sources: list[Path]) -> None:
     half_width = int(reach * scale) + 2
     canvas_size = (half_width * 2, int(rise * scale) + 2)
     output_dir.mkdir(parents=True, exist_ok=True)
-    for index, (frame, center, box) in enumerate(zip(frames, centers, boxes), start=1):
+    for (name, _), frame, center, box in zip(sources, frames, centers, boxes):
         size = (max(round(frame.width * scale), 1), max(round(frame.height * scale), 1))
         small = frame.resize(size, Image.LANCZOS)
         canvas = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
         canvas.alpha_composite(small, (half_width - round(center * scale), canvas_size[1] - round(box[3] * scale)))
-        canvas.save(output_dir / f"walk_{index}.png")
+        canvas.save(output_dir / f"{name}.png")
     print(f"Кадров: {len(frames)}, холст {canvas_size[0]}x{canvas_size[1]}")
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 4:
         sys.exit(__doc__)
-    prepare(Path(sys.argv[1]), int(sys.argv[2]), [Path(value) for value in sys.argv[3:]])
+    prepare(Path(sys.argv[1]), int(sys.argv[2]), [split_name(value, index) for index, value in enumerate(sys.argv[3:], start=1)])
