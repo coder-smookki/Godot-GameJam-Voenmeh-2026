@@ -24,8 +24,15 @@ Validation on macOS with Godot 4.7.2:
 - Windowed run with screenshots of the menu, rooms, fork screen, phone, developer menu, dialogue and ending screen: layouts checked by eye.
 - `--export-pack "Windows"` and a run of the resulting pack: main menu renders with the font and Russian texts.
 
+Validation in GitHub Actions:
+
+- The first run on `dev` failed in the import step: on a clean checkout Godot loads the project theme before the font is imported and logs a parse error once. The workflows now import twice and check the second pass.
+- After the fix the `dev` run and the pull request run passed all three jobs: lint, tests, build.
+- The build artifact was downloaded and inspected: `Eksperiment404.exe`, 104 MB, PE32+ GUI x86-64, with the game pack embedded (texts, font and scenes present, `tests/` and `docs/` absent).
+- `release.yml` has not run yet: pull request #1 from `dev` into `main` is open and waits for a manual merge.
+
 Limitations:
 
-- The Windows `.exe` is built only in CI; it was not launched on a Windows machine in this session.
+- The Windows `.exe` was not launched on a Windows machine in this session.
 - Player input (walking, jumping, aiming with the mouse) was exercised through scripted calls and screenshots, not by hand.
 - 4 of 46 locations exist; see `PROJECT.md` for the list of missing mechanics.
