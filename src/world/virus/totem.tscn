@@ -1,0 +1,41 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/world/virus/totem.gd" id="1"]
+[ext_resource type="Script" path="res://src/world/interact/speech_bubble.gd" id="2"]
+
+[sub_resource type="RectangleShape2D" id="zone"]
+size = Vector2(130, 160)
+
+[sub_resource type="RectangleShape2D" id="wall"]
+size = Vector2(20, 400)
+
+[sub_resource type="RectangleShape2D" id="guard"]
+size = Vector2(20, 200)
+
+[node name="Totem" type="Area2D"]
+script = ExtResource("1")
+prompt_offset = Vector2(40, -166)
+
+[node name="Shape" type="CollisionShape2D" parent="."]
+position = Vector2(45, -80)
+shape = SubResource("zone")
+
+[node name="Wall" type="StaticBody2D" parent="."]
+
+[node name="Shape" type="CollisionShape2D" parent="Wall"]
+position = Vector2(-30, -100)
+shape = SubResource("wall")
+
+[node name="Guard" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="Shape" type="CollisionShape2D" parent="Guard"]
+position = Vector2(-10, -100)
+shape = SubResource("guard")
+
+[node name="Voice" type="Node2D" parent="."]
+z_index = 40
+position = Vector2(-110, -158)
+script = ExtResource("2")
+shout = true

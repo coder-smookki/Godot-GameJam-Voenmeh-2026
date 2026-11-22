@@ -1,0 +1,60 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
+[ext_resource type="Texture2D" path="res://assets/rooms/roof.png" id="art"]
+[ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
+[ext_resource type="PackedScene" path="res://src/world/interact/ending_terminal.tscn" id="terminal"]
+
+[sub_resource type="RectangleShape2D" id="floor"]
+size = Vector2(1900, 60)
+
+[sub_resource type="RectangleShape2D" id="wall"]
+size = Vector2(20, 400)
+
+[node name="Room" type="Node2D"]
+script = ExtResource("room")
+width = 1700
+
+[node name="Backdrop" type="Node2D" parent="."]
+z_index = -30
+
+[node name="Art" type="Sprite2D" parent="Backdrop"]
+texture = ExtResource("art")
+centered = false
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+
+[node name="Floor" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(850, 281)
+shape = SubResource("floor")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-10, 135)
+shape = SubResource("wall")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(1710, 135)
+shape = SubResource("wall")
+
+[node name="Props" type="Node2D" parent="."]
+z_index = -10
+
+[node name="Back" parent="Props" instance=ExtResource("door")]
+position = Vector2(70, 251)
+target_room = "corridor_5"
+target_spawn = "from_roof"
+
+[node name="Delete" parent="Props" instance=ExtResource("terminal")]
+position = Vector2(700, 251)
+terminal = "delete"
+
+[node name="Fix" parent="Props" instance=ExtResource("terminal")]
+position = Vector2(1000, 251)
+terminal = "fix"
+
+[node name="Actors" type="Node2D" parent="."]
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="start" type="Marker2D" parent="Spawns"]
+position = Vector2(200, 251)

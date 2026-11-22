@@ -1,0 +1,57 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
+[ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
+[ext_resource type="PackedScene" path="res://src/world/interact/stuck_vanya.tscn" id="vanya"]
+[ext_resource type="Texture2D" path="res://assets/rooms/wardrobe.png" id="wardrobe"]
+
+[sub_resource type="RectangleShape2D" id="floor"]
+size = Vector2(1132, 60)
+
+[sub_resource type="RectangleShape2D" id="wall"]
+size = Vector2(20, 400)
+
+[node name="Room" type="Node2D"]
+script = ExtResource("room")
+width = 932
+
+[node name="Backdrop" type="Node2D" parent="."]
+z_index = -30
+
+[node name="Art" type="Sprite2D" parent="Backdrop"]
+texture = ExtResource("wardrobe")
+centered = false
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+
+[node name="Floor" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(466, 276)
+shape = SubResource("floor")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-10, 135)
+shape = SubResource("wall")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(942, 135)
+shape = SubResource("wall")
+
+[node name="Props" type="Node2D" parent="."]
+z_index = -10
+
+[node name="Back" parent="Props" instance=ExtResource("door")]
+position = Vector2(95, 246)
+target_room = "vestibule"
+target_spawn = "door"
+drawn = false
+prompt_offset = Vector2(0, -158)
+
+[node name="Actors" type="Node2D" parent="."]
+
+[node name="Vanya" parent="Actors" instance=ExtResource("vanya")]
+position = Vector2(430, 246)
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="door" type="Marker2D" parent="Spawns"]
+position = Vector2(190, 246)

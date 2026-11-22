@@ -1,0 +1,77 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
+[ext_resource type="Texture2D" path="res://assets/rooms/corridor_5.png" id="art"]
+[ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
+[ext_resource type="PackedScene" path="res://src/world/interact/elevator_door.tscn" id="elevator"]
+[ext_resource type="PackedScene" path="res://src/world/effects/leak.tscn" id="leak"]
+
+[sub_resource type="RectangleShape2D" id="floor"]
+size = Vector2(2600, 60)
+
+[sub_resource type="RectangleShape2D" id="wall"]
+size = Vector2(20, 400)
+
+[node name="Room" type="Node2D"]
+script = ExtResource("room")
+width = 2400
+
+[node name="Backdrop" type="Node2D" parent="."]
+z_index = -30
+
+[node name="Art" type="Sprite2D" parent="Backdrop"]
+texture = ExtResource("art")
+centered = false
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+
+[node name="Floor" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(1200, 284)
+shape = SubResource("floor")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-10, 135)
+shape = SubResource("wall")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(2410, 135)
+shape = SubResource("wall")
+
+[node name="Props" type="Node2D" parent="."]
+z_index = -10
+
+[node name="Leak" parent="Backdrop" instance=ExtResource("leak")]
+position = Vector2(300, 120)
+amount = 14
+emission_rect_extents = Vector2(260, 110)
+
+[node name="Elevator" parent="Props" instance=ExtResource("elevator")]
+position = Vector2(2228, 254)
+drawn = false
+
+[node name="Server" parent="Props" instance=ExtResource("door")]
+position = Vector2(894, 254)
+target_room = "server"
+target_spawn = "door"
+drawn = false
+
+[node name="Roof" parent="Props" instance=ExtResource("door")]
+position = Vector2(1143, 254)
+target_room = "roof"
+target_spawn = "start"
+drawn = false
+open_when = "is_marked('boss_5')"
+locked_text_key = "LOCK_ROOF"
+
+[node name="Actors" type="Node2D" parent="."]
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="elevator" type="Marker2D" parent="Spawns"]
+position = Vector2(2228, 254)
+
+[node name="from_server" type="Marker2D" parent="Spawns"]
+position = Vector2(894, 254)
+
+[node name="from_roof" type="Marker2D" parent="Spawns"]
+position = Vector2(1143, 254)
