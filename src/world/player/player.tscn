@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/world/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://src/world/player/aim.gd" id="3"]
@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" path="res://assets/characters/dima/walk_4.png" id="w4"]
 [ext_resource type="Texture2D" path="res://assets/characters/dima/jump_1.png" id="j1"]
 [ext_resource type="Texture2D" path="res://assets/characters/dima/jump_2.png" id="j2"]
+[ext_resource type="Texture2D" path="res://assets/characters/dima/idle.png" id="idle"]
 
 [sub_resource type="RectangleShape2D" id="body"]
 size = Vector2(36, 150)
@@ -20,7 +21,7 @@ size = Vector2(84, 150)
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("w3")
+"texture": ExtResource("idle")
 }],
 "loop": true,
 "name": &"idle",

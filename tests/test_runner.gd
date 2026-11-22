@@ -5,6 +5,7 @@ extends Node
 ## Живёт в корне дерева, а не в текущей сцене, поэтому тесты могут менять сцены.
 
 const TESTS_DIR := "res://tests/"
+const SKIPPED: Array[String] = ["test_case.gd", "test_runner.gd"]
 const SAVE_DIR := "user://tests/"
 
 
@@ -25,6 +26,7 @@ func _ready() -> void:
 
 
 ## Находит наборы тестов и выполняет в каждом все функции с именами на "test_".
+## Набор с ошибкой в скрипте считается проваленным, а не пропускается.
 ## Возвращает число проваленных проверок.
 func _run_all() -> int:
 	var failed := 0
@@ -34,8 +36,14 @@ func _run_all() -> int:
 	for file: String in files:
 		if not file.begins_with("test_") or not file.ends_with(".gd"):
 			continue
+		if file in SKIPPED:
+			continue
 		var script: GDScript = load(TESTS_DIR + file)
-		if script == null or script.get_base_script() != TestCase:
+		if script == null or not script.can_instantiate():
+			failed += 1
+			print("  FAIL  %s: набор не загрузился (ошибка в скрипте)" % file)
+			continue
+		if script.get_base_script() != TestCase:
 			continue
 		var case: TestCase = script.new()
 		case.tree = get_tree()

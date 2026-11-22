@@ -4,9 +4,11 @@ extends Node2D
 ##
 ## Порядок кадров показала художница: сидит на окне, готовится, прыгает, садится на пол,
 ## дальше бежит по кругу кадров. Если герой отстал, кот садится и ждёт, пока тот подойдёт.
-## У двери кот садится, исчезает за ней и ставит отметку: больше он в коридоре не появится.
+## У двери кот садится, ставит отметку arrive_mark и ждёт героя, глядя на него. Когда герой
+## заходит в 316, кот становится его спутником ([CatFollower]), а этот кот больше не появляется
+## (отметка gone_mark).
 
-signal ran_away
+signal arrived
 
 enum Phase { WINDOW, READY, JUMP, LANDED, RUN, WAIT, DOOR }
 
@@ -17,10 +19,10 @@ const LANDED_SEC := 0.3
 const RUN_SPEED := 175.0
 const LEAD_GAP := 300.0
 const RESUME_GAP := 170.0
-const DOOR_SEC := 0.5
-const FADE_SEC := 0.3
+const MEOW_GAP := 120.0
 
 @export var gone_mark: String = ""
+@export var arrive_mark: String = ""
 @export var floor_y: float = 255.0
 @export var exit_x: float = 0.0
 
@@ -39,6 +41,11 @@ func _ready() -> void:
 		queue_free()
 		return
 	_meow.hide()
+	if not arrive_mark.is_empty() and World.is_marked(arrive_mark):
+		global_position = Vector2(exit_x, floor_y)
+		_body.pose(CatSprite.SIT)
+		_enter(Phase.DOOR)
+		return
 	_body.pose(CatSprite.WINDOW)
 	_notice.body_entered.connect(_on_notice_body_entered)
 
@@ -47,6 +54,11 @@ func _ready() -> void:
 ## Возвращает true с той минуты, как кот перестал сидеть на окне.
 func is_running() -> bool:
 	return _phase != Phase.WINDOW
+
+
+## Сообщает, сидит ли кот у двери и ждёт, пока герой войдёт.
+func is_at_door() -> bool:
+	return _phase == Phase.DOOR
 
 
 ## Сообщает, ждёт ли кот отставшего героя.
@@ -88,8 +100,8 @@ func _process(delta: float) -> void:
 			if _behind() <= RESUME_GAP:
 				_enter(Phase.RUN)
 		Phase.DOOR:
-			if _clock >= DOOR_SEC:
-				_leave()
+			_body.face(_hero_x() - global_position.x)
+			_meow.visible = absf(_hero_x() - global_position.x) < MEOW_GAP and _clock < 1.5
 
 
 ## Ведёт кота с подоконника на пол по дуге и сажает его.
@@ -109,7 +121,7 @@ func _fly(progress: float) -> void:
 		_enter(Phase.LANDED)
 
 
-## Бежит к двери; садится, если герой отстал, и уходит за дверь, когда добежал.
+## Бежит к двери; садится, если герой отстал, и садится ждать у двери, когда добежал.
 ## [param delta] - время кадра в секундах.
 func _run(delta: float) -> void:
 	if _behind() > LEAD_GAP:
@@ -123,18 +135,9 @@ func _run(delta: float) -> void:
 	if is_equal_approx(global_position.x, exit_x):
 		_body.pose(CatSprite.SIT)
 		_enter(Phase.DOOR)
-
-
-## Растворяет кота у двери и запоминает, что он ушёл.
-func _leave() -> void:
-	set_process(false)
-	if not gone_mark.is_empty():
-		World.mark(gone_mark)
-	var tween := create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, FADE_SEC)
-	await tween.finished
-	ran_away.emit()
-	queue_free()
+		if not arrive_mark.is_empty():
+			World.mark(arrive_mark)
+		arrived.emit()
 
 
 ## Возвращает направление к двери: 1 вправо, -1 влево.

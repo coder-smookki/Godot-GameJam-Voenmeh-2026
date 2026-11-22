@@ -4,7 +4,9 @@ extends Node2D
 ##
 ## Экран включается с помехами, глаза моргают и следят за героем, при атаке рот раскрывается,
 ## от бомбы по экрану идут трещины. Внизу три порта: закрыты, открыты (светятся) и разбиты.
-## После победы экран рассыпается на клетки, и под ним остаётся спокойная капибара фона.
+## После победы экран разбит: тёмное стекло с трещинами от удара, выбитые осколки и редкие
+## искры; так он выглядит и при следующих визитах. Экран живёт и на паузе, чтобы ожить во время
+## разговора с Вальштейном.
 
 enum Face { IDLE, ATTACK, HURT, TEXT }
 enum Port { CLOSED, OPEN, BROKEN }
@@ -33,11 +35,15 @@ var _clock: float = 0.0
 var _face_left: float = 0.0
 var _glitch: float = 0.0
 var _crack_lines: Array[PackedVector2Array] = []
+var _broken: bool = false
+var _holes: Array[PackedVector2Array] = []
+var _impact: Vector2 = Vector2.ZERO
 
 
 ## Готовит выключенный экран.
 func _ready() -> void:
 	z_index = -20
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
 ## Ведёт моргание, помехи и возврат лица к покою.
@@ -56,6 +62,53 @@ func _process(delta: float) -> void:
 func boot() -> void:
 	_glitch = BOOT_SEC
 	create_tween().tween_property(self, "_power", 1.0, BOOT_SEC)
+
+
+## Сразу включает экран без помех, например когда герой вернулся в комнату до боя.
+func power_on() -> void:
+	_power = 1.0
+
+
+## Разбивает экран: тёмное стекло, трещины лучами от места удара и выбитые осколки.
+func shatter() -> void:
+	_broken = true
+	_power = 0.0
+	face = Face.IDLE
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 202
+	_impact = Vector2(RECT.position.x + RECT.size.x * 0.58, RECT.position.y + RECT.size.y * 0.42)
+	_crack_lines.clear()
+	for ray: int in 11:
+		var angle := TAU * ray / 11.0 + rng.randf_range(-0.2, 0.2)
+		var points := PackedVector2Array([_impact])
+		var at := _impact
+		for step: int in 6:
+			var reach := rng.randf_range(14.0, 34.0)
+			var bend := angle + rng.randf_range(-0.35, 0.35)
+			at = (at + Vector2(cos(bend), sin(bend)) * reach).clamp(RECT.position, RECT.end)
+			points.append(at)
+		_crack_lines.append(points)
+	_holes.clear()
+	for hole: int in 5:
+		var center := _impact + Vector2(rng.randf_range(-60.0, 60.0), rng.randf_range(-30.0, 30.0))
+		var size := rng.randf_range(6.0, 14.0)
+		(
+			_holes
+			. append(
+				PackedVector2Array(
+					[
+						center + Vector2(-size, -size * 0.4),
+						center + Vector2(size * 0.7, -size),
+						center + Vector2(size, size * 0.6),
+					]
+				)
+			)
+		)
+
+
+## Сообщает, разбит ли экран.
+func is_broken() -> bool:
+	return _broken
 
 
 ## Гасит экран; под ним снова виден рисунок фона.
@@ -98,6 +151,9 @@ func glitch(sec: float) -> void:
 
 ## Рисует экран: фон, лицо или текст, порты, трещины, строки развёртки и помехи.
 func _draw() -> void:
+	if _broken:
+		_draw_broken()
+		return
 	if _power <= 0.0:
 		return
 	var alpha := _power
@@ -122,6 +178,21 @@ func _draw() -> void:
 				RECT.position.x + maxf(shift, 0.0), y, RECT.size.x - absf(shift), 4.0
 			)
 			draw_rect(strip, Color(EYE, 0.25 * alpha))
+
+
+## Рисует разбитый экран: тёмное стекло, трещины, дыры и искру, которая иногда проскакивает.
+func _draw_broken() -> void:
+	draw_rect(RECT, Color(0.0, 0.0, 0.0, 0.55))
+	for hole: PackedVector2Array in _holes:
+		draw_colored_polygon(hole, Color(0.0, 0.0, 0.0, 0.95))
+		draw_polyline(hole + PackedVector2Array([hole[0]]), CRACK, 1.0)
+	for line: PackedVector2Array in _crack_lines:
+		draw_polyline(line, CRACK, 1.0)
+	draw_circle(_impact, 5.0, Color(CRACK, 0.9))
+	if fmod(_clock, 2.7) < 0.12:
+		var spark := _impact + Vector2(randf_range(-40.0, 40.0), randf_range(-20.0, 20.0))
+		draw_rect(Rect2(spark, Vector2(3.0, 3.0)), Color("ffe066"))
+		draw_rect(Rect2(spark + Vector2(4.0, -3.0), Vector2(2.0, 2.0)), Color.WHITE)
 
 
 ## Рисует глаза и рот; глаза смотрят в сторону героя.

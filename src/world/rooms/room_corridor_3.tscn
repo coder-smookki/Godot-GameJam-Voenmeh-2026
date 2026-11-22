@@ -59,9 +59,10 @@ drawn = false
 
 [node name="Cat" parent="Actors" instance=ExtResource("cat")]
 position = Vector2(1700, 160)
-gone_mark = "cat_316"
+gone_mark = "cat_joined"
+arrive_mark = "cat_316"
 floor_y = 254.0
-exit_x = 280.0
+exit_x = 300.0
 
 [node name="Spawns" type="Node2D" parent="."]
 

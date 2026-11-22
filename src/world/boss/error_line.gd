@@ -11,17 +11,16 @@ signal dodged(line: ErrorLine)
 
 enum Kind { SLIDE, DROP }
 
-const TEXTS: Array[String] = [
-	"error", "segfault", "NULL", "0xDEAD", "undef", "warning", "EOF", "ld: err", "core"
-]
-const HEIGHT := 13.0
-const PADDING := 5.0
+const TEXTS: Array[String] = ["ERR", "404", "NUL", "EOF", "0x0", "SEG", "???", "!!!"]
+const FONT_SIZE := 16
+const HEIGHT := 20.0
+const PADDING := 6.0
 const RED := Color("d81e1e")
 const RED_DARK := Color("6e0f12")
 const INK := Color("fff1f1")
 const TRAIL := 3
-const TRAIL_GAP := 7.0
-const DROP_SIZE := Vector2(26.0, 26.0)
+const TRAIL_GAP := 10.0
+const DROP_SIZE := Vector2(40.0, 40.0)
 const DROP_FROM := 30.0
 const DROP_SPEED := 620.0
 const WARN_SEC := 0.75
@@ -53,7 +52,8 @@ func setup_slide(from_x: float, move_right: bool, line_speed: float, hero: Node2
 	speed = line_speed
 	target = hero
 	_text = TEXTS[randi() % TEXTS.size()]
-	var width := Palette.font().get_string_size(_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 8).x
+	var font := Palette.font()
+	var width := font.get_string_size(_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x
 	_size = Vector2(width + PADDING * 2.0, HEIGHT)
 	position = Vector2(from_x, floor_y)
 
@@ -64,7 +64,7 @@ func setup_slide(from_x: float, move_right: bool, line_speed: float, hero: Node2
 func setup_drop(at_x: float, hero: Node2D) -> void:
 	kind = Kind.DROP
 	target = hero
-	_text = "{ }"
+	_text = "{}"
 	_size = DROP_SIZE
 	_warn = WARN_SEC
 	position = Vector2(at_x, DROP_FROM)
@@ -119,8 +119,8 @@ func _draw() -> void:
 	var font := Palette.font()
 	var baseline := Vector2(box.position.x + PADDING, box.end.y - 3.0)
 	if kind == Kind.DROP:
-		baseline = Vector2(box.position.x + 1.0, box.end.y - 9.0)
-	draw_string(font, baseline.round(), _text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 8, INK)
+		baseline = Vector2(box.position.x + 4.0, box.end.y - 12.0)
+	draw_string(font, baseline.round(), _text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, INK)
 
 
 ## Сообщает, засчитана ли строка как прыжок через неё.

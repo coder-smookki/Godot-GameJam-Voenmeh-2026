@@ -63,9 +63,10 @@ poses = {
 }
 idle_pose = "infected"
 
-[node name="Fight" type="Node2D" parent="." node_paths=PackedStringArray("valshtein")]
+[node name="Fight" type="Node2D" parent="." node_paths=PackedStringArray("valshtein", "exit_door")]
 script = ExtResource("fight")
 valshtein = NodePath("../Actors/Valshtein")
+exit_door = NodePath("../Props/Back")
 
 [node name="Spawns" type="Node2D" parent="."]
 

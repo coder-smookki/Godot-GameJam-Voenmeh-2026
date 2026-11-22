@@ -10,9 +10,9 @@ const SEEN_PREFIX := "seen_"
 const ARRIVALS: Dictionary = {
 	"vestibule": ["vestibule_arrival"],
 	"corridor_2": ["corridor_2_arrival"],
-	"202": ["valshtein"],
 	"lift": ["elevator_first", "lift_lestenko"],
 }
+const ENTRY_MARKS: Dictionary = {"316": "cat_joined"}
 const ARRIVAL_CONDITIONS: Dictionary = {
 	"lift_lestenko": "is_marked('boss_2')",
 }
@@ -69,6 +69,8 @@ func _on_game_started() -> void:
 ## Разговор с условием начинается, только когда условие выполнено.
 ## [param code] - код комнаты, в которую вошёл герой.
 func _on_room_entered(code: String) -> void:
+	if ENTRY_MARKS.has(code):
+		World.mark(ENTRY_MARKS[code])
 	for talk_id: String in ARRIVALS.get(code, []):
 		if not Condition.new(ARRIVAL_CONDITIONS.get(talk_id, "")).is_met():
 			continue

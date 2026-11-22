@@ -8,7 +8,7 @@ extends Control
 
 const BAR := Rect2(170.0, 22.0, 140.0, 6.0)
 const NAME_Y := 17.0
-const HINT_Y := 42.0
+const HINT_Y := 60.0
 const BOTTOM_Y := 258.0
 const SEGMENT_GAP := 3.0
 const BOSS_COLOR := Color("ff2b3a")

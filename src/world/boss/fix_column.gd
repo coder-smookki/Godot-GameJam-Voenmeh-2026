@@ -11,9 +11,10 @@ signal fixed(column: FixColumn)
 signal missed(column: FixColumn)
 
 const LAYER_SHOOTABLE := 8
-const WIDTH := 26.0
-const HEIGHT := 74.0
-const SCREEN := Rect2(-10.0, -66.0, 20.0, 16.0)
+const WIDTH := 40.0
+const HEIGHT := 110.0
+const SCREEN := Rect2(-15.0, -100.0, 30.0, 26.0)
+const FONT_SIZE := 16
 const STEP_SEC := 0.55
 const METAL := Color("2b3142")
 const METAL_LIGHT := Color("47506a")
@@ -86,14 +87,14 @@ func _draw() -> void:
 	var body := Rect2(-WIDTH * 0.5, -HEIGHT, WIDTH, HEIGHT)
 	draw_rect(body, METAL)
 	draw_rect(Rect2(body.position, Vector2(3.0, HEIGHT)), METAL_LIGHT)
-	for row: int in 3:
-		draw_rect(Rect2(-WIDTH * 0.5 + 4.0, -34.0 + row * 9.0, WIDTH - 8.0, 2.0), METAL_LIGHT)
+	for row: int in 4:
+		draw_rect(Rect2(-WIDTH * 0.5 + 6.0, -56.0 + row * 12.0, WIDTH - 12.0, 3.0), METAL_LIGHT)
 	draw_rect(SCREEN, GLASS)
 	var font := Palette.font()
 	var shown := RIGHT if is_fixed else WRONG
-	_digit(font, Vector2(0.0, SCREEN.end.y - 4.0), str(value), shown)
+	_digit(font, Vector2(0.0, SCREEN.end.y - 5.0), str(value), shown)
 	if not is_fixed:
-		_digit(font, Vector2(0.0, -HEIGHT - 6.0), "=%d" % target, Palette.GOAL)
+		_digit(font, Vector2(0.0, -HEIGHT - 8.0), "=%d" % target, Palette.GOAL)
 	if _flash > 0.0:
 		draw_rect(body, Color(_flash_color, _flash / FLASH_SEC * 0.7))
 	draw_set_transform(Vector2.ZERO)
@@ -127,13 +128,9 @@ func _blink(color: Color) -> void:
 ## [param text] - строка.
 ## [param color] - цвет.
 func _digit(font: Font, at: Vector2, text: String, color: Color) -> void:
-	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 8).x
-	draw_string(
-		font,
-		(at - Vector2(width * 0.5, 0.0)).round(),
-		text,
-		HORIZONTAL_ALIGNMENT_LEFT,
-		-1.0,
-		8,
-		color
+	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x
+	var left := (at - Vector2(width * 0.5, 0.0)).round()
+	draw_string_outline(
+		font, left, text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, 4, Color.BLACK
 	)
+	draw_string(font, left, text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, color)

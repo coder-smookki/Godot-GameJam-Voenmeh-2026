@@ -186,7 +186,8 @@ func test_blob() -> void:
 	check(room.get_node_or_null("Props/Seal") == null, "шахматка с двери ушла")
 
 
-## Кот на третьем этаже замечает героя, убегает к кабинету 316 и больше не появляется.
+## Кот на третьем этаже замечает героя, бежит к кабинету 316 и ждёт у двери; когда герой
+## входит в 316, кошка становится спутником и ходит за ним по всем комнатам.
 func test_cat_runs_away() -> void:
 	await start_game()
 	await Game.goto_room("corridor_3", Elevator.SPAWN)
@@ -201,12 +202,30 @@ func test_cat_runs_away() -> void:
 		await tree.physics_frame
 	check(cat.is_running(), "кот заметил героя")
 	check(cat.get_node("Meow").visible, "кот мяукнул")
-	await cat.ran_away
-	check(World.is_marked("cat_316"), "побег запомнен")
+	await cat.arrived
+	check(World.is_marked("cat_316"), "кот добежал до двери")
+	check(cat.is_at_door(), "и ждёт у неё")
 	equal(cat.global_position.y, cat.floor_y, "кот спрыгнул на пол")
+	await tree.create_timer(0.5).timeout
+	check(is_instance_valid(cat) and cat.visible, "в дверь кот не ушёл")
 	await Game.goto_room("vestibule", "elevator")
 	await Game.goto_room("corridor_3", Elevator.SPAWN)
-	check(tree.current_scene.get_node_or_null("Actors/Cat") == null, "убежавший кот не вернулся")
+	var waiting: Cat = tree.current_scene.get_node("Actors/Cat")
+	check(waiting.is_at_door(), "кот снова ждёт у двери 316")
+	check((tree.current_scene as Room).cat == null, "спутника ещё нет")
+	await Game.goto_room("316", "door")
+	room = tree.current_scene as Room
+	check(World.is_marked("cat_joined"), "в 316 кошка присоединилась")
+	check(room.cat != null, "кошка в кабинете рядом с героем")
+	room.player.global_position.x += 300.0
+	await tree.create_timer(0.2).timeout
+	check(not room.cat.is_resting(), "герой ушёл, кошка бежит следом")
+	await tree.create_timer(2.0).timeout
+	check(room.cat.is_resting(), "кошка догнала героя и села")
+	await Game.goto_room("corridor_3", "from_316")
+	room = tree.current_scene as Room
+	check(room.get_node_or_null("Actors/Cat") == null, "кот у двери больше не нужен")
+	check(room.cat != null, "кошка ходит за героем и в коридоре")
 
 
 ## Без сердец игра показывает заставку и начинается заново, а открытые концовки остаются.
@@ -262,14 +281,23 @@ func test_compiler_fight() -> void:
 	await start_game()
 	World.mark("totem_corridor_2")
 	await Game.goto_room("202", "door")
-	check(Ui.dialogue.visible, "Вальштейн заговорил при входе")
-	finish_talk()
-	equal(Game.task_key, "TASK_FIGHT_COMPILER", "задание: к монитору")
 	var room := tree.current_scene as Room
+	var fight: CompilerFight = room.get_node("Fight")
+	check(Ui.dialogue.visible, "Вальштейн заговорил при входе")
+	check(fight.director().is_current(), "камера боя снимает разговор")
+	check(fight.director().global_position.x < 300.0, "камера на Вальштейне")
+	for press: int in 4:
+		Ui.dialogue.advance()
+	await tree.create_timer(1.2).timeout
+	check(fight.director().global_position.x > 800.0, "на словах о компиляторе камера на мониторе")
+	finish_talk()
+	await _until(func() -> bool: return not fight.is_meeting())
+	equal(Game.task_key, "TASK_FIGHT_COMPILER", "задание: к монитору")
+	check(room.get_viewport().get_camera_2d().get_parent() is Player, "камера вернулась к герою")
+	check(room.player.controls_enabled, "герой снова идёт сам")
 	var valshtein: Npc = room.get_node("Actors/Valshtein")
 	check(valshtein.global_position.x < 245.0, "Вальштейн левее капибары")
 	equal(valshtein.current_texture(), valshtein.poses["infected"], "Вальштейн заражён")
-	var fight: CompilerFight = room.get_node("Fight")
 	Engine.time_scale = 4.0
 	room.player.global_position.x = 800.0
 	for frame: int in 3:
@@ -278,6 +306,9 @@ func test_compiler_fight() -> void:
 	check(not room.player.controls_enabled, "на облёте камеры герой ждёт")
 	await _until(func() -> bool: return fight.phase != CompilerFight.Phase.INTRO)
 	equal(fight.phase, CompilerFight.Phase.COLUMNS, "первая фаза: колонны")
+	equal(
+		fight.director().zoom, Vector2.ONE * CompilerFight.PLAY_ZOOM, "камера отдалена на кабинет"
+	)
 	check(room.player.controls_enabled, "герой снова управляем")
 	await tree.create_timer(FixColumn.RISE_SEC + 0.1).timeout
 	var column: FixColumn = fight.columns()[0]
