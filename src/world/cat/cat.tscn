@@ -22,6 +22,6 @@ shape = SubResource("notice")
 
 [node name="Meow" type="Node2D" parent="."]
 z_index = 40
-position = Vector2(-2, -84)
+position = Vector2(-2, -58)
 script = ExtResource("bubble")
 text_keys = PackedStringArray("CAT_MEOW")

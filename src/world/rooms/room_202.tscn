@@ -62,6 +62,7 @@ poses = {
 "throw_2": ExtResource("v_throw_2")
 }
 idle_pose = "infected"
+faces_right = true
 
 [node name="Fight" type="Node2D" parent="." node_paths=PackedStringArray("valshtein", "exit_door")]
 script = ExtResource("fight")

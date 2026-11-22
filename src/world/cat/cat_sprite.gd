@@ -19,8 +19,8 @@ const POSES: Dictionary = {
 	STRETCH: preload("res://assets/characters/cat/stretch.png"),
 	WINDOW: preload("res://assets/characters/cat/window.png"),
 }
-const OFFSETS: Dictionary = {WINDOW: Vector2(-32.0, -81.0)}
-const FRAME_OFFSET := Vector2(-66.0, -100.0)
+const OFFSETS: Dictionary = {WINDOW: Vector2(-21.0, -53.0)}
+const FRAME_OFFSET := Vector2(-44.0, -65.0)
 const RUN_CYCLE: Array[StringName] = [READY, STRETCH, SIT, JUMP]
 const RUN_FRAME_SEC := 0.08
 const SHADOW_FADE_HEIGHT := 120.0

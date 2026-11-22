@@ -6,7 +6,7 @@ extends Node2D
 ## дальше, бежит следом по кругу кадров бега, поднимая пыль. Если герой оказался совсем далеко
 ## (переход, прыжок через полкомнаты), кошка сразу переносится к нему.
 
-const FOLLOW_DISTANCE := 80.0
+const FOLLOW_DISTANCE := 60.0
 const REST_DISTANCE := 14.0
 const START_DISTANCE := 40.0
 const RUN_SPEED := 210.0

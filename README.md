@@ -228,12 +228,12 @@ pip install Pillow
 python tools/prepare_character.py assets/characters/dima 168 "гг 1.png" "гг 2.png" "гг 3.png" "гг 4.png" "jump_1=прыжок1.png" "jump_2=прыжок2.png"
 ```
 
-Кадры должны быть в одном масштабе. Так же подготовлены Ваня (рост 170), кошка (рост 77, под размер кота на окне) и бегущие фигуры (рост 165). Если кадр сохранён на белом фоне без прозрачности, фон сначала убирает третий скрипт; точки после имён файлов указывают на замкнутые просветы внутри контура:
+Кадры должны быть в одном масштабе. Так же подготовлены Ваня (рост 170), кошка (рост 50; кот на окне уменьшен в той же пропорции, 50/77) и бегущие фигуры (рост 165). Если кадр сохранён на белом фоне без прозрачности, фон сначала убирает третий скрипт; точки после имён файлов указывают на замкнутые просветы внутри контура:
 
 ```sh
 python tools/cut_background.py "стоитваня.png" vanya_cut.png 197,791 305,84
 python tools/prepare_character.py assets/characters/vanya 170 "stand=vanya_cut.png"
-python tools/prepare_character.py assets/characters/cat 77 "sit=кошк1 3.png" "ready=кошк1 4.png" "jump=кошк1 2.png" "stretch=кошк1 1.png"
+python tools/prepare_character.py assets/characters/cat 50 "sit=кошк1 3.png" "ready=кошк1 4.png" "jump=кошк1 2.png" "stretch=кошк1 1.png"
 python tools/prepare_character.py assets/characters/runners 165 "run_1=бег нн 1.png" "run_2=бегнн2.png" "run_3=бегнн3.png" "run_4=бегнн4.png" "run_5=бег нн 5.png" "run_6=бег нн6.png"
 ```
 

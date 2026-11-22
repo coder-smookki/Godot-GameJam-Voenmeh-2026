@@ -262,7 +262,7 @@ func _throw_bomb() -> void:
 	var hint := _hud.hint
 	_hud.hint = ""
 	await _pan(_valshtein_view() + Vector2(0.0, 15.0), 0.6, 1.3)
-	valshtein.face_right(false)
+	valshtein.face_right(true)
 	valshtein.set_pose("throw_1")
 	var windup := create_tween()
 	windup.tween_property(valshtein, "scale", Vector2(0.94, 1.05), 0.25)
