@@ -1,0 +1,80 @@
+name: Проверка релиза
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Тег релиза, например v0.1; пусто - последний"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Запуск .exe на Windows
+    runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ inputs.tag }}
+    steps:
+      - name: Скачать релиз
+        shell: pwsh
+        run: |
+          if ($env:TAG) {
+            gh release download $env:TAG --repo $env:GITHUB_REPOSITORY --pattern "Eksperiment404.exe*" --dir release
+          } else {
+            gh release download --repo $env:GITHUB_REPOSITORY --pattern "Eksperiment404.exe*" --dir release
+          }
+          Get-ChildItem release
+
+      - name: Контрольная сумма
+        shell: pwsh
+        run: |
+          $expected = ((Get-Content release/Eksperiment404.exe.sha256) -split '\s+')[0].ToLower()
+          $actual = (Get-FileHash release/Eksperiment404.exe -Algorithm SHA256).Hash.ToLower()
+          Write-Output "ожидалась $expected"
+          Write-Output "получена  $actual"
+          if ($expected -ne $actual) { throw "SHA-256 не совпадает" }
+
+      - name: Запуск без окна
+        shell: pwsh
+        run: |
+          $log = "$env:GITHUB_WORKSPACE\headless.log"
+          $game = Start-Process -FilePath release\Eksperiment404.exe `
+            -ArgumentList "--headless", "--quit-after", "600", "--log-file", $log `
+            -Wait -PassThru
+          Get-Content $log
+          Write-Output "код выхода: $($game.ExitCode)"
+          if ($game.ExitCode -ne 0) { throw "игра завершилась с кодом $($game.ExitCode)" }
+          if (Select-String -Path $log -Pattern "SCRIPT ERROR", "Parse Error", "Failed to load") {
+            throw "в журнале есть ошибки скриптов"
+          }
+
+      - name: Запись кадров с отрисовкой
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          New-Item -ItemType Directory -Force frames | Out-Null
+          $log = "$env:GITHUB_WORKSPACE\movie.log"
+          $movie = "$env:GITHUB_WORKSPACE\frames\frame.png"
+          $game = Start-Process -FilePath release\Eksperiment404.exe `
+            -ArgumentList "--write-movie", $movie, "--fixed-fps", "30", "--quit-after", "150", "--log-file", $log `
+            -Wait -PassThru
+          Get-Content $log
+          Write-Output "код выхода: $($game.ExitCode)"
+          $count = (Get-ChildItem frames -Filter *.png).Count
+          Write-Output "кадров: $count"
+          if ($count -eq 0) { throw "кадры не записаны" }
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: release-check
+          path: |
+            headless.log
+            movie.log
+            frames/
+          if-no-files-found: warn
+          retention-days: 7
