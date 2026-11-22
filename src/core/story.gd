@@ -10,6 +10,7 @@ const SEEN_PREFIX := "seen_"
 const ARRIVALS: Dictionary = {
 	"vestibule": ["vestibule_arrival"],
 	"corridor_2": ["corridor_2_arrival"],
+	"202": ["valshtein"],
 	"lift": ["elevator_first", "lift_lestenko"],
 }
 const ARRIVAL_CONDITIONS: Dictionary = {
@@ -20,7 +21,9 @@ const STEPS: Dictionary = {
 	"seen_corridor_2_arrival": {"task": "TASK_FIND_HELP", "infect_floor": 2, "infection": 10.0},
 	"ability_debugger": {"task": "TASK_DEBUG_CODE", "announce": "ANNOUNCE_DEBUGGER"},
 	"first_totem": {"task": "TASK_TALK_VALSHTEIN"},
-	"boss_2": {"announce": "ANNOUNCE_BUTTON_3"},
+	"seen_valshtein": {"task": "TASK_FIGHT_COMPILER"},
+	"ability_2": {"announce": "ANNOUNCE_ABILITY_2"},
+	"boss_2": {"task": "TASK_GO_FLOOR_3", "announce": "ANNOUNCE_BUTTON_3"},
 	"boss_3": {"announce": "ANNOUNCE_BUTTON_4"},
 	"boss_4": {"announce": "ANNOUNCE_BUTTON_5"},
 	"seen_lift_lestenko": {"announce": "ANNOUNCE_RAM"},

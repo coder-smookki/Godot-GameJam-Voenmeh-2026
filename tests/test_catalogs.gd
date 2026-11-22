@@ -20,9 +20,9 @@ func test_forks_match_schema() -> void:
 		equal(ForkCatalog.id_by_key(fork["key"]), fork_id, "%s находится по переменной" % fork_id)
 
 
-## В каталогах 13 локаций (с кабиной лифта) и 5 концовок, как в раскадровке.
+## В каталогах 12 локаций (с кабиной лифта) и 5 концовок, как в раскадровке.
 func test_catalog_sizes() -> void:
-	equal(LocationCatalog.codes().size(), 13, "локации вместе с кабиной лифта")
+	equal(LocationCatalog.codes().size(), 12, "локации вместе с кабиной лифта")
 	equal(EndingCatalog.total(), 5, "концовки")
 	for index: int in EndingCatalog.ids().size():
 		equal(EndingCatalog.number(EndingCatalog.ids()[index]), index + 1, "номера по порядку")

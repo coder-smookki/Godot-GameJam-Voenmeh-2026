@@ -70,14 +70,6 @@ emission_rect_extents = Vector2(70, 90)
 position = Vector2(2228, 254)
 drawn = false
 
-[node name="Kafedra" parent="Props" instance=ExtResource("door")]
-position = Vector2(230, 254)
-target_room = "kafedra"
-target_spawn = "door"
-drawn = false
-open_when = "is_marked('totem_corridor_2')"
-locked_text_key = "LOCK_KAFEDRA"
-
 [node name="Room202" parent="Props" instance=ExtResource("door")]
 position = Vector2(894, 254)
 target_room = "202"
@@ -124,9 +116,6 @@ poses = {
 
 [node name="elevator" type="Marker2D" parent="Spawns"]
 position = Vector2(2228, 254)
-
-[node name="from_kafedra" type="Marker2D" parent="Spawns"]
-position = Vector2(230, 254)
 
 [node name="from_202" type="Marker2D" parent="Spawns"]
 position = Vector2(894, 254)

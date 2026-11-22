@@ -35,6 +35,7 @@ const KNOCK_BRAKE := 0.3
 const KNOCK_TINT := Color(1.8, 0.55, 0.55)
 
 var facing: int = 1
+var controls_enabled: bool = true
 
 var _nearby: Array[Interactable] = []
 var _focus: Interactable = null
@@ -72,7 +73,8 @@ func _exit_tree() -> void:
 ## Двигает героя, выбирает ближайший объект и обрабатывает прицел и выстрел.
 ## [param delta] - шаг физики в секундах.
 func _physics_process(delta: float) -> void:
-	var direction := 0.0 if _stun > 0.0 else Input.get_axis("move_left", "move_right")
+	var steering := _stun <= 0.0 and controls_enabled
+	var direction := Input.get_axis("move_left", "move_right") if steering else 0.0
 	var brake := KNOCK_BRAKE if _stun > 0.0 else 1.0
 	_stun = maxf(_stun - delta, 0.0)
 	velocity.x = move_toward(velocity.x, direction * SPEED, ACCELERATION * brake * delta)
@@ -91,6 +93,8 @@ func _physics_process(delta: float) -> void:
 ## Нажатие, которым игрок закрыл диалог или мини-игру, сюда не доходит: герой от него не прыгает.
 ## [param event] - событие ввода, не обработанное интерфейсом.
 func _unhandled_input(event: InputEvent) -> void:
+	if not controls_enabled:
+		return
 	if event.is_action_pressed("fire"):
 		_shot_requested = true
 	elif event.is_action_pressed("jump"):
@@ -129,6 +133,18 @@ func knock_back(push: Vector2) -> void:
 	var tween := create_tween()
 	tween.tween_property(_sprite, "modulate", Color.WHITE, KNOCK_SEC)
 	shake_camera(4.0, 0.25)
+
+
+## Включает или выключает управление героем, например на время сцены в бою с боссом.
+## [param enabled] - false останавливает героя и не даёт прыгать, стрелять и говорить.
+func set_controls(enabled: bool) -> void:
+	controls_enabled = enabled
+
+
+## Возвращает героя к его собственной камере после сцены, которую снимала другая камера.
+func take_camera() -> void:
+	_camera.make_current()
+	_camera.reset_smoothing()
 
 
 ## Сообщает, летит ли герой после толчка и не слушается клавиш.
@@ -260,7 +276,9 @@ func _update_focus() -> void:
 ## [param delta] - шаг физики в секундах.
 func _update_debugger(delta: float) -> void:
 	_cooldown = maxf(_cooldown - delta, 0.0)
-	var aiming := Input.is_action_pressed("debugger") and World.is_marked(DEBUGGER_MARK)
+	var aiming := (
+		controls_enabled and Input.is_action_pressed("debugger") and World.is_marked(DEBUGGER_MARK)
+	)
 	Game.set_slow_motion(aiming)
 	_aim.set_aiming(aiming, _muzzle.position)
 	if _shot_requested and aiming and _cooldown <= 0.0:

@@ -21,6 +21,7 @@ var _fade_tween: Tween = null
 @onready var elevator: ElevatorPanel = $ElevatorPanel
 @onready var pull: PullGame = $PullGame
 @onready var debug: DebugGame = $DebugGame
+@onready var drawing: DrawGame = $DrawGame
 @onready var game_over: GameOverScreen = $GameOverScreen
 @onready var settings: SettingsScreen = $SettingsScreen
 @onready var confirm: ConfirmScreen = $ConfirmScreen

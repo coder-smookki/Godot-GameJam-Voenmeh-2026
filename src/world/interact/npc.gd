@@ -7,7 +7,8 @@ extends Interactable
 ## Если персонаж или предмет уже нарисован на фоне комнаты, заглушка отключается флажком drawn.
 ## Условие present_when проверяется при входе в комнату: так персонаж уходит между визитами.
 ## Персонаж с кадрами художниц (poses) рисуется ими вместо заглушки: в разговоре он
-## поворачивается к герою, а реплика с полем pose меняет его позу.
+## поворачивается к герою, а реплика с полем pose меняет его позу; в покое показана поза
+## idle_pose.
 
 const DEFAULT_POSE := "neutral"
 
@@ -18,6 +19,7 @@ const DEFAULT_POSE := "neutral"
 @export var drawn: bool = true
 @export var present_when: String = ""
 @export var poses: Dictionary = {}
+@export var idle_pose: String = DEFAULT_POSE
 
 @onready var _body: Node2D = $Body
 @onready var _shadow: Node2D = $Shadow
@@ -36,7 +38,7 @@ func _ready() -> void:
 	_body.visible = drawn and poses.is_empty()
 	_shadow.visible = drawn
 	_sprite.visible = not poses.is_empty()
-	set_pose(DEFAULT_POSE)
+	set_pose(idle_pose)
 
 
 ## Меняет кадр персонажа; неизвестная поза ничего не меняет.
@@ -47,6 +49,12 @@ func set_pose(pose_name: String) -> void:
 		return
 	_sprite.texture = texture
 	_sprite.offset = Vector2(-texture.get_width() * 0.5, -texture.get_height())
+
+
+## Поворачивает персонажа вправо или влево; кадры художниц смотрят влево.
+## [param right] - true, чтобы персонаж смотрел вправо.
+func face_right(right: bool) -> void:
+	_sprite.flip_h = right
 
 
 ## Возвращает текстуру позы, которая показана сейчас; нужно тестам.
@@ -64,7 +72,7 @@ func _interact(player: Player) -> void:
 	if not is_inside_tree():
 		return
 	_sprite.flip_h = false
-	set_pose(DEFAULT_POSE)
+	set_pose(idle_pose)
 	if not finished or mark_id.is_empty() or World.is_marked(mark_id):
 		return
 	World.mark(mark_id)

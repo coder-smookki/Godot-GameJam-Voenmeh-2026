@@ -14,7 +14,6 @@ const LOCATIONS: Dictionary = {
 	"vestibule": 1,
 	"wardrobe": 1,
 	"corridor_2": 2,
-	"kafedra": 2,
 	"202": 2,
 	"corridor_3": 3,
 	"316": 3,

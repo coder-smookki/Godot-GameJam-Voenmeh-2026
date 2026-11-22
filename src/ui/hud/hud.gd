@@ -8,6 +8,8 @@ extends Control
 const TASK_FLASH := Color(1.6, 1.4, 0.8)
 const TASK_FLASH_SEC := 0.6
 
+var _task_hidden: bool = false
+
 @onready var _task_panel: PanelContainer = $TaskPanel
 @onready var _task_text: Label = $TaskPanel/Box/Text
 @onready var _floor_name: Label = $FloorPanel/Box/Name
@@ -33,17 +35,25 @@ func _ready() -> void:
 ## [param _code] - код комнаты; этаж берётся из системы заражения.
 func _on_room_entered(_code: String) -> void:
 	show()
+	hide_task(false)
 	_refresh_floor()
 
 
 ## Обновляет строку задания; новое задание коротко подсвечивается.
 ## [param text_key] - ключ текста задания; при пустом ключе панель прячется.
 func _on_task_changed(text_key: String) -> void:
-	_task_panel.visible = not text_key.is_empty()
+	_task_panel.visible = not text_key.is_empty() and not _task_hidden
 	if _task_text.text != tr(text_key):
 		_task_panel.modulate = TASK_FLASH
 		create_tween().tween_property(_task_panel, "modulate", Color.WHITE, TASK_FLASH_SEC)
 	_task_text.text = tr(text_key)
+
+
+## Прячет или возвращает плашку задания, например на время боя с боссом.
+## [param hidden] - true прячет плашку.
+func hide_task(hidden: bool) -> void:
+	_task_hidden = hidden
+	_task_panel.visible = not hidden and not _task_text.text.is_empty()
 
 
 ## Затемняет мир и показывает подпись режима отладчика.

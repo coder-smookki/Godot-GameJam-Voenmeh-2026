@@ -207,3 +207,25 @@ func test_debug_timeout() -> void:
 	hasty.point(posmod(hasty.bug_line() + 1, hasty.lines.size()))
 	hasty.select()
 	check(hasty.is_failed(), "штраф съел последние секунды")
+
+
+## Капибара: клетки силуэта засчитываются один раз, промах отнимает полсекунды, все клетки - победа.
+func test_draw_logic() -> void:
+	var drawing := DrawLogic.new()
+	equal(drawing.cells_left(), DrawLogic.shape_cells(), "ничего не нарисовано")
+	check(not drawing.paint(Vector2i(0, 0)), "угол сетки мимо силуэта")
+	equal(drawing.time_left, DrawLogic.TIME_SEC - DrawLogic.MISS_SEC, "промах стоит полсекунды")
+	check(drawing.paint(Vector2i(0, 3)), "клетка силуэта закрашена")
+	check(not drawing.paint(Vector2i(0, 3)), "второй раз та же клетка не считается")
+	drawing.move(Vector2i(-5, 0))
+	equal(drawing.cursor, Vector2i(0, 3), "курсор не выходит за край")
+	var size := DrawLogic.grid_size()
+	for y: int in size.y:
+		for x: int in size.x:
+			if DrawLogic.in_shape(Vector2i(x, y)):
+				drawing.paint(Vector2i(x, y))
+	check(drawing.is_solved() and drawing.cells_left() == 0, "капибара нарисована")
+	var late := DrawLogic.new()
+	late.advance(DrawLogic.TIME_SEC + 0.1)
+	check(late.is_failed(), "время вышло")
+	check(not late.paint(Vector2i(0, 3)), "после конца не рисуется")

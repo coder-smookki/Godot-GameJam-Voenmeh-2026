@@ -16,6 +16,8 @@ const CIRCLE_Y: Array[float] = [40.0, 82.0, 122.0, 164.0, 205.0]
 const BUTTON_LEFT := 34.0
 const BUTTON_SIZE := Vector2(78.0, 36.0)
 const LABEL_MARGIN := 9.0
+const CHOSEN := Color("ff8a1c")
+const POP_SEC := 0.15
 
 var _buttons: Dictionary = {}
 
@@ -25,8 +27,9 @@ var _buttons: Dictionary = {}
 @onready var _back: Button = $Right/Box/Back
 
 
-## Создаёт кнопки этажей поверх нарисованных кругов: номер слева от круга, рамка фокуса
-## охватывает номер и круг (круги на рисунке стоят на x 77-106).
+## Создаёт кнопки этажей поверх нарисованных кругов: номер слева от круга. Рамки нет:
+## выбранная кнопка (наведение мышью или стрелки) показана оранжевым номером, который
+## на миг подпрыгивает (круги на рисунке стоят на x 77-106).
 func _ready() -> void:
 	for level: int in range(1, CIRCLE_Y.size() + 1):
 		var button := Button.new()
@@ -36,14 +39,14 @@ func _ready() -> void:
 		button.position = Vector2(BUTTON_LEFT, roundf(CIRCLE_Y[level - 1] - BUTTON_SIZE.y * 0.5))
 		var empty := StyleBoxEmpty.new()
 		empty.content_margin_left = LABEL_MARGIN
-		for state: String in ["normal", "hover", "pressed", "disabled"]:
+		for state: String in ["normal", "hover", "pressed", "disabled", "focus"]:
 			button.add_theme_stylebox_override(state, empty)
-		var focus := Palette.frame(Palette.GOAL, 2)
-		focus.bg_color = Color(0.0, 0.0, 0.0, 0.0)
-		button.add_theme_stylebox_override("focus", focus)
 		button.add_theme_color_override("font_color", Palette.UI_SOLID)
-		button.add_theme_color_override("font_focus_color", Palette.UI_SOLID)
+		for state: String in ["font_focus_color", "font_hover_color", "font_pressed_color"]:
+			button.add_theme_color_override(state, CHOSEN)
+		button.add_theme_color_override("font_hover_pressed_color", CHOSEN)
 		button.add_theme_color_override("font_disabled_color", Color(0.3, 0.3, 0.33))
+		button.focus_entered.connect(_pop.bind(button))
 		button.pressed.connect(ride.bind(level))
 		button.focus_entered.connect(_describe.bind(level))
 		button.mouse_entered.connect(button.grab_focus)
@@ -51,6 +54,14 @@ func _ready() -> void:
 		_buttons[level] = button
 	_back.pressed.connect(close)
 	_back.focus_entered.connect(_describe.bind(0))
+
+
+## Коротко увеличивает номер выбранной кнопки.
+## [param button] - кнопка, на которую перешёл выбор.
+func _pop(button: Button) -> void:
+	button.pivot_offset = Vector2(LABEL_MARGIN + 4.0, button.size.y * 0.5)
+	button.scale = Vector2(1.35, 1.35)
+	create_tween().tween_property(button, "scale", Vector2.ONE, POP_SEC)
 
 
 ## Показывает панель с нужным числом горящих кнопок и ставит фокус на этаж, куда ведёт сюжет.

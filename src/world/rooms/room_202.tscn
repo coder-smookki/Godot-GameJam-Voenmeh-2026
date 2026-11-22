@@ -4,6 +4,11 @@
 [ext_resource type="Texture2D" path="res://assets/rooms/room_202.png" id="art"]
 [ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
 [ext_resource type="PackedScene" path="res://src/world/interact/npc.tscn" id="npc"]
+[ext_resource type="Script" path="res://src/world/boss/compiler_fight.gd" id="fight"]
+[ext_resource type="Texture2D" path="res://assets/characters/valshtein/infected.png" id="v_infected"]
+[ext_resource type="Texture2D" path="res://assets/characters/valshtein/throw_1.png" id="v_throw_1"]
+[ext_resource type="Texture2D" path="res://assets/characters/valshtein/throw_2.png" id="v_throw_2"]
+[ext_resource type="Texture2D" path="res://assets/characters/valshtein/neutral.png" id="v_neutral"]
 
 [sub_resource type="RectangleShape2D" id="floor"]
 size = Vector2(1900, 60)
@@ -48,8 +53,19 @@ drawn = false
 [node name="Actors" type="Node2D" parent="."]
 
 [node name="Valshtein" parent="Actors" instance=ExtResource("npc")]
-position = Vector2(1040, 254)
+position = Vector2(150, 254)
 talk_id = "valshtein"
+poses = {
+"infected": ExtResource("v_infected"),
+"neutral": ExtResource("v_neutral"),
+"throw_1": ExtResource("v_throw_1"),
+"throw_2": ExtResource("v_throw_2")
+}
+idle_pose = "infected"
+
+[node name="Fight" type="Node2D" parent="." node_paths=PackedStringArray("valshtein")]
+script = ExtResource("fight")
+valshtein = NodePath("../Actors/Valshtein")
 
 [node name="Spawns" type="Node2D" parent="."]
 

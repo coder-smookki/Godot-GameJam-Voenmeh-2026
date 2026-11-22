@@ -70,8 +70,7 @@ func test_floor_2_story() -> void:
 	var room := tree.current_scene as Room
 	var crowd: RunnerCrowd = room.get_node("Actors/Crowd")
 	equal(crowd.size(), 8, "по коридору бегают люди")
-	var kafedra: Door = room.get_node("Props/Kafedra")
-	check(not kafedra.is_open(), "дверь кафедры заблокирована")
+	check(room.get_node_or_null("Props/Kafedra") == null, "у двери 201 нет входа")
 	var naurusova: Npc = room.get_node("Actors/Naurusova")
 	var totem: Totem = room.get_node("Actors/Totem")
 	check(naurusova.global_position.x - totem.global_position.x < 250.0, "Наурусова у надписи")
@@ -232,20 +231,18 @@ func test_game_over_restarts() -> void:
 	finish_talk()
 
 
-## Рамка выбранной кнопки лифта охватывает номер и нарисованный круг этой кнопки.
+## У кнопок лифта нет рамки: выбранная кнопка показана оранжевым номером.
 func test_lift_panel_frames() -> void:
 	await start_game()
 	World.mark("vanya_saved")
 	Ui.elevator.open()
 	var keys: Control = Ui.elevator.get_node("Art/Keys")
 	equal(keys.get_child_count(), 5, "пять кнопок")
-	for index: int in keys.get_child_count():
-		var button: Button = keys.get_child(index)
-		var rect := Rect2(button.position, button.size)
-		var circle := Vector2(91.5, ElevatorPanel.CIRCLE_Y[index])
-		check(rect.grow(-14.0).has_point(circle), "кнопка %d: круг внутри рамки" % (index + 1))
-		var right_gap := rect.end.x - 106.0
-		check(right_gap >= 3.0 and right_gap <= 8.0, "кнопка %d: рамка не режет круг" % (index + 1))
+	var second: Button = keys.get_child(1)
+	check(second.has_focus(), "выбран второй этаж")
+	check(second.get_theme_stylebox("focus") is StyleBoxEmpty, "рамки фокуса нет")
+	equal(second.get_theme_color("font_focus_color"), ElevatorPanel.CHOSEN, "номер оранжевый")
+	equal(second.get_theme_color("font_hover_color"), ElevatorPanel.CHOSEN, "и при наведении")
 	Ui.elevator.close()
 
 
@@ -257,3 +254,101 @@ func _announced(player: Player, text_key: String) -> bool:
 		if child is Label and child.text == tr(text_key):
 			return true
 	return false
+
+
+## Бой с Компилятором в кабинете 202: Вальштейн у капибары, бой у монитора, три колонны,
+## три бомбы Вальштейна, капибара, победа и кнопка третьего этажа.
+func test_compiler_fight() -> void:
+	await start_game()
+	World.mark("totem_corridor_2")
+	await Game.goto_room("202", "door")
+	check(Ui.dialogue.visible, "Вальштейн заговорил при входе")
+	finish_talk()
+	equal(Game.task_key, "TASK_FIGHT_COMPILER", "задание: к монитору")
+	var room := tree.current_scene as Room
+	var valshtein: Npc = room.get_node("Actors/Valshtein")
+	check(valshtein.global_position.x < 245.0, "Вальштейн левее капибары")
+	equal(valshtein.current_texture(), valshtein.poses["infected"], "Вальштейн заражён")
+	var fight: CompilerFight = room.get_node("Fight")
+	Engine.time_scale = 4.0
+	room.player.global_position.x = 800.0
+	for frame: int in 3:
+		await tree.physics_frame
+	check(fight.is_running(), "у монитора начался бой")
+	check(not room.player.controls_enabled, "на облёте камеры герой ждёт")
+	await _until(func() -> bool: return fight.phase != CompilerFight.Phase.INTRO)
+	equal(fight.phase, CompilerFight.Phase.COLUMNS, "первая фаза: колонны")
+	check(room.player.controls_enabled, "герой снова управляем")
+	await tree.create_timer(FixColumn.RISE_SEC + 0.1).timeout
+	var column: FixColumn = fight.columns()[0]
+	column.value = (column.target + 1) % 10
+	column.hit()
+	check(not column.is_fixed, "не то число: колонна не починена")
+	for item: FixColumn in fight.columns():
+		item.value = item.target
+		item.hit()
+	equal(fight.phase, CompilerFight.Phase.TALK, "порты открыты, говорит Вальштейн")
+	await _until(func() -> bool: return fight.phase != CompilerFight.Phase.TALK)
+	equal(fight.phase, CompilerFight.Phase.BOMBS, "вторая фаза: бомбы")
+	for bomb: int in CompilerFight.BOMBS:
+		for dodge: int in CompilerFight.DODGES_PER_BOMB:
+			fight.on_dodged()
+		check(fight.phase == CompilerFight.Phase.BOMB_SCENE, "бомба %d летит" % (bomb + 1))
+		await _until(func() -> bool: return fight.phase != CompilerFight.Phase.BOMB_SCENE)
+	equal(fight.bombs_done, CompilerFight.BOMBS, "три бомбы в портах")
+	await _until(func() -> bool: return Ui.drawing.visible)
+	var drawing := Ui.drawing.logic()
+	var size := DrawLogic.grid_size()
+	for y: int in size.y:
+		for x: int in size.x:
+			if DrawLogic.in_shape(Vector2i(x, y)):
+				drawing.paint(Vector2i(x, y))
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	equal(valshtein.current_texture(), valshtein.poses["neutral"], "Вальштейн освобождён")
+	finish_talk()
+	await _until(func() -> bool: return not fight.is_running())
+	Engine.time_scale = 1.0
+	check(
+		World.is_marked("boss_2") and World.is_marked("ability_2"), "босс побеждён, умение получено"
+	)
+	equal(Game.task_key, "TASK_GO_FLOOR_3", "задание: на третий этаж")
+	equal(World.f["hearts"], 3, "сердца целы")
+	await Game.goto_room("corridor_2", "from_202")
+	await Game.goto_room("202", "door")
+	fight = tree.current_scene.get_node("Fight")
+	check(not fight.is_running(), "бой не повторяется")
+	var again: Npc = tree.current_scene.get_node("Actors/Valshtein")
+	equal(again.talk_id, "valshtein_free", "Вальштейн благодарит")
+	equal(again.current_texture(), again.poses["neutral"], "и стоит без заражения")
+
+
+## Три попадания срывают фазу боя: минус сердце, фаза начинается заново.
+func test_compiler_fight_hits() -> void:
+	await start_game()
+	World.mark("seen_valshtein")
+	await Game.goto_room("202", "door")
+	var room := tree.current_scene as Room
+	var fight: CompilerFight = room.get_node("Fight")
+	Engine.time_scale = 4.0
+	fight.start()
+	await _until(func() -> bool: return fight.phase != CompilerFight.Phase.INTRO)
+	for hit: int in CompilerFight.INTEGRITY:
+		var line := ErrorLine.new()
+		line.setup_slide(room.player.global_position.x, true, 0.0, room.player)
+		fight.add_child(line)
+		fight.on_touched(line)
+		await tree.create_timer(CompilerFight.INVULNERABLE_SEC + 0.05).timeout
+	await tree.create_timer(0.6).timeout
+	equal(World.f["hearts"], 2, "минус сердце")
+	equal(fight.phase, CompilerFight.Phase.COLUMNS, "фаза начинается заново")
+	equal(fight.integrity, CompilerFight.INTEGRITY, "целостность снова полная")
+	Engine.time_scale = 1.0
+
+
+## Ждёт, пока условие не станет верным, но не дольше 20 секунд.
+## [param condition] - функция без параметров, которая возвращает bool.
+func _until(condition: Callable) -> void:
+	var limit := Time.get_ticks_msec() + 20000
+	while not condition.call() and Time.get_ticks_msec() < limit:
+		await tree.process_frame
+	check(condition.call(), "дождались условия")

@@ -197,9 +197,6 @@ msgstr "Вызвать лифт"
 msgid "PROMPT_GRAB_HAND"
 msgstr "Схватить за руку"
 
-msgid "PROMPT_LOOK_SCREEN"
-msgstr "Посмотреть на экран"
-
 msgid "PROMPT_READ"
 msgstr "Прочитать"
 
@@ -220,9 +217,6 @@ msgstr "Сначала гляну, кто кричит"
 
 msgid "DOOR_404"
 msgstr "404 · не найдено"
-
-msgid "TOAST_LABA_SEEN"
-msgstr "ЛАБА: «Найдёнов не найден»"
 
 msgid "TOAST_CAPY"
 msgstr "Найдена капибара: {capy} из 5"
@@ -446,9 +440,6 @@ msgstr "Гардероб"
 msgid "LOC_CORRIDOR_2"
 msgstr "Коридор 2 этажа"
 
-msgid "LOC_KAFEDRA"
-msgstr "Кафедра Н2"
-
 msgid "LOC_CORRIDOR_3"
 msgstr "Коридор 3 этажа"
 
@@ -548,9 +539,6 @@ msgstr "Выйти из лифта"
 msgid "LOC_LIFT"
 msgstr "Лифт"
 
-msgid "LOCK_KAFEDRA"
-msgstr "Дверь кафедры заблокирована"
-
 msgid "LOCK_NEED_BLOB"
 msgstr "Дверь держит сгусток ошибки. Выстрелите в него три раза"
 
@@ -625,3 +613,81 @@ msgstr "ЛАБА: перезапускаю эксперимент №404..."
 
 msgid "GAME_OVER_HINT"
 msgstr "Нажмите любую клавишу"
+
+msgid "TASK_FIGHT_COMPILER"
+msgstr "Подойти к монитору · там заражённый Компилятор"
+
+msgid "TASK_GO_FLOOR_3"
+msgstr "Подняться на 3 этаж · лифт"
+
+msgid "ANNOUNCE_ABILITY_2"
+msgstr "Получено новое умение"
+
+msgid "TALK_VALSHTEIN_ATTACK"
+msgstr "Ну всё, теперь можно атаковать."
+
+msgid "TALK_VALSHTEIN_FREE_1"
+msgstr "Спасибо. Компилятор снова слушается, а я снова слышу себя."
+
+msgid "TALK_VALSHTEIN_FREE_2"
+msgstr "Кнопка третьего этажа должна была вернуться. Мне пора."
+
+msgid "BOSS_COMPILER"
+msgstr "КОМПИЛЯТОР"
+
+msgid "BOSS_COMPILER_INTRO"
+msgstr "ЗАРАЖЁННЫЙ КОМПИЛЯТОР"
+
+msgid "BOSS_PHASE_COLUMNS"
+msgstr "ПОЧИНИ ТРИ КОЛОННЫ"
+
+msgid "BOSS_HINT_COLUMNS"
+msgstr "Q + ЛКМ по колонне, когда число совпадёт"
+
+msgid "BOSS_PORTS_OPEN"
+msgstr "ПОРТЫ ОТКРЫТЫ"
+
+msgid "BOSS_HINT_BOMBS"
+msgstr "Прыгайте через ошибки: Вальштейн готовит бомбу"
+
+msgid "BOSS_HIT"
+msgstr "ПОПАДАНИЕ!"
+
+msgid "BOSS_NOT_OVER"
+msgstr "НЕ КОНЕЦ"
+
+msgid "BOSS_NOT_OVER_BANNER"
+msgstr "ЭТО БЫЛО ТОЛЬКО НАЧАЛО..."
+
+msgid "BOSS_HINT_DRAW"
+msgstr "Последний этап: нарисуйте капибару"
+
+msgid "BOSS_WIN"
+msgstr "КОМПИЛЯТОР РАССЫПАЛСЯ"
+
+msgid "BOSS_FAILED"
+msgstr "СБОЙ! МИНУС СЕРДЦЕ"
+
+msgid "BOSS_RETRY"
+msgstr "ЕЩЁ РАЗ"
+
+msgid "BOSS_LAUGH"
+msgstr "ХА-ХА"
+
+msgid "BOSS_INTEGRITY"
+msgstr "ЦЕЛОСТНОСТЬ"
+
+msgid "BOSS_BOMB"
+msgstr "БОМБА"
+
+msgid "DRAW_TITLE"
+msgstr "НАРИСУЙ КАПИБАРУ"
+
+msgid "DRAW_LEFT"
+msgstr "Осталось клеток: {count}"
+
+msgid "DRAW_HELP"
+msgstr "Стрелки - кисть, пробел - красить"
+
+msgid "DRAW_DONE"
+msgstr "Капибара готова!"

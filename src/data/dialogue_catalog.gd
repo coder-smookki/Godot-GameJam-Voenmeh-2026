@@ -73,6 +73,11 @@ const TALKS: Dictionary = {
 		{"speaker": "demyan", "text": "TALK_VALSHTEIN_2"},
 		{"speaker": "valshtein", "text": "TALK_VALSHTEIN_3"},
 	],
+	"valshtein_free":
+	[
+		{"speaker": "valshtein", "text": "TALK_VALSHTEIN_FREE_1"},
+		{"speaker": "demyan", "text": "TALK_VALSHTEIN_FREE_2"},
+	],
 	"lift_lestenko":
 	[
 		{"speaker": "demyan", "text": "TALK_LESTENKO_1"},
