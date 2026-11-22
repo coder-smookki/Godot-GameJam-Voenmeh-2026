@@ -4,7 +4,8 @@ extends CharacterBody2D
 ##
 ## Начало координат находится у ног. Ввод обрабатывается только когда мир не на паузе.
 ## Тень и отражение остаются на полу, когда герой прыгает. Толчок, приземление и шаги
-## поднимают пыль, а спрайт на мгновение вытягивается и сплющивается.
+## поднимают пыль, а спрайт на мгновение вытягивается и сплющивается. Шахматка и надпись ERROR
+## могут отбросить героя: на короткое время он не слушается клавиш и краснеет.
 
 const SPEED := 150.0
 const ACCELERATION := 1200.0
@@ -29,6 +30,9 @@ const ANNOUNCE_RISE := 8.0
 const ANNOUNCE_SCREEN_TOP := 56.0
 const ANNOUNCE_SEC := 2.2
 const ANNOUNCE_FADE_SEC := 0.5
+const KNOCK_SEC := 0.45
+const KNOCK_BRAKE := 0.3
+const KNOCK_TINT := Color(1.8, 0.55, 0.55)
 
 var facing: int = 1
 
@@ -42,6 +46,7 @@ var _airborne: bool = false
 var _land_left: float = 0.0
 var _air_sec: float = 0.0
 var _squash: Tween = null
+var _stun: float = 0.0
 
 @onready var _zone: Area2D = $InteractZone
 @onready var _muzzle: Marker2D = $Muzzle
@@ -67,8 +72,10 @@ func _exit_tree() -> void:
 ## Двигает героя, выбирает ближайший объект и обрабатывает прицел и выстрел.
 ## [param delta] - шаг физики в секундах.
 func _physics_process(delta: float) -> void:
-	var direction := Input.get_axis("move_left", "move_right")
-	velocity.x = move_toward(velocity.x, direction * SPEED, ACCELERATION * delta)
+	var direction := 0.0 if _stun > 0.0 else Input.get_axis("move_left", "move_right")
+	var brake := KNOCK_BRAKE if _stun > 0.0 else 1.0
+	_stun = maxf(_stun - delta, 0.0)
+	velocity.x = move_toward(velocity.x, direction * SPEED, ACCELERATION * brake * delta)
 	if not is_on_floor():
 		velocity.y += GRAVITY * delta
 	move_and_slide()
@@ -109,6 +116,24 @@ func zoom_camera(zoom: float, sec: float) -> void:
 func shake_camera(strength: float, sec: float) -> void:
 	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.tween_method(_set_shake, strength, 0.0, sec)
+
+
+## Отбрасывает героя: он отлетает, на миг краснеет и не слушается клавиш.
+## [param push] - скорость толчка в пикселях в секунду; отрицательный y подбрасывает вверх.
+func knock_back(push: Vector2) -> void:
+	velocity = push
+	_stun = KNOCK_SEC
+	if push.x != 0.0:
+		facing = -1 if push.x > 0.0 else 1
+	_sprite.modulate = KNOCK_TINT
+	var tween := create_tween()
+	tween.tween_property(_sprite, "modulate", Color.WHITE, KNOCK_SEC)
+	shake_camera(4.0, 0.25)
+
+
+## Сообщает, летит ли герой после толчка и не слушается клавиш.
+func is_stunned() -> bool:
+	return _stun > 0.0
 
 
 ## Показывает над головой героя плашку с полученной вещью или умением; она всплывает и гаснет.

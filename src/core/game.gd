@@ -3,12 +3,15 @@ extends Node
 ##
 ## Единственное место, которое меняет сцены. Комнаты и двери просят переход здесь,
 ## поэтому затемнение, автосохранение и защита от двойного перехода работают одинаково везде.
+## Здесь же сердца героя: проигранная мини-игра или бой отнимают одно, без сердец игра
+## начинается заново после заставки.
 
 signal room_entered(code: String)
 signal rooms_left
 signal game_started
 signal task_changed(text_key: String)
 signal slow_motion_changed(active: bool)
+signal heart_lost(left: int)
 
 const START_ROOM := "vestibule"
 const START_SPAWN := "start"
@@ -16,6 +19,7 @@ const MAIN_MENU_SCENE := "res://src/ui/main_menu/main_menu.tscn"
 const ENDING_SCENE := "res://src/ui/ending/ending_screen.tscn"
 const SLOW_SCALE := 0.5
 const LIFT_ROOM := "lift"
+const HEARTS := "hearts"
 
 var room_code: String = ""
 var spawn_id: String = ""
@@ -79,6 +83,33 @@ func goto_room(code: String, spawn: String = START_SPAWN) -> void:
 	_busy = false
 	room_entered.emit(code)
 	task_changed.emit(task_key)
+
+
+## Отнимает у героя сердце за проигранную мини-игру или бой.
+## Когда сердец не осталось, показывает заставку проигрыша и начинает игру заново.
+## Возвращает, сколько сердец осталось.
+func lose_heart() -> int:
+	var left := World.bump(HEARTS, -1)
+	heart_lost.emit(left)
+	if left > 0:
+		SaveSystem.save_game()
+	else:
+		await game_over()
+	return left
+
+
+## Показывает заставку проигрыша и начинает новую игру с вестибюля.
+## Открытые концовки в профиле остаются.
+func game_over() -> void:
+	if _busy:
+		return
+	_busy = true
+	in_room = false
+	await Ui.game_over.play()
+	await Ui.fade_out()
+	Ui.game_over.close()
+	_busy = false
+	await new_game()
 
 
 ## Заводит героя в кабину лифта и запоминает этаж, с которого он вошёл.

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5uk3mdc4miru"
-path="res://.godot/imported/room_214.png-dca6f633a7546aad2792b6b41562e59e.ctex"
+uid="uid://fumbnnlsffhk"
+path="res://.godot/imported/neutral.png-1f1ed44095342256c7d292fb2ed35aab.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/rooms/room_214.png"
-dest_files=["res://.godot/imported/room_214.png-dca6f633a7546aad2792b6b41562e59e.ctex"]
+source_file="res://assets/characters/naurusova/neutral.png"
+dest_files=["res://.godot/imported/neutral.png-1f1ed44095342256c7d292fb2ed35aab.ctex"]
 
 [params]
 

@@ -109,7 +109,7 @@ func current_key() -> int:
 ## Сообщает, насколько шахматка наступила на героя.
 ## Возвращает число от 1 до 4 из [method PullLogic.pressure].
 func pressure() -> int:
-	return _logic.pressure() if _logic != null else PullLogic.START_PRESSURE
+	return _logic.pressure() if _logic != null else 1
 
 
 ## Засчитывает нажатие нужной клавиши; вне игры ничего не делает.

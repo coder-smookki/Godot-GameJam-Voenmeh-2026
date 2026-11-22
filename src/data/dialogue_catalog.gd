@@ -3,7 +3,8 @@ extends RefCounted
 ## Каталог разговоров: кто говорит, какой текст и какие ответы может выбрать игрок.
 ##
 ## Реплика - словарь с ключами speaker (код из [SpeakerCatalog], пустой для текста от автора),
-## text (ключ текста) и необязательным choices. Ответ - словарь с ключами text, tag и reply.
+## text (ключ текста), необязательными choices и pose (поза говорящего, если у него есть кадры).
+## Ответ - словарь с ключами text, tag и reply.
 ## Ответ с меткой «сюжет» ведёт разговор дальше, после остальных игрок возвращается к выбору.
 
 const TAG_STORY := "story"
@@ -59,16 +60,12 @@ const TALKS: Dictionary = {
 		{"speaker": "", "text": "TALK_CORRIDOR_2_4"},
 		{"speaker": "demyan", "text": "TALK_CORRIDOR_2_5"},
 	],
-	"naurusova_door":
-	[
-		{"speaker": "naurusova", "text": "TALK_NAURUSOVA_DOOR_1"},
-		{"speaker": "naurusova", "text": "TALK_NAURUSOVA_DOOR_2"},
-		{"speaker": "", "text": "TALK_NAURUSOVA_DOOR_3"},
-	],
 	"naurusova":
 	[
-		{"speaker": "naurusova", "text": "TALK_NAURUSOVA_1"},
-		{"speaker": "naurusova", "text": "TALK_NAURUSOVA_2"},
+		{"speaker": "naurusova", "text": "TALK_NAURUSOVA_1", "pose": "neutral2"},
+		{"speaker": "naurusova", "text": "TALK_NAURUSOVA_2", "pose": "questioning"},
+		{"speaker": "naurusova", "text": "TALK_NAURUSOVA_3", "pose": "neutral"},
+		{"speaker": "naurusova", "text": "TALK_NAURUSOVA_4", "pose": "angry"},
 	],
 	"valshtein":
 	[

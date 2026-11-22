@@ -22,7 +22,6 @@ const DRAIN_PER_SEC := 0.2
 const DRAIN_SCALES: Array[float] = [1.0, 1.5, 2.0]
 const SWITCH_SEC: Array[float] = [0.0, 2.6, 1.8]
 const NO_KEY := -1
-const START_PRESSURE := 2
 const MAX_PRESSURE := 4
 
 var jerk: int = 0
@@ -61,12 +60,10 @@ func is_done() -> bool:
 	return is_won() or is_lost()
 
 
-## Считает, насколько шахматка наступила на героя.
-## Возвращает число от 1 (отступила) до 4 (поглотила): рывки отодвигают её, промахи приближают.
+## Считает, насколько шахматка наступила на героя: каждый промах приближает её на шаг.
+## Возвращает число от 1 (начало спасения) до 4 (третий промах, герой поглощён).
 func pressure() -> int:
-	if is_lost():
-		return MAX_PRESSURE
-	return clampi(START_PRESSURE + misses - jerk, 1, MAX_PRESSURE - 1)
+	return mini(misses + 1, MAX_PRESSURE)
 
 
 ## Засчитывает нажатие клавиши: нужная клавиша растит шкалу, чужая уменьшает.

@@ -1,8 +1,7 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
 [ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
-[ext_resource type="PackedScene" path="res://src/world/interact/npc.tscn" id="npc"]
 [ext_resource type="PackedScene" path="res://src/world/interact/trigger.tscn" id="trigger"]
 
 [sub_resource type="RectangleShape2D" id="floor"]
@@ -102,20 +101,7 @@ mark_id = "laba_seen"
 prompt_key = "PROMPT_LOOK_SCREEN"
 toast_key = "TOAST_LABA_SEEN"
 
-[node name="Monitor" parent="Props" instance=ExtResource("trigger")]
-position = Vector2(160, 264)
-mark_id = "capi_joined"
-available_when = "is_marked('laba_seen')"
-prompt_key = "PROMPT_LOOK_MONITOR"
-toast_key = "TOAST_CAPI"
-hide_when_used = false
-
 [node name="Actors" type="Node2D" parent="."]
-
-[node name="Naurusova" parent="Actors" instance=ExtResource("npc")]
-position = Vector2(345, 264)
-talk_id = "naurusova"
-mark_id = "ability_debugger"
 
 [node name="Spawns" type="Node2D" parent="."]
 

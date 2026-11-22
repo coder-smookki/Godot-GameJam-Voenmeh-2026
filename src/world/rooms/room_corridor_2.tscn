@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
 [ext_resource type="Texture2D" path="res://assets/rooms/corridor_2.png" id="art"]
@@ -9,8 +9,11 @@
 [ext_resource type="PackedScene" path="res://src/world/effects/leak.tscn" id="leak"]
 [ext_resource type="Shader" path="res://src/world/virus/glitch.gdshader" id="glitch"]
 [ext_resource type="PackedScene" path="res://src/world/virus/totem.tscn" id="totem"]
-[ext_resource type="Script" path="res://src/world/messages/hidden_message.gd" id="message"]
 [ext_resource type="Script" path="res://src/world/crowd/runner_crowd.gd" id="crowd"]
+[ext_resource type="Texture2D" path="res://assets/characters/naurusova/neutral.png" id="g_neutral"]
+[ext_resource type="Texture2D" path="res://assets/characters/naurusova/neutral2.png" id="g_neutral2"]
+[ext_resource type="Texture2D" path="res://assets/characters/naurusova/angry.png" id="g_angry"]
+[ext_resource type="Texture2D" path="res://assets/characters/naurusova/questioning.png" id="g_questioning"]
 
 [sub_resource type="RectangleShape2D" id="floor"]
 size = Vector2(2600, 60)
@@ -72,16 +75,22 @@ position = Vector2(230, 254)
 target_room = "kafedra"
 target_spawn = "door"
 drawn = false
-open_when = "is_marked('seen_naurusova_door')"
+open_when = "is_marked('totem_corridor_2')"
 locked_text_key = "LOCK_KAFEDRA"
 
-[node name="Room214" parent="Props" instance=ExtResource("door")]
-position = Vector2(1143, 254)
-target_room = "214"
+[node name="Room202" parent="Props" instance=ExtResource("door")]
+position = Vector2(894, 254)
+target_room = "202"
 target_spawn = "door"
 drawn = false
 open_when = "is_marked('totem_corridor_2')"
 locked_text_key = "LOCK_NEED_TOTEM"
+
+[node name="Room203" parent="Props" instance=ExtResource("door")]
+position = Vector2(1143, 254)
+drawn = false
+open_when = "false"
+locked_text_key = "LOCK_INFECTED"
 
 [node name="Actors" type="Node2D" parent="."]
 
@@ -89,29 +98,27 @@ locked_text_key = "LOCK_NEED_TOTEM"
 position = Vector2(0, 254)
 script = ExtResource("crowd")
 count = 8
-left = 480.0
-right = 2080.0
-gone_mark = "seen_naurusova_door"
-vanish_x = 330.0
-vanish_distance = 420.0
+left = 1000.0
+right = 2160.0
+gone_mark = "ability_debugger"
+vanish_x = 1610.0
+vanish_distance = 300.0
+
+[node name="Totem" parent="Actors" instance=ExtResource("totem")]
+position = Vector2(1440, 254)
+totem_id = "corridor_2"
 
 [node name="Naurusova" parent="Actors" instance=ExtResource("npc")]
-position = Vector2(330, 254)
-talk_id = "naurusova_door"
-mark_id = "seen_naurusova_door"
-present_when = "not is_marked('seen_naurusova_door')"
-
-[node name="Totem" parent="Actors" node_paths=PackedStringArray("seal") instance=ExtResource("totem")]
-position = Vector2(1330, 150)
-totem_id = "corridor_2"
-seal = NodePath("../../Backdrop/Seal")
-
-[node name="Message" type="Node2D" parent="Actors"]
-z_index = 30
-position = Vector2(1157, 175)
-script = ExtResource("message")
-text_key = "LABA_MESSAGE_1"
-mark_id = "message_1"
+position = Vector2(1610, 254)
+talk_id = "naurusova"
+mark_id = "ability_debugger"
+present_when = "not is_marked('totem_corridor_2')"
+poses = {
+"angry": ExtResource("g_angry"),
+"neutral": ExtResource("g_neutral"),
+"neutral2": ExtResource("g_neutral2"),
+"questioning": ExtResource("g_questioning")
+}
 
 [node name="Spawns" type="Node2D" parent="."]
 
@@ -121,5 +128,5 @@ position = Vector2(2228, 254)
 [node name="from_kafedra" type="Marker2D" parent="Spawns"]
 position = Vector2(230, 254)
 
-[node name="from_214" type="Marker2D" parent="Spawns"]
-position = Vector2(1143, 254)
+[node name="from_202" type="Marker2D" parent="Spawns"]
+position = Vector2(894, 254)

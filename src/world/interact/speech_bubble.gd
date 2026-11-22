@@ -103,6 +103,16 @@ func _show_line(index: int) -> void:
 	queue_redraw()
 
 
+## Показывает готовую строку вместо реплик из ключей, например битые символы надписи ERROR.
+## [param value] - текст реплики.
+func say(value: String) -> void:
+	_lines = PackedStringArray([value])
+	scale = Vector2(POP_FROM, POP_FROM)
+	create_tween().tween_property(self, "scale", Vector2.ONE, POP_SEC)
+	show()
+	queue_redraw()
+
+
 ## Двигает дрожание и по истечении срока показывает следующую реплику.
 func _on_tick() -> void:
 	_ticks += 1

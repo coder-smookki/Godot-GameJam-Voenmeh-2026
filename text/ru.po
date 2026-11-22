@@ -200,9 +200,6 @@ msgstr "Схватить за руку"
 msgid "PROMPT_LOOK_SCREEN"
 msgstr "Посмотреть на экран"
 
-msgid "PROMPT_LOOK_MONITOR"
-msgstr "Заглянуть в монитор"
-
 msgid "PROMPT_READ"
 msgstr "Прочитать"
 
@@ -213,7 +210,7 @@ msgid "LOCK_NOT_BUILT"
 msgstr "Эта локация ещё не собрана"
 
 msgid "LOCK_NEED_TOTEM"
-msgstr "Дверь заражена. Сначала выбейте отладчиком надпись ERROR"
+msgstr "Сначала нужно убрать надпись ERROR"
 
 msgid "LOCK_EXIT_404"
 msgstr "Дверь не найдена: 404"
@@ -227,9 +224,6 @@ msgstr "404 · не найдено"
 msgid "TOAST_LABA_SEEN"
 msgstr "ЛАБА: «Найдёнов не найден»"
 
-msgid "TOAST_CAPI"
-msgstr "Из монитора вылезла Капи. Теперь она ходит следом"
-
 msgid "TOAST_CAPY"
 msgstr "Найдена капибара: {capy} из 5"
 
@@ -239,14 +233,8 @@ msgstr "Узнать, кто кричит · дверь «Гардероб»"
 msgid "TASK_GO_FLOOR_2"
 msgstr "Подняться на 2 этаж · лифт"
 
-msgid "TASK_GO_KAFEDRA"
-msgstr "Зайти на кафедру Н2 · дверь 201"
-
-msgid "TASK_BREAK_TOTEM"
-msgstr "Выбить отладчиком надпись ERROR · держите Q, стреляйте ЛКМ"
-
 msgid "TASK_TALK_VALSHTEIN"
-msgstr "Поговорить с Вальштейном · кабинет 214"
+msgstr "Поговорить с Вальштейном · кабинет 202"
 
 msgid "TERMINAL_DELETE"
 msgstr "УДАЛИТЬ"
@@ -327,7 +315,7 @@ msgid "PULL_HOLD"
 msgstr "ДЕРЖИ"
 
 msgid "PULL_LOST"
-msgstr "Шахматка отбросила вас. Попробуйте ещё раз"
+msgstr "Шахматка отбросила вас. Минус сердце. Попробуйте ещё раз"
 
 msgid "NAME_VANYA"
 msgstr "Ваня"
@@ -461,9 +449,6 @@ msgstr "Коридор 2 этажа"
 msgid "LOC_KAFEDRA"
 msgstr "Кафедра Н2"
 
-msgid "LOC_214"
-msgstr "214 · Вальштейн"
-
 msgid "LOC_CORRIDOR_3"
 msgstr "Коридор 3 этажа"
 
@@ -507,22 +492,13 @@ msgid "TASK_FIND_HELP"
 msgstr "Найти, кто объяснит, что случилось · коридор"
 
 msgid "TASK_DEBUG_CODE"
-msgstr "Отладить код у заражённой двери · держите Q"
-
-msgid "TALK_NAURUSOVA_DOOR_1"
-msgstr "Это всё научный проект кафедры. Похоже, эксперимент вышел из-под контроля. Он во всём виноват..."
-
-msgid "TALK_NAURUSOVA_DOOR_2"
-msgstr "Только ты можешь помочь. Заходи на кафедру."
-
-msgid "TALK_NAURUSOVA_DOOR_3"
-msgstr "Демьян снимает блокировку с двери 201."
+msgstr "Отладить код надписи ERROR · подойдите к ней, E"
 
 msgid "TALK_NAURUSOVA_1"
-msgstr "Пойдём с нами, нам нужны рабочие руки."
+msgstr "Это всё научный проект кафедры. Похоже, эксперимент вышел из-под контроля. Он во всём виноват..."
 
 msgid "TALK_NAURUSOVA_2"
-msgstr "Возьми с собой отладчик. Он поможет разобраться с заражёнными объектами."
+msgstr "Пойдём с нами, нам нужны рабочие руки."
 
 msgid "TALK_VALSHTEIN_1"
 msgstr "Если на Python вы захотите выстрелить себе в ногу, он скажет вам «нельзя». Если на C++ спросит, какие вам патроны."
@@ -581,8 +557,71 @@ msgstr "Дверь держит сгусток ошибки. Выстрелит�
 msgid "LOCK_ROOF"
 msgstr "Выход на крышу откроется после серверной"
 
-msgid "LABA_MESSAGE_1"
-msgstr "Я только учусь"
-
 msgid "TOAST_MESSAGE"
 msgstr "Послание ЛАБЫ: {messages} из 3"
+
+msgid "TALK_NAURUSOVA_3"
+msgstr "Возьми с собой отладчик. Он поможет разобраться с заражёнными объектами."
+
+msgid "TALK_NAURUSOVA_4"
+msgstr "Эта надпись никого не пускает. Найди ошибку в её коде, пока не поздно."
+
+msgid "LOC_202"
+msgstr "Кабинет 202"
+
+msgid "LOCK_INFECTED"
+msgstr "Кабинет заражён. Дверь не открывается"
+
+msgid "LOCK_ERROR"
+msgstr "Надпись ERROR не пускает дальше. Нужен отладчик"
+
+msgid "PROMPT_DEBUG_CODE"
+msgstr "Отладить код"
+
+msgid "PROMPT_INSPECT"
+msgstr "Осмотреть"
+
+msgid "DEBUG_TITLE"
+msgstr "ОТЛАДЧИК · error.c"
+
+msgid "DEBUG_HELP_FIND"
+msgstr "Найдите строку с ошибкой: стрелки, E"
+
+msgid "DEBUG_HELP_FIX"
+msgstr "Стрелки, E - заменить · Esc - назад к коду"
+
+msgid "DEBUG_ASK"
+msgstr "Чем заменить строку {line}?"
+
+msgid "DEBUG_RUN"
+msgstr "$ gcc error.c && ./a.out"
+
+msgid "DEBUG_SOLVED"
+msgstr "Код исправлен. Надпись рассыпается"
+
+msgid "DEBUG_TIMEOUT"
+msgstr "ВРЕМЯ ВЫШЛО"
+
+msgid "DEBUG_LOST"
+msgstr "Отладка сорвалась: минус сердце. Подойдите к надписи ещё раз"
+
+msgid "DEBUG_HINT_SEMICOLON"
+msgstr "gcc: ошибка: ожидалась «;»"
+
+msgid "DEBUG_HINT_ASSIGN"
+msgstr "программа ничего не напечатала, код выхода 1"
+
+msgid "DEBUG_HINT_FORMAT"
+msgstr "gcc: формат %d ждёт число, а передана строка"
+
+msgid "DEBUG_HINT_BOUNDS"
+msgstr "Segmentation fault (core dumped)"
+
+msgid "GAME_OVER_TITLE"
+msgstr "СЕРДЦА КОНЧИЛИСЬ"
+
+msgid "GAME_OVER_TEXT"
+msgstr "ЛАБА: перезапускаю эксперимент №404..."
+
+msgid "GAME_OVER_HINT"
+msgstr "Нажмите любую клавишу"

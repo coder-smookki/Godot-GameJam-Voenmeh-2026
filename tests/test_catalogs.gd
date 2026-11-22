@@ -20,7 +20,7 @@ func test_forks_match_schema() -> void:
 		equal(ForkCatalog.id_by_key(fork["key"]), fork_id, "%s находится по переменной" % fork_id)
 
 
-## В каталогах 12 локаций и 5 концовок, как в раскадровке.
+## В каталогах 13 локаций (с кабиной лифта) и 5 концовок, как в раскадровке.
 func test_catalog_sizes() -> void:
 	equal(LocationCatalog.codes().size(), 13, "локации вместе с кабиной лифта")
 	equal(EndingCatalog.total(), 5, "концовки")
@@ -37,6 +37,7 @@ func test_every_key_has_text() -> void:
 	keys.append_array(Elevator.text_keys())
 	keys.append_array(DialogueCatalog.text_keys())
 	keys.append_array(SpeakerCatalog.text_keys())
+	keys.append_array(DebugLogic.text_keys())
 	for key: String in Settings.DEFAULTS:
 		keys.append("SETTINGS_%s" % key.to_upper())
 	for key: String in Story.STEPS:
@@ -96,7 +97,7 @@ func test_built_rooms() -> void:
 	for level: int in [3, 4, 5]:
 		check(LocationCatalog.is_built(Elevator.room(level)), "коридор этажа %d" % level)
 	check(LocationCatalog.is_built(Game.LIFT_ROOM), "кабина лифта")
-	check(LocationCatalog.is_built("214"), "кабинет 214")
+	check(LocationCatalog.is_built("202"), "кабинет 202")
 	check(not LocationCatalog.is_built("server"), "серверная ещё не собрана")
 	check(not LocationCatalog.is_built("9-99"), "чужой код")
 	equal(LocationCatalog.floor_of("wardrobe"), 1, "гардероб на первом этаже")

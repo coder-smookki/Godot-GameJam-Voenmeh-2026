@@ -1,5 +1,5 @@
 extends Node
-## Сюжетное состояние игры: переменные развилок, счётчики находок и разовые отметки.
+## Сюжетное состояние игры: переменные развилок, счётчики находок, сердца героя и разовые отметки.
 ##
 ## Единственное место, где хранятся сюжетные флаги. Сцены читают состояние отсюда
 ## и меняют его только через [method choose], [method bump] и [method mark].
@@ -16,6 +16,7 @@ const SCHEMA: Dictionary = {
 	"mozh": {"default": "", "values": ["", "capy", "stay", "off"]},
 	"messages": {"default": 0, "max": 3},
 	"capy": {"default": 0, "max": 5},
+	"hearts": {"default": 3, "max": 3},
 }
 const MESSAGES_FOR_FIX := 2
 const CAPY_TOTAL := 5

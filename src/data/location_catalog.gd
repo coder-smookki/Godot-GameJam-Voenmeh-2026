@@ -15,7 +15,7 @@ const LOCATIONS: Dictionary = {
 	"wardrobe": 1,
 	"corridor_2": 2,
 	"kafedra": 2,
-	"214": 2,
+	"202": 2,
 	"corridor_3": 3,
 	"316": 3,
 	"corridor_4": 4,
@@ -27,7 +27,7 @@ const LOCATIONS: Dictionary = {
 
 
 ## Проверяет, есть ли локация в каталоге.
-## [param code] - код локации, например "vestibule" или "214".
+## [param code] - код локации, например "vestibule" или "202".
 ## Возвращает true, если код известен.
 static func has(code: String) -> bool:
 	return LOCATIONS.has(code)

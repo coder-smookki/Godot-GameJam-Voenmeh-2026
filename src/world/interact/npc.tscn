@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/world/interact/npc.gd" id="1"]
 [ext_resource type="Script" path="res://src/world/placeholder/pill.gd" id="2"]
@@ -22,3 +22,7 @@ radius = Vector2(26, 4)
 script = ExtResource("2")
 size = Vector2(44, 160)
 color = Color(0.419608, 0.447059, 0.501961, 1)
+
+[node name="Sprite" type="Sprite2D" parent="."]
+visible = false
+centered = false

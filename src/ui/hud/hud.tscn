@@ -1,7 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/ui/hud/hud.gd" id="1"]
 [ext_resource type="Script" path="res://src/ui/theme/trim.gd" id="trim"]
+[ext_resource type="Script" path="res://src/ui/hud/hearts.gd" id="hearts"]
 
 [sub_resource type="StyleBoxFlat" id="meter_back"]
 bg_color = Color(0.1, 0.12, 0.2, 1)
@@ -84,6 +85,11 @@ mouse_filter = 2
 theme_override_styles/background = SubResource("meter_back")
 theme_override_styles/fill = SubResource("meter_fill")
 show_percentage = false
+
+[node name="Hearts" type="Control" parent="FloorPanel/Box"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("hearts")
 
 [node name="DebuggerLabel" type="Label" parent="."]
 layout_mode = 1

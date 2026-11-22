@@ -18,9 +18,7 @@ const ARRIVAL_CONDITIONS: Dictionary = {
 const STEPS: Dictionary = {
 	"vanya_saved": {"task": "TASK_GO_FLOOR_2"},
 	"seen_corridor_2_arrival": {"task": "TASK_FIND_HELP", "infect_floor": 2, "infection": 10.0},
-	"seen_naurusova_door": {"task": "TASK_GO_KAFEDRA"},
 	"ability_debugger": {"task": "TASK_DEBUG_CODE", "announce": "ANNOUNCE_DEBUGGER"},
-	"message_1": {"task": "TASK_BREAK_TOTEM"},
 	"first_totem": {"task": "TASK_TALK_VALSHTEIN"},
 	"boss_2": {"announce": "ANNOUNCE_BUTTON_3"},
 	"boss_3": {"announce": "ANNOUNCE_BUTTON_4"},

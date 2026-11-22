@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/ui/ui.gd" id="1"]
 [ext_resource type="PackedScene" path="res://src/ui/hud/hud.tscn" id="2"]
@@ -12,6 +12,8 @@
 [ext_resource type="PackedScene" path="res://src/ui/pull/pull_game.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://src/ui/settings/settings_screen.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://src/ui/confirm/confirm_screen.tscn" id="12"]
+[ext_resource type="PackedScene" path="res://src/ui/debug/debug_game.tscn" id="14"]
+[ext_resource type="PackedScene" path="res://src/ui/game_over/game_over_screen.tscn" id="15"]
 
 [ext_resource type="Shader" path="res://src/ui/effects/screen_fx.gdshader" id="13"]
 
@@ -50,9 +52,13 @@ mouse_filter = 2
 
 [node name="PullGame" parent="." instance=ExtResource("10")]
 
+[node name="DebugGame" parent="." instance=ExtResource("14")]
+
 [node name="SettingsScreen" parent="." instance=ExtResource("11")]
 
 [node name="ConfirmScreen" parent="." instance=ExtResource("12")]
+
+[node name="GameOverScreen" parent="." instance=ExtResource("15")]
 
 [node name="Fade" type="ColorRect" parent="."]
 anchors_preset = 15

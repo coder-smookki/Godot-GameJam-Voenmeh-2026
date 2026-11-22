@@ -1,7 +1,7 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
-[ext_resource type="Texture2D" path="res://assets/rooms/room_214.png" id="art"]
+[ext_resource type="Texture2D" path="res://assets/rooms/room_202.png" id="art"]
 [ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
 [ext_resource type="PackedScene" path="res://src/world/interact/npc.tscn" id="npc"]
 
@@ -42,7 +42,7 @@ z_index = -10
 [node name="Back" parent="Props" instance=ExtResource("door")]
 position = Vector2(335, 254)
 target_room = "corridor_2"
-target_spawn = "from_214"
+target_spawn = "from_202"
 drawn = false
 
 [node name="Actors" type="Node2D" parent="."]

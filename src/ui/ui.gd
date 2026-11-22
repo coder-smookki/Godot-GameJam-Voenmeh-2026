@@ -1,5 +1,6 @@
 extends CanvasLayer
-## Весь интерфейс поверх игры: задания, тосты, диалоги, развилки, лифт, настройки, меню.
+## Весь интерфейс поверх игры: задания, тосты, диалоги, развилки, лифт, мини-игры, настройки,
+## меню и заставка проигрыша.
 ##
 ## Игровые сцены обращаются к интерфейсу только через этот узел.
 
@@ -19,6 +20,8 @@ var _fade_tween: Tween = null
 @onready var dev_menu: DevMenu = $DevMenu
 @onready var elevator: ElevatorPanel = $ElevatorPanel
 @onready var pull: PullGame = $PullGame
+@onready var debug: DebugGame = $DebugGame
+@onready var game_over: GameOverScreen = $GameOverScreen
 @onready var settings: SettingsScreen = $SettingsScreen
 @onready var confirm: ConfirmScreen = $ConfirmScreen
 @onready var _screen_fx: ColorRect = $ScreenFx

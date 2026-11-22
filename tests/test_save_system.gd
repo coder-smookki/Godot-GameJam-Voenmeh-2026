@@ -8,7 +8,7 @@ func test_roundtrip() -> void:
 	World.bump("capy", 3)
 	World.mark("vanya_saved")
 	Infection.start(2, 31.0)
-	SaveSystem.session = {"room": "corridor_2", "spawn": "elevator", "task": "TASK_BREAK_TOTEM"}
+	SaveSystem.session = {"room": "corridor_2", "spawn": "elevator", "task": "TASK_DEBUG_CODE"}
 	check(SaveSystem.save_game(), "файл записан")
 	World.reset()
 	Journal.clear()

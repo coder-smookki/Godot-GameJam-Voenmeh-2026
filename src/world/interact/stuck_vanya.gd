@@ -3,7 +3,8 @@ extends Interactable
 ## Ваня в гардеробе: сначала застрял в шахматке, после мини-игры «Тяни!» свободен.
 ##
 ## Сцену спасения показывают кадры художниц: ком шахматки и герой, который тянет.
-## Рывки отодвигают шахматку, промахи приближают, после трёх промахов она отбрасывает героя.
+## Игра начинается с первого кадра; каждый промах показывает следующий, на третьем шахматка
+## поглощает героя, а потом отбрасывает его назад, и он теряет сердце.
 ## Слои нарисованы на холсте всей комнаты, поэтому лежат в координатах комнаты и не двигаются
 ## вместе с этим узлом. Освобождённый Ваня вылетает из шахматки по дуге и встаёт лицом к герою.
 
@@ -13,7 +14,8 @@ const AFTER_TALK := "vanya_after"
 const FREE_X := 660.0
 const HERO_PULL_X := 500.0
 const HERO_FREE_X := 560.0
-const HERO_THROWN_X := 300.0
+const HERO_THROWN_FROM := 405.0
+const THROW := Vector2(-320.0, -260.0)
 const REMNANT_SCALE := 0.55
 const SHRINK_SEC := 0.5
 const SWALLOW_SEC := 0.7
@@ -144,15 +146,19 @@ func _face(player: Player) -> void:
 	_body.flip_h = player.global_position.x < global_position.x
 
 
-## Показывает, как шахматка накрыла героя, и возвращает его к началу комнаты.
+## Показывает, как шахматка накрыла героя, и отбрасывает его от кома назад; он теряет сердце.
 ## [param player] - герой, который проиграл мини-игру.
 func _throw_back(player: Player) -> void:
 	_show_pressure()
 	await get_tree().create_timer(SWALLOW_SEC).timeout
-	player.global_position.x = HERO_THROWN_X
-	player.show()
 	_show_state(false)
+	player.global_position.x = HERO_THROWN_FROM
+	player.show()
+	player.knock_back(THROW)
+	_burst.restart()
+	_burst.emitting = true
 	Ui.toast(tr("PULL_LOST"), ToastStack.KIND_LABA)
+	Game.lose_heart()
 
 
 ## Показывает кадр мини-игры по тому, насколько шахматка наступила на героя.
@@ -183,10 +189,9 @@ func _on_pulled() -> void:
 	_sparks_off.tween_callback(_sparks.set_emitting.bind(false))
 
 
-## Отмечает сделанный рывок: шахматка отступает, из неё вылетает сноп клеток.
-## [param _index] - сколько рывков уже сделано; кадр берётся из мини-игры.
+## Отмечает сделанный рывок: кадр дёргается, из шахматки вылетает сноп клеток.
+## [param _index] - сколько рывков уже сделано.
 func _on_jerk_done(_index: int) -> void:
-	_show_pressure()
 	_jolt_frame(JERK_JOLT)
 	_player.shake_camera(3.0, JOLT_SEC * 2.0)
 	_burst.restart()

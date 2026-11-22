@@ -9,6 +9,7 @@ extends Modal
 signal typed
 signal advanced
 signal picked(index: int)
+signal line_shown(line: Dictionary)
 
 const CHARS_PER_SEC := 45.0
 const SLIDE_SEC := 0.16
@@ -192,6 +193,7 @@ func _fill_line(line: Dictionary) -> void:
 	_text.add_theme_color_override("font_color", color)
 	_text.text = tr(str(line.get("text", "")))
 	_text.visible_characters = -1
+	line_shown.emit(line)
 
 
 ## Печатает текущую реплику по буквам и ждёт конца печати.

@@ -14,7 +14,6 @@ const TEXT := Color("e8ecf4")
 const UI_BACKGROUND := Color(0.047, 0.071, 0.125, 0.92)
 const UI_SOLID := Color("0c1220")
 const PLAYER := Color("ff1fb4")
-const CAPI := Color("a8703a")
 const NPC := Color("6b7280")
 const FONT_SIZE := 8
 const CORNER := 3

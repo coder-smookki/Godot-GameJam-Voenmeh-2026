@@ -4,7 +4,8 @@ extends Node2D
 ##
 ## Начало координат - точка на полу под кошкой. Кадры смотрят влево; при движении вправо
 ## рисунок отражается. Кадр «на окне» нарисован со спины и в отражении не нуждается.
-## Этим рисунком пользуются и Капи, и кот в коридоре третьего этажа.
+## Бег - все четыре кадра по кругу в порядке, который назвал владелец: «кошк1 4», «кошк1 1»,
+## «кошк1 3», «кошк1 2» (здесь ready, stretch, sit, jump).
 
 const SIT := &"sit"
 const READY := &"ready"
@@ -20,26 +21,25 @@ const POSES: Dictionary = {
 }
 const OFFSETS: Dictionary = {WINDOW: Vector2(-32.0, -81.0)}
 const FRAME_OFFSET := Vector2(-66.0, -100.0)
-const RUN_CYCLE: Array[StringName] = [STRETCH, JUMP]
-const RUN_FRAME_SEC := 0.09
+const RUN_CYCLE: Array[StringName] = [READY, STRETCH, SIT, JUMP]
+const RUN_FRAME_SEC := 0.08
 const SHADOW_FADE_HEIGHT := 120.0
 const SHADOW_MIN_SCALE := 0.4
 
 var _pose: StringName = SIT
 var _run_clock: float = 0.0
 var _run_index: int = 0
+var _running: bool = false
 
 @onready var _sprite: Sprite2D = $Sprite
 @onready var _shadow: Node2D = $Shadow
 
 
-## Меняет кадр кошки.
+## Меняет кадр кошки и останавливает бег.
 ## [param frame] - имя кадра: sit, ready, jump, stretch или window.
 func pose(frame: StringName) -> void:
-	_pose = frame
-	_sprite.texture = POSES[frame]
-	_sprite.offset = OFFSETS.get(frame, FRAME_OFFSET)
-	_shadow.visible = frame != WINDOW
+	_running = false
+	_show(frame)
 
 
 ## Сообщает, какой кадр показан сейчас.
@@ -52,18 +52,24 @@ func current_pose() -> StringName:
 ## [param delta] - время кадра в секундах.
 ## Возвращает true в тот момент, когда лапы коснулись пола (начался новый круг).
 func run(delta: float) -> bool:
-	if _pose not in RUN_CYCLE:
+	if not _running:
+		_running = true
 		_run_clock = 0.0
 		_run_index = 0
-		pose(RUN_CYCLE[0])
+		_show(RUN_CYCLE[0])
 		return true
 	_run_clock += delta
 	if _run_clock < RUN_FRAME_SEC:
 		return false
 	_run_clock -= RUN_FRAME_SEC
 	_run_index = (_run_index + 1) % RUN_CYCLE.size()
-	pose(RUN_CYCLE[_run_index])
+	_show(RUN_CYCLE[_run_index])
 	return _run_index == 0
+
+
+## Сообщает, бежит ли кошка.
+func is_running() -> bool:
+	return _running
 
 
 ## Поворачивает кошку в сторону движения или взгляда.
@@ -80,3 +86,12 @@ func lift(height: float) -> void:
 	_sprite.position.y = -height
 	var shrink := clampf(1.0 - height / SHADOW_FADE_HEIGHT, SHADOW_MIN_SCALE, 1.0)
 	_shadow.scale = Vector2(shrink, shrink)
+
+
+## Показывает кадр, не трогая бег.
+## [param frame] - имя кадра.
+func _show(frame: StringName) -> void:
+	_pose = frame
+	_sprite.texture = POSES[frame]
+	_sprite.offset = OFFSETS.get(frame, FRAME_OFFSET)
+	_shadow.visible = frame != WINDOW

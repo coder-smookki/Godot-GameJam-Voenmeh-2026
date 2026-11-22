@@ -78,7 +78,7 @@ func test_pull_logic() -> void:
 	var pull := PullLogic.new(7)
 	equal(pull.jerk, 0, "первый рывок")
 	equal(pull.level, PullLogic.START_LEVEL, "шкала начинается не с нуля")
-	equal(pull.pressure(), PullLogic.START_PRESSURE, "шахматка на исходной")
+	equal(pull.pressure(), 1, "спасение начинается с первого кадра")
 	var wrong := (pull.key + 1) % PullLogic.KEY_COUNT
 	check(not pull.press(wrong), "чужая клавиша не считается")
 	check(pull.level < PullLogic.START_LEVEL, "чужая клавиша уменьшает шкалу")
@@ -91,7 +91,7 @@ func test_pull_logic() -> void:
 	equal(pull.jerk, 1, "шкала заполнена, рывок засчитан")
 	check(pull.key != first_key, "в новом рывке другая клавиша")
 	equal(pull.level, PullLogic.START_LEVEL, "новый рывок начинается с той же шкалы")
-	equal(pull.pressure(), 1, "шахматка отступила")
+	equal(pull.pressure(), 1, "рывок кадр не меняет")
 	pull.level = 0.9
 	pull.advance(0.5)
 	var second := 0.9 - pull.level
@@ -114,9 +114,10 @@ func test_pull_misses() -> void:
 	pull.advance(2.1)
 	equal(pull.misses, 1, "шкала утекла до нуля: промах")
 	equal(pull.level, PullLogic.START_LEVEL, "после промаха шкала возвращается к началу")
-	equal(pull.pressure(), PullLogic.START_PRESSURE + 1, "шахматка наступила")
+	equal(pull.pressure(), 2, "после промаха второй кадр")
 	check(not pull.is_done(), "один промах игру не заканчивает")
 	pull.advance(2.1)
+	equal(pull.pressure(), 3, "после второго промаха третий кадр")
 	pull.advance(2.1)
 	equal(counts, [1, 2, 3] as Array[int], "о каждом промахе сообщено")
 	check(pull.is_lost() and pull.is_done() and not pull.is_won(), "три промаха: поражение")
@@ -158,3 +159,51 @@ func test_pull_hold_mode() -> void:
 		seconds += 0.1
 	check(pull.is_won(), "удержание нужной клавиши проходит все три рывка")
 	check(seconds < 30.0, "удержание занимает меньше полминуты")
+
+
+## Отладчик: неверная строка и неверное исправление отнимают секунды, верное исправление
+## заменяет строку и заканчивает игру победой.
+func test_debug_logic() -> void:
+	for index: int in DebugLogic.PUZZLES.size():
+		var item: Dictionary = DebugLogic.PUZZLES[index]
+		var program: Array = item["lines"]
+		check(program[item["bug"]] != item["fixes"][0], "программа %d: в строке ошибка" % index)
+		for line: String in program:
+			check(line.length() <= 50, "программа %d: строка помещается в окно" % index)
+	var debug := DebugLogic.new(5, 0)
+	var lost: Array[float] = []
+	debug.penalized.connect(func(seconds: float) -> void: lost.append(seconds))
+	equal(debug.time_left, DebugLogic.TIME_SEC, "время полное")
+	debug.point(0)
+	check(not debug.select(), "в первой строке ошибки нет")
+	equal(debug.time_left, DebugLogic.TIME_SEC - DebugLogic.WRONG_LINE_SEC, "штраф за строку")
+	debug.move(-1)
+	equal(debug.cursor, debug.lines.size() - 1, "курсор ходит по кругу")
+	debug.point(debug.bug_line())
+	check(debug.select() and debug.picking, "строка с ошибкой найдена")
+	debug.cancel()
+	check(not debug.picking, "можно вернуться к коду")
+	debug.select()
+	debug.point((debug.answer() + 1) % debug.choices.size())
+	check(not debug.select(), "неверное исправление")
+	equal(lost, [DebugLogic.WRONG_LINE_SEC, DebugLogic.WRONG_FIX_SEC] as Array[float], "штрафы")
+	debug.point(debug.answer())
+	check(debug.select() and debug.is_solved(), "код исправлен")
+	equal(debug.lines[debug.bug_line()], DebugLogic.PUZZLES[0]["fixes"][0], "строка заменена")
+	debug.advance(100.0)
+	check(not debug.is_failed(), "после победы время не тикает")
+
+
+## Время отладки кончается, и игра проиграна; штраф тоже может её закончить.
+func test_debug_timeout() -> void:
+	var debug := DebugLogic.new(1)
+	debug.advance(DebugLogic.TIME_SEC - 1.0)
+	check(not debug.is_done(), "время ещё есть")
+	debug.advance(1.5)
+	check(debug.is_failed() and debug.is_done(), "время вышло")
+	check(not debug.select(), "после конца выбор не считается")
+	var hasty := DebugLogic.new(2)
+	hasty.advance(DebugLogic.TIME_SEC - 1.0)
+	hasty.point(posmod(hasty.bug_line() + 1, hasty.lines.size()))
+	hasty.select()
+	check(hasty.is_failed(), "штраф съел последние секунды")

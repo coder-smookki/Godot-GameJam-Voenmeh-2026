@@ -12,10 +12,10 @@ const ART: Array[Texture2D] = [
 	preload("res://assets/ui/lift/panel_3.png"),
 	preload("res://assets/ui/lift/panel_4.png"),
 ]
-const CIRCLE_X := 91.0
-const CIRCLE_Y: Array[float] = [40.0, 81.0, 122.0, 164.0, 205.0]
-const BUTTON_SIZE := Vector2(64.0, 32.0)
-const LABEL_SHIFT := 26.0
+const CIRCLE_Y: Array[float] = [40.0, 82.0, 122.0, 164.0, 205.0]
+const BUTTON_LEFT := 34.0
+const BUTTON_SIZE := Vector2(78.0, 36.0)
+const LABEL_MARGIN := 9.0
 
 var _buttons: Dictionary = {}
 
@@ -25,19 +25,19 @@ var _buttons: Dictionary = {}
 @onready var _back: Button = $Right/Box/Back
 
 
-## Создаёт кнопки этажей поверх нарисованных кругов.
+## Создаёт кнопки этажей поверх нарисованных кругов: номер слева от круга, рамка фокуса
+## охватывает номер и круг (круги на рисунке стоят на x 77-106).
 func _ready() -> void:
 	for level: int in range(1, CIRCLE_Y.size() + 1):
 		var button := Button.new()
 		button.text = str(level)
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.size = BUTTON_SIZE
-		button.position = Vector2(
-			CIRCLE_X - LABEL_SHIFT - BUTTON_SIZE.x * 0.5 + 6.0,
-			CIRCLE_Y[level - 1] - BUTTON_SIZE.y * 0.5
-		)
+		button.position = Vector2(BUTTON_LEFT, roundf(CIRCLE_Y[level - 1] - BUTTON_SIZE.y * 0.5))
+		var empty := StyleBoxEmpty.new()
+		empty.content_margin_left = LABEL_MARGIN
 		for state: String in ["normal", "hover", "pressed", "disabled"]:
-			button.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+			button.add_theme_stylebox_override(state, empty)
 		var focus := Palette.frame(Palette.GOAL, 2)
 		focus.bg_color = Color(0.0, 0.0, 0.0, 0.0)
 		button.add_theme_stylebox_override("focus", focus)
