@@ -66,6 +66,12 @@ static func state(level: int, current: int) -> String:
 	return STATE_GOAL if level == goal_floor() else STATE_OPEN
 
 
+## Выбирает картинку кабины и панели кнопок: сколько кнопок уже вернулось.
+## Возвращает номер от 1 (горят кнопки 1 и 2 этажей) до 4 (горят все пять).
+static func stage() -> int:
+	return clampi(goal_floor() - 1, 1, 4)
+
+
 ## Возвращает комнату, в которую лифт привозит на этаже.
 ## [param level] - номер этажа.
 ## Возвращает код локации или пустую строку, если этажа нет.

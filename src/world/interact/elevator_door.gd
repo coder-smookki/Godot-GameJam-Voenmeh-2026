@@ -1,11 +1,9 @@
 class_name ElevatorDoor
 extends Interactable
-## Двери лифта: открывают панель выбора этажа.
+## Двери лифта: ведут в кабину, где у панели кнопок выбирают этаж.
 ##
 ## Пока лифт не работает, двери объясняют, что нужно сделать сначала.
 ## Если лифт уже нарисован на фоне комнаты, заглушка отключается флажком drawn.
-
-const FIRST_TALK := "elevator_first"
 
 @export var drawn: bool = true
 
@@ -21,12 +19,10 @@ func _ready() -> void:
 	_plate.show_text(tr("ELEVATOR_PLATE") if drawn else "")
 
 
-## Открывает панель этажей или объясняет, почему лифт пока не едет.
-## В первый раз герой сначала замечает, что кнопок почти не осталось.
+## Заводит героя в кабину лифта или объясняет, почему лифт пока не едет.
 ## [param _player] - герой, который вызвал лифт.
 func _interact(_player: Player) -> void:
 	if not Elevator.is_working():
 		Ui.toast(tr("LOCK_ELEVATOR_EARLY"), ToastStack.KIND_HINT)
 		return
-	await Story.play_once(FIRST_TALK)
-	Ui.elevator.open()
+	Game.enter_lift()

@@ -5,19 +5,25 @@ extends Interactable
 ## Разговор берётся из [DialogueCatalog] по коду. После первого разговора можно поставить
 ## отметку, увеличить счётчик и показать тост: так выдаются предметы и находки.
 ## Если персонаж или предмет уже нарисован на фоне комнаты, заглушка отключается флажком drawn.
+## Условие present_when проверяется при входе в комнату: так персонаж уходит между визитами.
 
 @export var talk_id: String = ""
 @export var mark_id: String = ""
 @export var counter_key: String = ""
 @export var toast_key: String = ""
 @export var drawn: bool = true
+@export var present_when: String = ""
 
 @onready var _body: Node2D = $Body
 @onready var _shadow: Node2D = $Shadow
 
 
-## Ставит подсказку «говорить», если она не задана в инспекторе, и прячет заглушку.
+## Убирает персонажа, которого сейчас здесь нет; ставит подсказку «говорить», если она
+## не задана в инспекторе, и прячет заглушку.
 func _ready() -> void:
+	if not Condition.new(present_when).is_met():
+		queue_free()
+		return
 	super()
 	if prompt_key.is_empty():
 		prompt_key = "PROMPT_TALK"

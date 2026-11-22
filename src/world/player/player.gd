@@ -24,6 +24,11 @@ const LAND_SQUASH := Vector2(1.1, 0.9)
 const SQUASH_SEC := 0.2
 const STEP_BACK := 10.0
 const WALK := &"walk"
+const ANNOUNCE_Y := -196.0
+const ANNOUNCE_RISE := 8.0
+const ANNOUNCE_SCREEN_TOP := 56.0
+const ANNOUNCE_SEC := 2.2
+const ANNOUNCE_FADE_SEC := 0.5
 
 var facing: int = 1
 
@@ -104,6 +109,33 @@ func zoom_camera(zoom: float, sec: float) -> void:
 func shake_camera(strength: float, sec: float) -> void:
 	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.tween_method(_set_shake, strength, 0.0, sec)
+
+
+## Показывает над головой героя плашку с полученной вещью или умением; она всплывает и гаснет.
+## Плашка не заходит выше полосы, где интерфейс показывает задание и сообщения.
+## [param text] - готовый текст плашки.
+func announce(text: String) -> void:
+	var plate := Label.new()
+	plate.text = text
+	plate.top_level = true
+	plate.z_index = 60
+	plate.add_theme_color_override("font_color", Palette.GOAL)
+	plate.add_theme_stylebox_override("normal", Palette.frame(Palette.GOAL))
+	add_child(plate)
+	plate.reset_size()
+	var start := global_position + Vector2(-plate.size.x * 0.5, ANNOUNCE_Y)
+	var view := get_viewport().get_canvas_transform()
+	var on_screen := view * start
+	on_screen.y = maxf(on_screen.y, ANNOUNCE_SCREEN_TOP + ANNOUNCE_RISE)
+	start = view.affine_inverse() * on_screen
+	plate.global_position = start
+	plate.scale = Vector2(0.6, 0.6)
+	plate.pivot_offset = plate.size * 0.5
+	var tween := create_tween().set_parallel(true)
+	tween.tween_property(plate, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(plate, "global_position:y", start.y - ANNOUNCE_RISE, ANNOUNCE_SEC)
+	tween.chain().tween_property(plate, "modulate:a", 0.0, ANNOUNCE_FADE_SEC)
+	tween.chain().tween_callback(plate.queue_free)
 
 
 ## Ограничивает камеру границами комнаты.

@@ -203,9 +203,6 @@ msgstr "Посмотреть на экран"
 msgid "PROMPT_LOOK_MONITOR"
 msgstr "Заглянуть в монитор"
 
-msgid "PROMPT_TAKE_DEBUGGER"
-msgstr "Взять отладчик"
-
 msgid "PROMPT_READ"
 msgstr "Прочитать"
 
@@ -216,7 +213,7 @@ msgid "LOCK_NOT_BUILT"
 msgstr "Эта локация ещё не собрана"
 
 msgid "LOCK_NEED_TOTEM"
-msgstr "Дверь заражена. Сначала разбейте тотем ERROR"
+msgstr "Дверь заражена. Сначала выбейте отладчиком надпись ERROR"
 
 msgid "LOCK_EXIT_404"
 msgstr "Дверь не найдена: 404"
@@ -233,9 +230,6 @@ msgstr "ЛАБА: «Найдёнов не найден»"
 msgid "TOAST_CAPI"
 msgstr "Из монитора вылезла Капи. Теперь она ходит следом"
 
-msgid "TOAST_DEBUGGER"
-msgstr "Получен отладчик: держите Q и стреляйте ЛКМ"
-
 msgid "TOAST_CAPY"
 msgstr "Найдена капибара: {capy} из 5"
 
@@ -246,13 +240,10 @@ msgid "TASK_GO_FLOOR_2"
 msgstr "Подняться на 2 этаж · лифт"
 
 msgid "TASK_GO_KAFEDRA"
-msgstr "Зайти на кафедру Н2"
-
-msgid "TASK_GET_DEBUGGER"
-msgstr "Взять отладчик · шкаф на кафедре"
+msgstr "Зайти на кафедру Н2 · дверь 201"
 
 msgid "TASK_BREAK_TOTEM"
-msgstr "Разбить тотем ERROR в коридоре"
+msgstr "Выбить отладчиком надпись ERROR · держите Q, стреляйте ЛКМ"
 
 msgid "TASK_TALK_VALSHTEIN"
 msgstr "Поговорить с Вальштейном · кабинет 214"
@@ -282,7 +273,7 @@ msgid "ELEVATOR_HINT"
 msgstr "Пропавшая кнопка вернётся после победы над боссом этажом ниже"
 
 msgid "ELEVATOR_BACK"
-msgstr "Выйти из лифта"
+msgstr "Назад"
 
 msgid "ELEVATOR_HERE"
 msgstr "вы здесь"
@@ -428,15 +419,6 @@ msgstr "Нет ответа."
 msgid "TALK_CORRIDOR_2_5"
 msgstr "Ну хоть кто-нибудь мне объяснит, что тут происходит?.."
 
-msgid "TALK_CORRIDOR_2_6"
-msgstr "Это всё научный проект кафедры. Похоже, эксперимент вышел из-под контроля. Он во всём виноват..."
-
-msgid "TALK_CORRIDOR_2_7"
-msgstr "Пойдём с нами, нам нужны рабочие руки."
-
-msgid "TALK_NAURUSOVA"
-msgstr "Возьми с собой отладчик. Он поможет разобраться с заражёнными объектами."
-
 msgid "END_EXPELLED"
 msgstr "Отчислен"
 
@@ -520,3 +502,87 @@ msgstr "5 ЭТАЖ"
 
 msgid "FLOOR_6"
 msgstr "КРЫША"
+
+msgid "TASK_FIND_HELP"
+msgstr "Найти, кто объяснит, что случилось · коридор"
+
+msgid "TASK_DEBUG_CODE"
+msgstr "Отладить код у заражённой двери · держите Q"
+
+msgid "TALK_NAURUSOVA_DOOR_1"
+msgstr "Это всё научный проект кафедры. Похоже, эксперимент вышел из-под контроля. Он во всём виноват..."
+
+msgid "TALK_NAURUSOVA_DOOR_2"
+msgstr "Только ты можешь помочь. Заходи на кафедру."
+
+msgid "TALK_NAURUSOVA_DOOR_3"
+msgstr "Демьян снимает блокировку с двери 201."
+
+msgid "TALK_NAURUSOVA_1"
+msgstr "Пойдём с нами, нам нужны рабочие руки."
+
+msgid "TALK_NAURUSOVA_2"
+msgstr "Возьми с собой отладчик. Он поможет разобраться с заражёнными объектами."
+
+msgid "TALK_VALSHTEIN_1"
+msgstr "Если на Python вы захотите выстрелить себе в ногу, он скажет вам «нельзя». Если на C++ спросит, какие вам патроны."
+
+msgid "TALK_VALSHTEIN_2"
+msgstr "Что с вами случилось?"
+
+msgid "TALK_VALSHTEIN_3"
+msgstr "А что-то не так? Я просто тут сражаюсь с компилятором."
+
+msgid "TALK_LESTENKO_1"
+msgstr "Здравствуйте! У меня накопилось несколько животрепещущих вопросов. Не могли бы вы ответить на пару из них?.."
+
+msgid "TALK_LESTENKO_2"
+msgstr "Задавайте вопросы…"
+
+msgid "TALK_LESTENKO_3"
+msgstr "Двери лифта открываются. Лестенко молча оставляет подарок - планку RAM, которая увеличивает память."
+
+msgid "NAME_VALSHTEIN"
+msgstr "Вальштейн"
+
+msgid "NAME_LESTENKO"
+msgstr "Лестенко"
+
+msgid "ANNOUNCE_DEBUGGER"
+msgstr "Получен отладчик"
+
+msgid "ANNOUNCE_BUTTON_3"
+msgstr "Вернулась кнопка 3 этажа"
+
+msgid "ANNOUNCE_BUTTON_4"
+msgstr "Вернулась кнопка 4 этажа"
+
+msgid "ANNOUNCE_BUTTON_5"
+msgstr "Вернулась кнопка 5 этажа"
+
+msgid "ANNOUNCE_RAM"
+msgstr "Получена планка RAM"
+
+msgid "PROMPT_LIFT_BUTTONS"
+msgstr "Нажать кнопку"
+
+msgid "PROMPT_LIFT_EXIT"
+msgstr "Выйти из лифта"
+
+msgid "LOC_LIFT"
+msgstr "Лифт"
+
+msgid "LOCK_KAFEDRA"
+msgstr "Дверь кафедры заблокирована"
+
+msgid "LOCK_NEED_BLOB"
+msgstr "Дверь держит сгусток ошибки. Выстрелите в него три раза"
+
+msgid "LOCK_ROOF"
+msgstr "Выход на крышу откроется после серверной"
+
+msgid "LABA_MESSAGE_1"
+msgstr "Я только учусь"
+
+msgid "TOAST_MESSAGE"
+msgstr "Послание ЛАБЫ: {messages} из 3"

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dieuncxbt6mn3"
-path="res://.godot/imported/leap.png-23047ff4f8c78d4b8d7f2b7bf9979e47.ctex"
+uid="uid://l4duv537suhu"
+path="res://.godot/imported/window.png-1ea31f670b2bd14b7b79d9d26e608002.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/characters/cat/leap.png"
-dest_files=["res://.godot/imported/leap.png-23047ff4f8c78d4b8d7f2b7bf9979e47.ctex"]
+source_file="res://assets/characters/cat/window.png"
+dest_files=["res://.godot/imported/window.png-1ea31f670b2bd14b7b79d9d26e608002.ctex"]
 
 [params]
 

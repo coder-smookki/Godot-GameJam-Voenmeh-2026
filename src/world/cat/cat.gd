@@ -1,105 +1,166 @@
 class_name Cat
 extends Node2D
-## Кот: сидит на месте, а когда герой подходит, мяукает, спрыгивает и скачет к выходу.
+## Кот на окне третьего этажа: замечает героя, спрыгивает и ведёт его к кабинету 316.
 ##
-## Весь побег собран в одну цепочку движений, поэтому он останавливается вместе с миром
-## на паузе. Убежавший кот ставит отметку мира и больше в комнате не появляется.
+## Порядок кадров показала художница: сидит на окне, готовится, прыгает, садится на пол,
+## дальше бежит по кругу кадров. Если герой отстал, кот садится и ждёт, пока тот подойдёт.
+## У двери кот садится, исчезает за ней и ставит отметку: больше он в коридоре не появится.
 
 signal ran_away
 
-const NOTICE_SEC := 0.45
-const HOP_LENGTH := 56.0
-const HOP_HEIGHT := 18.0
-const HOP_SEC := 0.28
-const DROP_SEC_PER_PX := 0.0016
-const LAND_SEC := 0.09
-const GATHER_SEC := 0.06
-const FADE_SEC := 0.2
+enum Phase { WINDOW, READY, JUMP, LANDED, RUN, WAIT, DOOR }
+
+const READY_SEC := 0.5
+const JUMP_SEC := 0.5
+const JUMP_HEIGHT := 26.0
+const LANDED_SEC := 0.3
+const RUN_SPEED := 175.0
+const LEAD_GAP := 300.0
+const RESUME_GAP := 170.0
+const DOOR_SEC := 0.5
+const FADE_SEC := 0.3
 
 @export var gone_mark: String = ""
-@export var floor_y: float = 264.0
+@export var floor_y: float = 255.0
 @export var exit_x: float = 0.0
 
-var _running: bool = false
+var _phase: Phase = Phase.WINDOW
+var _clock: float = 0.0
+var _from: Vector2 = Vector2.ZERO
 
 @onready var _body: CatSprite = $Body
 @onready var _notice: Area2D = $Notice
 @onready var _meow: Node2D = $Meow
 
 
-## Убирает кота, если он уже убегал, иначе ждёт героя.
+## Убирает кота, если он уже ушёл, иначе сажает его на окно и ждёт героя.
 func _ready() -> void:
 	if not gone_mark.is_empty() and World.is_marked(gone_mark):
 		queue_free()
 		return
 	_meow.hide()
+	_body.pose(CatSprite.WINDOW)
 	_notice.body_entered.connect(_on_notice_body_entered)
 
 
-## Сообщает, бежит ли кот сейчас.
-## Возвращает true с момента, когда кот заметил героя.
+## Сообщает, заметил ли кот героя.
+## Возвращает true с той минуты, как кот перестал сидеть на окне.
 func is_running() -> bool:
-	return _running
+	return _phase != Phase.WINDOW
 
 
-## Запускает побег: присед с «мяу», прыжок на пол и скачки до выхода.
+## Сообщает, ждёт ли кот отставшего героя.
+## Возвращает true, пока кот сидит посреди дороги.
+func is_waiting() -> bool:
+	return _phase == Phase.WAIT
+
+
+## Начинает спуск: кот мяукает и готовится к прыжку.
 func run_away() -> void:
-	if _running:
+	if _phase != Phase.WINDOW:
 		return
-	_running = true
-	_body.face(1.0 if exit_x >= global_position.x else -1.0)
+	_body.face(_direction())
 	_meow.show()
-	_body.pose(CatSprite.CROUCH)
-	var tween := create_tween()
-	tween.tween_interval(NOTICE_SEC)
-	tween.tween_callback(_meow.hide)
-	var from := global_position
-	while not is_equal_approx(from.x, exit_x) or not is_equal_approx(from.y, floor_y):
-		var to := Vector2(move_toward(from.x, exit_x, HOP_LENGTH), floor_y)
-		_add_hop(tween, from, to)
-		from = to
-	tween.tween_property(self, "modulate:a", 0.0, FADE_SEC)
-	tween.tween_callback(_leave)
+	_body.pose(CatSprite.READY)
+	_enter(Phase.READY)
 
 
-## Добавляет в цепочку один скачок: полёт по дуге, приземление и сбор перед следующим.
-## [param tween] - цепочка движений побега.
-## [param from] - точка толчка в координатах мира.
-## [param to] - точка приземления на полу.
-func _add_hop(tween: Tween, from: Vector2, to: Vector2) -> void:
-	var sec := HOP_SEC + absf(to.y - from.y) * DROP_SEC_PER_PX
-	tween.tween_callback(_body.pose.bind(CatSprite.LEAP))
-	tween.tween_method(_fly.bind(from, to), 0.0, 1.0, sec)
-	tween.tween_callback(_touch_down)
-	tween.tween_interval(LAND_SEC)
-	tween.tween_callback(_body.pose.bind(CatSprite.CROUCH))
-	tween.tween_interval(GATHER_SEC)
+## Ведёт кота по шагам: подготовка, прыжок, посадка, бег, ожидание героя, уход за дверь.
+## [param delta] - время кадра в секундах.
+func _process(delta: float) -> void:
+	_clock += delta
+	match _phase:
+		Phase.READY:
+			if _clock >= READY_SEC:
+				_meow.hide()
+				_from = global_position
+				_body.pose(CatSprite.JUMP)
+				_enter(Phase.JUMP)
+		Phase.JUMP:
+			_fly(minf(_clock / JUMP_SEC, 1.0))
+		Phase.LANDED:
+			if _clock >= LANDED_SEC:
+				_enter(Phase.RUN)
+		Phase.RUN:
+			_run(delta)
+		Phase.WAIT:
+			_body.face(_hero_x() - global_position.x)
+			if _behind() <= RESUME_GAP:
+				_enter(Phase.RUN)
+		Phase.DOOR:
+			if _clock >= DOOR_SEC:
+				_leave()
 
 
-## Ведёт кота по дуге: сам узел идёт по полу под котом, а рисунок поднят на высоту дуги.
-## [param progress] - доля скачка от 0 до 1.
-## [param from] - точка толчка.
-## [param to] - точка приземления.
-func _fly(progress: float, from: Vector2, to: Vector2) -> void:
-	var height := lerpf(to.y - from.y, 0.0, progress * progress)
-	height += HOP_HEIGHT * 4.0 * progress * (1.0 - progress)
-	global_position = Vector2(lerpf(from.x, to.x, progress), to.y)
+## Ведёт кота с подоконника на пол по дуге и сажает его.
+## [param progress] - доля прыжка от 0 до 1.
+func _fly(progress: float) -> void:
+	var drop := floor_y - _from.y
+	var x := lerpf(_from.x, _from.x + _direction() * drop * 0.6, progress)
+	global_position = Vector2(x, floor_y)
+	var height := (
+		drop * (1.0 - progress * progress) + JUMP_HEIGHT * 4.0 * progress * (1.0 - progress)
+	)
 	_body.lift(height)
+	if progress >= 1.0:
+		_body.lift(0.0)
+		_body.pose(CatSprite.SIT)
+		Puff.spawn(get_parent(), global_position)
+		_enter(Phase.LANDED)
 
 
-## Показывает кадр приземления и выбивает пыль из-под лап.
-func _touch_down() -> void:
-	_body.pose(CatSprite.LAND)
-	_body.lift(0.0)
-	Puff.spawn(get_parent(), global_position, Puff.STEP_AMOUNT + 1)
+## Бежит к двери; садится, если герой отстал, и уходит за дверь, когда добежал.
+## [param delta] - время кадра в секундах.
+func _run(delta: float) -> void:
+	if _behind() > LEAD_GAP:
+		_body.pose(CatSprite.SIT)
+		_enter(Phase.WAIT)
+		return
+	_body.face(_direction())
+	global_position.x = move_toward(global_position.x, exit_x, RUN_SPEED * delta)
+	if _body.run(delta):
+		Puff.spawn(get_parent(), global_position, Puff.STEP_AMOUNT)
+	if is_equal_approx(global_position.x, exit_x):
+		_body.pose(CatSprite.SIT)
+		_enter(Phase.DOOR)
 
 
-## Запоминает, что кот убежал, и убирает его из комнаты.
+## Растворяет кота у двери и запоминает, что он ушёл.
 func _leave() -> void:
+	set_process(false)
 	if not gone_mark.is_empty():
 		World.mark(gone_mark)
+	var tween := create_tween()
+	tween.tween_property(self, "modulate:a", 0.0, FADE_SEC)
+	await tween.finished
 	ran_away.emit()
 	queue_free()
+
+
+## Возвращает направление к двери: 1 вправо, -1 влево.
+func _direction() -> float:
+	return 1.0 if exit_x >= global_position.x else -1.0
+
+
+## Считает, на сколько герой отстал от кота по дороге к двери.
+## Возвращает расстояние в пикселях; отрицательное, если герой впереди кота.
+func _behind() -> float:
+	return (global_position.x - _hero_x()) * _direction()
+
+
+## Возвращает положение героя по горизонтали или положение самого кота, если героя нет.
+func _hero_x() -> float:
+	var room := get_tree().current_scene as Room
+	if room == null or not is_instance_valid(room.player):
+		return global_position.x
+	return room.player.global_position.x
+
+
+## Переходит в новый шаг и обнуляет его таймер.
+## [param phase] - новый шаг.
+func _enter(phase: Phase) -> void:
+	_phase = phase
+	_clock = 0.0
 
 
 ## Замечает героя, который подошёл близко.

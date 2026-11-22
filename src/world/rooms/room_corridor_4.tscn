@@ -1,0 +1,98 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
+[ext_resource type="Texture2D" path="res://assets/rooms/corridor_4.png" id="art"]
+[ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
+[ext_resource type="PackedScene" path="res://src/world/interact/elevator_door.tscn" id="elevator"]
+[ext_resource type="PackedScene" path="res://src/world/effects/leak.tscn" id="leak"]
+[ext_resource type="Shader" path="res://src/world/virus/glitch.gdshader" id="glitch"]
+[ext_resource type="Texture2D" path="res://assets/props/infection.png" id="infection"]
+[ext_resource type="Texture2D" path="res://assets/props/error.png" id="error"]
+[ext_resource type="PackedScene" path="res://src/world/virus/blob.tscn" id="blob"]
+
+[sub_resource type="RectangleShape2D" id="floor"]
+size = Vector2(2600, 60)
+
+[sub_resource type="RectangleShape2D" id="wall"]
+size = Vector2(20, 400)
+
+[sub_resource type="ShaderMaterial" id="seal_material"]
+shader = ExtResource("glitch")
+shader_parameter/cell = 4.0
+shader_parameter/rate = 5.0
+shader_parameter/amount = 0.15
+shader_parameter/tear = 0.03
+
+[node name="Room" type="Node2D"]
+script = ExtResource("room")
+width = 2400
+
+[node name="Backdrop" type="Node2D" parent="."]
+z_index = -30
+
+[node name="Art" type="Sprite2D" parent="Backdrop"]
+texture = ExtResource("art")
+centered = false
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+
+[node name="Floor" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(1200, 284)
+shape = SubResource("floor")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-10, 135)
+shape = SubResource("wall")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(2410, 135)
+shape = SubResource("wall")
+
+[node name="Props" type="Node2D" parent="."]
+z_index = -10
+
+[node name="Seal" type="Sprite2D" parent="Props"]
+z_index = 1
+material = SubResource("seal_material")
+position = Vector2(808, 8)
+texture = ExtResource("infection")
+centered = false
+
+[node name="Label" type="Sprite2D" parent="Props"]
+z_index = 1
+material = SubResource("seal_material")
+position = Vector2(1000, 92)
+texture = ExtResource("error")
+
+[node name="Elevator" parent="Props" instance=ExtResource("elevator")]
+position = Vector2(2228, 254)
+drawn = false
+
+[node name="Room418" parent="Props" instance=ExtResource("door")]
+position = Vector2(894, 254)
+target_room = "418"
+target_spawn = "door"
+drawn = false
+open_when = "is_marked('blob_corridor_4')"
+locked_text_key = "LOCK_NEED_BLOB"
+
+[node name="Actors" type="Node2D" parent="."]
+
+[node name="Blob" parent="Actors" node_paths=PackedStringArray("seal", "label") instance=ExtResource("blob")]
+position = Vector2(1000, 254)
+blob_id = "corridor_4"
+seal = NodePath("../../Props/Seal")
+label = NodePath("../../Props/Label")
+
+[node name="Leak" parent="Actors/Blob" instance=ExtResource("leak")]
+position = Vector2(0, -70)
+amount = 12
+emission_rect_extents = Vector2(90, 60)
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="elevator" type="Marker2D" parent="Spawns"]
+position = Vector2(2228, 254)
+
+[node name="from_418" type="Marker2D" parent="Spawns"]
+position = Vector2(894, 254)

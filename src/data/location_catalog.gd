@@ -10,6 +10,7 @@ const FLOOR_ROOF := 6
 const ROOMS_DIR := "res://src/world/rooms/"
 
 const LOCATIONS: Dictionary = {
+	"lift": 0,
 	"vestibule": 1,
 	"wardrobe": 1,
 	"corridor_2": 2,
@@ -42,7 +43,8 @@ static func codes() -> Array[String]:
 
 ## Возвращает этаж локации.
 ## [param code] - код локации.
-## Возвращает номер этажа: 1-5 - этажи, 6 - крыша; -1, если кода нет.
+## Возвращает номер этажа: 1-5 - этажи, 6 - крыша, 0 - кабина лифта между этажами;
+## -1, если кода нет.
 static func floor_of(code: String) -> int:
 	return int(LOCATIONS.get(code, -1))
 

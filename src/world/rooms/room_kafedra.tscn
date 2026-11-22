@@ -110,18 +110,12 @@ prompt_key = "PROMPT_LOOK_MONITOR"
 toast_key = "TOAST_CAPI"
 hide_when_used = false
 
-[node name="Cabinet" parent="Props" instance=ExtResource("trigger")]
-position = Vector2(430, 264)
-mark_id = "ability_debugger"
-available_when = "is_marked('laba_seen')"
-prompt_key = "PROMPT_TAKE_DEBUGGER"
-toast_key = "TOAST_DEBUGGER"
-
 [node name="Actors" type="Node2D" parent="."]
 
 [node name="Naurusova" parent="Actors" instance=ExtResource("npc")]
 position = Vector2(345, 264)
 talk_id = "naurusova"
+mark_id = "ability_debugger"
 
 [node name="Spawns" type="Node2D" parent="."]
 

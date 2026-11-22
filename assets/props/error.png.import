@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dlsgakfqsfbar"
-path="res://.godot/imported/land.png-3de25e833d3fd88296ad7e8a27a65c4d.ctex"
+uid="uid://c6r4akrm6txv5"
+path="res://.godot/imported/error.png-82f8db1913fd2b249603e6d3b8b1da6f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/characters/cat/land.png"
-dest_files=["res://.godot/imported/land.png-3de25e833d3fd88296ad7e8a27a65c4d.ctex"]
+source_file="res://assets/props/error.png"
+dest_files=["res://.godot/imported/error.png-82f8db1913fd2b249603e6d3b8b1da6f.ctex"]
 
 [params]
 

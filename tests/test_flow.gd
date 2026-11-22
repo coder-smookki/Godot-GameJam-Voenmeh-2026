@@ -159,7 +159,7 @@ func test_elevator_ride() -> void:
 	check(Ui.dialogue.visible, "герой осматривается на этаже")
 	check(not Infection.is_active(2), "до конца разговора этаж не заражается")
 	finish_talk()
-	equal(Game.task_key, "TASK_GO_KAFEDRA", "после разговора задание ведёт на кафедру")
+	equal(Game.task_key, "TASK_FIND_HELP", "после разговора нужно найти, кто объяснит")
 	check(Infection.is_active(2), "второй этаж заражается")
 	equal(Game.spawn_id, Elevator.SPAWN, "герой вышел из лифта")
 	equal(Infection.current_floor, 2, "этаж сменился")
@@ -187,9 +187,14 @@ func test_totem_break() -> void:
 	equal(Infection.percent(2), before - 8, "заражение этажа упало на 8%")
 	check(door.is_open(), "кабинет 214 открылся")
 	equal(Game.task_key, "TASK_TALK_VALSHTEIN", "новое задание")
+	await tree.create_timer(Totem.DISSOLVE_SEC + 0.2).timeout
+	check(tree.current_scene.get_node_or_null("Backdrop/Seal") == null, "шахматка с двери ушла")
 	await Game.goto_room("kafedra", "door")
 	await Game.goto_room("corridor_2", "from_kafedra")
-	check(tree.current_scene.get_node_or_null("Actors/Totem") == null, "разбитый тотем не вернулся")
+	check(
+		tree.current_scene.get_node_or_null("Actors/Totem") == null, "разбитая надпись не вернулась"
+	)
+	check(tree.current_scene.get_node_or_null("Backdrop/Seal") == null, "дверь осталась чистой")
 
 
 ## Капи появляется в момент, когда присоединяется, и остаётся у рубильника, если так решено.
@@ -199,7 +204,6 @@ func test_capi_joins() -> void:
 	var actors := tree.current_scene.get_node("Actors")
 	var before := actors.get_child_count()
 	World.mark("laba_seen")
-	equal(Game.task_key, "TASK_GET_DEBUGGER", "после катсцены нужно взять отладчик")
 	World.mark("capi_joined")
 	equal(actors.get_child_count(), before + 1, "Капи вылезла из монитора")
 	var room := tree.current_scene as Room
@@ -210,8 +214,8 @@ func test_capi_joins() -> void:
 	equal(body.current_pose(), CatSprite.SIT, "сидящая Капи показана кадром «сидит»")
 	room.player.global_position.x += 180.0
 	await tree.create_timer(0.15).timeout
-	check(not capi.is_resting(), "герой ушёл, Капи скачет следом")
-	equal(body.current_pose(), CatSprite.LEAP, "в скачке кадр полёта")
+	check(not capi.is_resting(), "герой ушёл, Капи бежит следом")
+	check(body.current_pose() in CatSprite.RUN_CYCLE, "на бегу кадры бега")
 	await tree.create_timer(1.6).timeout
 	check(capi.is_resting(), "Капи догнала героя и села")
 	var gap := absf(room.player.global_position.x - Capi.FOLLOW_DISTANCE - capi.global_position.x)
@@ -346,23 +350,130 @@ func test_notice_board() -> void:
 	equal(World.f["capy"], 1, "второй раз та же капибара не считается")
 
 
-## В первый раз у лифта герой замечает пропавшие кнопки, потом панель открывается сразу.
+## Двери лифта ведут в кабину; в первый раз герой замечает пропавшие кнопки.
+## Панель кнопок открывается у стены кабины, двери кабины выводят на тот же этаж.
 func test_elevator_first_look() -> void:
 	await start_game()
 	var room := tree.current_scene as Room
 	var doors: ElevatorDoor = room.get_node("Props/Elevator")
 	doors.interact(room.player)
-	check(
-		not Ui.dialogue.visible and not Ui.elevator.visible, "пока Ваня не спасён, лифт не работает"
-	)
+	check(not Game.is_busy() and not Ui.dialogue.visible, "пока Ваня не спасён, лифт не работает")
 	World.mark("vanya_saved")
 	doors.interact(room.player)
-	check(Ui.dialogue.visible and not Ui.elevator.visible, "сначала реплика о кнопках")
+	await Game.room_entered
+	equal(Game.room_code, Game.LIFT_ROOM, "герой в кабине лифта")
+	equal(Game.current_floor(), 1, "кабина помнит этаж, где герой вошёл")
+	equal(Infection.current_floor, 1, "в кабине этаж на плашке прежний")
+	check(Ui.dialogue.visible, "сначала реплика о кнопках")
 	finish_talk()
-	check(Ui.elevator.visible, "после реплики открылась панель")
+	var cabin := tree.current_scene as Room
+	var art: LiftArt = cabin.get_node("Backdrop/Art")
+	equal(art.texture, LiftArt.ART[0], "горят кнопки первого и второго этажей")
+	var buttons: LiftButtons = cabin.get_node("Props/Buttons")
+	buttons.interact(cabin.player)
+	check(Ui.elevator.visible, "у стены открылась панель кнопок")
 	Ui.elevator.close()
-	doors.interact(room.player)
-	check(Ui.elevator.visible and not Ui.dialogue.visible, "во второй раз панель открывается сразу")
+	var exit: LiftExit = cabin.get_node("Props/Exit")
+	exit.interact(cabin.player)
+	await Game.room_entered
+	equal(Game.room_code, "vestibule", "герой вышел на свой этаж")
+	equal(Game.spawn_id, Elevator.SPAWN, "у дверей лифта")
+	room = tree.current_scene as Room
+	room.get_node("Props/Elevator").interact(room.player)
+	await Game.room_entered
+	check(not Ui.dialogue.visible, "во второй раз реплики нет")
+
+
+## После победы над боссом в кабине стоит Лестенко: разговор, подарок над головой героя,
+## на панели загорается третья кнопка.
+func test_lift_lestenko() -> void:
+	await start_game()
+	World.mark("vanya_saved")
+	World.mark("seen_elevator_first")
+	World.mark("boss_2")
+	await Game.goto_room("corridor_2", Elevator.SPAWN)
+	finish_talk()
+	await Game.enter_lift()
+	var cabin := tree.current_scene as Room
+	check(cabin.get_node_or_null("Actors/Lestenko") != null, "Лестенко в кабине")
+	equal(cabin.get_node("Backdrop/Art").texture, LiftArt.ART[1], "горят три кнопки")
+	check(Ui.dialogue.visible, "Лестенко заговорил")
+	finish_talk()
+	check(World.is_marked("seen_lift_lestenko"), "разговор запомнен")
+	check(_announced(cabin.player, "ANNOUNCE_RAM"), "над головой плашка с подарком")
+	await Game.leave_lift()
+	equal(Game.room_code, "corridor_2", "кабина вернула героя на второй этаж")
+	await Game.enter_lift()
+	check(tree.current_scene.get_node_or_null("Actors/Lestenko") == null, "Лестенко уехал")
+
+
+## Второй этаж по сценарию и словам художницы: паника, Наурусова у двери 201, отладчик,
+## послание ЛАБЫ сквозь шахматку.
+func test_floor_2_story() -> void:
+	await start_game()
+	World.mark("vanya_saved")
+	await Game.goto_room("corridor_2", Elevator.SPAWN)
+	finish_talk()
+	var room := tree.current_scene as Room
+	var crowd: RunnerCrowd = room.get_node("Actors/Crowd")
+	equal(crowd.size(), 8, "по коридору бегают люди")
+	var kafedra: Door = room.get_node("Props/Kafedra")
+	check(not kafedra.is_open(), "дверь кафедры заблокирована")
+	room.player.global_position.x = 600.0
+	await crowd.vanished
+	await tree.process_frame
+	check(room.get_node_or_null("Actors/Crowd") == null, "у Наурусовой паника стихла")
+	var naurusova: Npc = room.get_node("Actors/Naurusova")
+	naurusova.interact(room.player)
+	finish_talk()
+	check(kafedra.is_open(), "Наурусова открыла кафедру")
+	equal(Game.task_key, "TASK_GO_KAFEDRA", "задание ведёт на кафедру")
+	await Game.goto_room("kafedra", "door")
+	var inside := tree.current_scene as Room
+	inside.get_node("Actors/Naurusova").interact(inside.player)
+	finish_talk()
+	check(World.is_marked("ability_debugger"), "Наурусова дала отладчик")
+	check(_announced(inside.player, "ANNOUNCE_DEBUGGER"), "над головой плашка «Получен отладчик»")
+	equal(Game.task_key, "TASK_DEBUG_CODE", "задание: отладить код")
+	await Game.goto_room("corridor_2", "from_kafedra")
+	room = tree.current_scene as Room
+	check(room.get_node_or_null("Actors/Naurusova") == null, "Наурусова ушла на кафедру")
+	check(room.get_node_or_null("Actors/Crowd") == null, "паника не вернулась")
+	var message: HiddenMessage = room.get_node("Actors/Message")
+	room.player.global_position.x = message.global_position.x + 100.0
+	Input.action_press("debugger")
+	for frame: int in 4:
+		await tree.physics_frame
+	check(message.is_shown(), "сквозь шахматку видно послание")
+	Input.action_release("debugger")
+	for frame: int in 2:
+		await tree.physics_frame
+	equal(World.f["messages"], 1, "послание засчитано")
+	equal(Game.task_key, "TASK_BREAK_TOTEM", "задание: выбить ERROR")
+	check(not message.is_shown(), "без отладчика послания не видно")
+
+
+## Сгусток ошибки на четвёртом этаже: три попадания, после первого он показан раненым.
+func test_blob() -> void:
+	await start_game()
+	await Game.goto_room("corridor_4", Elevator.SPAWN)
+	var room := tree.current_scene as Room
+	var blob: Blob = room.get_node("Actors/Blob")
+	var door: Door = room.get_node("Props/Room418")
+	check(not door.is_open(), "сгусток держит дверь 418")
+	blob.hit()
+	equal(blob.get_node("Sprite").texture, Blob.HURT, "после попадания кадр с уроном")
+	blob.hit()
+	check(not World.is_marked(blob.mark_name()), "после двух попаданий сгусток жив")
+	blob.hit()
+	check(World.is_marked(blob.mark_name()), "третье попадание его лопнуло")
+	check(door.is_open(), "дверь 418 открыта")
+	await Game.goto_room("corridor_2", Elevator.SPAWN)
+	finish_talk()
+	await Game.goto_room("corridor_4", Elevator.SPAWN)
+	room = tree.current_scene as Room
+	check(room.get_node_or_null("Actors/Blob") == null, "лопнувший сгусток не вернулся")
+	check(room.get_node_or_null("Props/Seal") == null, "шахматка с двери ушла")
 
 
 ## Кот на третьем этаже замечает героя, убегает к кабинету 316 и больше не появляется.
@@ -386,6 +497,16 @@ func test_cat_runs_away() -> void:
 	await Game.goto_room("vestibule", "elevator")
 	await Game.goto_room("corridor_3", Elevator.SPAWN)
 	check(tree.current_scene.get_node_or_null("Actors/Cat") == null, "убежавший кот не вернулся")
+
+
+## Проверяет, висит ли над героем плашка с этим текстом.
+## [param player] - герой.
+## [param text_key] - ключ текста плашки.
+func _announced(player: Player, text_key: String) -> bool:
+	for child: Node in player.get_children():
+		if child is Label and child.text == tr(text_key):
+			return true
+	return false
 
 
 ## Считает облачка пыли, которые сейчас висят в комнате.

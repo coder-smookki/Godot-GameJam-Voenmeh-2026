@@ -22,7 +22,7 @@ func test_forks_match_schema() -> void:
 
 ## В каталогах 12 локаций и 5 концовок, как в раскадровке.
 func test_catalog_sizes() -> void:
-	equal(LocationCatalog.codes().size(), 12, "локации")
+	equal(LocationCatalog.codes().size(), 13, "локации вместе с кабиной лифта")
 	equal(EndingCatalog.total(), 5, "концовки")
 	for index: int in EndingCatalog.ids().size():
 		equal(EndingCatalog.number(EndingCatalog.ids()[index]), index + 1, "номера по порядку")
@@ -40,7 +40,9 @@ func test_every_key_has_text() -> void:
 	for key: String in Settings.DEFAULTS:
 		keys.append("SETTINGS_%s" % key.to_upper())
 	for key: String in Story.STEPS:
-		keys.append(Story.STEPS[key]["task"])
+		for field: String in ["task", "announce"]:
+			if Story.STEPS[key].has(field):
+				keys.append(Story.STEPS[key][field])
 	keys.append(Story.START_TASK)
 	for key: String in keys:
 		check(TranslationServer.translate(key) != key, "нет текста для ключа %s" % key)
@@ -49,8 +51,11 @@ func test_every_key_has_text() -> void:
 
 ## В разговорах говорят известные персонажи, а из каждого выбора есть ровно один сюжетный выход.
 func test_dialogues_are_consistent() -> void:
-	for arrival: String in Story.ARRIVALS.values():
-		check(DialogueCatalog.has(arrival), "разговор %s есть в каталоге" % arrival)
+	for arrivals: Array in Story.ARRIVALS.values():
+		for arrival: String in arrivals:
+			check(DialogueCatalog.has(arrival), "разговор %s есть в каталоге" % arrival)
+	for talk_id: String in Story.ARRIVAL_CONDITIONS:
+		check(DialogueCatalog.has(talk_id), "условие для разговора %s" % talk_id)
 	for id: String in DialogueCatalog.ids():
 		check(not DialogueCatalog.talk(id).is_empty(), "%s: есть реплики" % id)
 		for line: Dictionary in DialogueCatalog.all_lines(id):
@@ -88,7 +93,10 @@ func test_built_rooms() -> void:
 	check(LocationCatalog.is_built(Game.START_ROOM), "стартовая комната")
 	check(LocationCatalog.is_built(DevMenu.ROOF), "крыша")
 	check(LocationCatalog.is_built(Elevator.room(2)), "коридор второго этажа")
-	check(LocationCatalog.is_built(Elevator.room(3)), "коридор третьего этажа")
+	for level: int in [3, 4, 5]:
+		check(LocationCatalog.is_built(Elevator.room(level)), "коридор этажа %d" % level)
+	check(LocationCatalog.is_built(Game.LIFT_ROOM), "кабина лифта")
+	check(LocationCatalog.is_built("214"), "кабинет 214")
 	check(not LocationCatalog.is_built("server"), "серверная ещё не собрана")
 	check(not LocationCatalog.is_built("9-99"), "чужой код")
 	equal(LocationCatalog.floor_of("wardrobe"), 1, "гардероб на первом этаже")

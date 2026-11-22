@@ -15,12 +15,14 @@ const START_SPAWN := "start"
 const MAIN_MENU_SCENE := "res://src/ui/main_menu/main_menu.tscn"
 const ENDING_SCENE := "res://src/ui/ending/ending_screen.tscn"
 const SLOW_SCALE := 0.5
+const LIFT_ROOM := "lift"
 
 var room_code: String = ""
 var spawn_id: String = ""
 var task_key: String = ""
 var pending_ending: String = ""
 var in_room: bool = false
+var lift_floor: int = 1
 
 var _busy: bool = false
 var _slow: bool = false
@@ -52,6 +54,7 @@ func continue_game() -> bool:
 	var code: String = str(session.get("room", START_ROOM))
 	var spawn: String = str(session.get("spawn", START_SPAWN))
 	task_key = str(session.get("task", ""))
+	lift_floor = int(session.get("lift_from", 1))
 	if not LocationCatalog.is_built(code):
 		code = START_ROOM
 		spawn = START_SPAWN
@@ -76,6 +79,27 @@ func goto_room(code: String, spawn: String = START_SPAWN) -> void:
 	_busy = false
 	room_entered.emit(code)
 	task_changed.emit(task_key)
+
+
+## Заводит героя в кабину лифта и запоминает этаж, с которого он вошёл.
+func enter_lift() -> void:
+	if _busy:
+		return
+	lift_floor = LocationCatalog.floor_of(room_code)
+	await goto_room(LIFT_ROOM, START_SPAWN)
+
+
+## Выводит героя из кабины на тот этаж, с которого он вошёл.
+func leave_lift() -> void:
+	await goto_room(Elevator.room(lift_floor), Elevator.SPAWN)
+
+
+## Сообщает, на каком этаже сейчас герой; в кабине лифта это этаж, где он в неё вошёл.
+## Возвращает номер этажа.
+func current_floor() -> int:
+	if room_code == LIFT_ROOM:
+		return lift_floor
+	return LocationCatalog.floor_of(room_code)
 
 
 ## Ставит текущее задание, которое показывает интерфейс.
@@ -143,7 +167,7 @@ func _switch_scene(path: String, code: String, spawn: String) -> void:
 	await Ui.fade_out()
 	room_code = code
 	spawn_id = spawn
-	if LocationCatalog.has(code):
+	if LocationCatalog.floor_of(code) > 0:
 		Infection.current_floor = LocationCatalog.floor_of(code)
 	if get_tree().change_scene_to_file(path) != OK:
 		push_error("Game: не удалось открыть сцену %s" % path)
@@ -153,4 +177,6 @@ func _switch_scene(path: String, code: String, spawn: String) -> void:
 
 ## Записывает место героя и задание в данные сохранения.
 func _store_session() -> void:
-	SaveSystem.session = {"room": room_code, "spawn": spawn_id, "task": task_key}
+	SaveSystem.session = {
+		"room": room_code, "spawn": spawn_id, "task": task_key, "lift_from": lift_floor
+	}

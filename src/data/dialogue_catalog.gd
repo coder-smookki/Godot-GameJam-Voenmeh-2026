@@ -58,10 +58,30 @@ const TALKS: Dictionary = {
 		{"speaker": "demyan", "text": "TALK_CORRIDOR_2_3"},
 		{"speaker": "", "text": "TALK_CORRIDOR_2_4"},
 		{"speaker": "demyan", "text": "TALK_CORRIDOR_2_5"},
-		{"speaker": "naurusova", "text": "TALK_CORRIDOR_2_6"},
-		{"speaker": "naurusova", "text": "TALK_CORRIDOR_2_7"},
 	],
-	"naurusova": [{"speaker": "naurusova", "text": "TALK_NAURUSOVA"}],
+	"naurusova_door":
+	[
+		{"speaker": "naurusova", "text": "TALK_NAURUSOVA_DOOR_1"},
+		{"speaker": "naurusova", "text": "TALK_NAURUSOVA_DOOR_2"},
+		{"speaker": "", "text": "TALK_NAURUSOVA_DOOR_3"},
+	],
+	"naurusova":
+	[
+		{"speaker": "naurusova", "text": "TALK_NAURUSOVA_1"},
+		{"speaker": "naurusova", "text": "TALK_NAURUSOVA_2"},
+	],
+	"valshtein":
+	[
+		{"speaker": "valshtein", "text": "TALK_VALSHTEIN_1"},
+		{"speaker": "demyan", "text": "TALK_VALSHTEIN_2"},
+		{"speaker": "valshtein", "text": "TALK_VALSHTEIN_3"},
+	],
+	"lift_lestenko":
+	[
+		{"speaker": "demyan", "text": "TALK_LESTENKO_1"},
+		{"speaker": "lestenko", "text": "TALK_LESTENKO_2"},
+		{"speaker": "", "text": "TALK_LESTENKO_3"},
+	],
 }
 
 
