@@ -1,9 +1,9 @@
 name: Установка Godot
-description: Ставит редактор Godot версии из файла .godot-version и при необходимости шаблоны экспорта Windows
+description: Ставит редактор Godot версии из файла .godot-version и при необходимости шаблоны экспорта Windows и macOS
 
 inputs:
   templates:
-    description: Установить шаблоны экспорта Windows
+    description: Установить шаблоны экспорта Windows и macOS
     required: false
     default: "false"
 
@@ -53,9 +53,9 @@ runs:
       uses: actions/cache@v6
       with:
         path: ${{ steps.version.outputs.templates_dir }}
-        key: godot-templates-windows-${{ steps.version.outputs.version }}
+        key: godot-templates-windows-macos-${{ steps.version.outputs.version }}
 
-    - name: Скачать шаблоны экспорта Windows
+    - name: Скачать шаблоны экспорта Windows и macOS
       if: inputs.templates == 'true' && steps.templates-cache.outputs.cache-hit != 'true'
       shell: bash
       env:
@@ -69,6 +69,6 @@ runs:
         curl -fsSL --retry 3 -o "$archive" "$BASE_URL/$archive"
         grep " $archive\$" SHA512-SUMS.txt | sha512sum -c -
         mkdir -p "$TEMPLATES_DIR"
-        unzip -q -j "$archive" "templates/windows_*_x86_64.exe" "templates/version.txt" -d "$TEMPLATES_DIR"
+        unzip -q -j "$archive" "templates/windows_*_x86_64.exe" "templates/macos.zip" "templates/version.txt" -d "$TEMPLATES_DIR"
         ls -la "$TEMPLATES_DIR"
         rm -f "$archive"

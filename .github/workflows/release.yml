@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   release:
-    name: Релиз из pull request
+    name: Релиз из pull request (Windows и macOS)
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     env:
@@ -54,17 +54,29 @@ jobs:
           fi
           ls -la build
 
-      - name: Контрольная сумма
+      - name: Экспорт macOS
+        run: |
+          godot --headless --path . --export-release "macOS" build/Eksperiment404-macos.zip 2>&1 | tee export-macos.log
+          if [ ! -s build/Eksperiment404-macos.zip ] || [ "$(stat -c%s build/Eksperiment404-macos.zip)" -lt 10000000 ]; then
+            echo "::error::Архив Eksperiment404-macos.zip не собран"
+            exit 1
+          fi
+
+      - name: Контрольные суммы
         working-directory: build
-        run: sha256sum Eksperiment404.exe > Eksperiment404.exe.sha256
+        run: |
+          sha256sum Eksperiment404.exe > Eksperiment404.exe.sha256
+          sha256sum Eksperiment404-macos.zip > Eksperiment404-macos.zip.sha256
 
       - name: Опубликовать релиз
         run: |
           printf '%s\n' "$PR_BODY" > notes.md
           if [ -z "$(tr -d '[:space:]' < notes.md)" ]; then
             gh release create "$BUILD_VERSION" build/Eksperiment404.exe build/Eksperiment404.exe.sha256 \
+              build/Eksperiment404-macos.zip build/Eksperiment404-macos.zip.sha256 \
               --target "$MERGE_SHA" --title "$PR_TITLE" --generate-notes
           else
             gh release create "$BUILD_VERSION" build/Eksperiment404.exe build/Eksperiment404.exe.sha256 \
+              build/Eksperiment404-macos.zip build/Eksperiment404-macos.zip.sha256 \
               --target "$MERGE_SHA" --title "$PR_TITLE" --notes-file notes.md
           fi
