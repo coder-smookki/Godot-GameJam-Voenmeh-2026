@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Эксперимент №404: Заражение"
+config/name="MAKE A ERROR, and you’re an error"
 config/description="2D-приключение с видом сбоку: вирус 404 в корпусе, боссы на этажах, 3 развилки и 5 концовок."
 config/version="0.1.0"
 run/main_scene="res://src/ui/main_menu/main_menu.tscn"
@@ -119,6 +119,7 @@ locale/fallback="ru"
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
+textures/vram_compression/import_etc2_astc=true
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.047058824, 0.07058824, 0.1254902, 1)

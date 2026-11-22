@@ -63,7 +63,7 @@ jobs:
         run: godot --headless --path . res://tests/test_runner.tscn
 
   build:
-    name: Сборка .exe
+    name: Сборка .exe и macOS
     runs-on: ubuntu-latest
     needs: test
     env:
@@ -98,9 +98,52 @@ jobs:
           fi
           ls -la build
 
+      - name: Экспорт macOS
+        run: |
+          godot --headless --path . --export-release "macOS" build/Eksperiment404-macos.zip 2>&1 | tee export-macos.log
+          if [ ! -s build/Eksperiment404-macos.zip ] || [ "$(stat -c%s build/Eksperiment404-macos.zip)" -lt 10000000 ]; then
+            echo "::error::Архив Eksperiment404-macos.zip не собран"
+            exit 1
+          fi
+          unzip -l build/Eksperiment404-macos.zip | head -20
+
       - uses: actions/upload-artifact@v7
         with:
           name: Eksperiment404-windows-${{ env.BUILD_VERSION }}
           path: build/Eksperiment404.exe
           if-no-files-found: error
           retention-days: 14
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Eksperiment404-macos-${{ env.BUILD_VERSION }}
+          path: build/Eksperiment404-macos.zip
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+  macos:
+    name: Запуск на macOS
+    runs-on: macos-latest
+    needs: build
+    steps:
+      - name: Короткая версия сборки
+        run: echo "BUILD_VERSION=dev-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: Eksperiment404-macos-${{ env.BUILD_VERSION }}
+
+      - name: Запуск без окна
+        run: |
+          unzip -q Eksperiment404-macos.zip -d game
+          app="$(find game -maxdepth 2 -name '*.app' | head -1)"
+          binary="$(find "$app/Contents/MacOS" -type f -perm -u+x | head -1)"
+          echo "приложение: $app"
+          codesign -dv "$app" 2>&1 || true
+          "$binary" --headless --quit-after 600 --log-file "$PWD/macos.log"
+          cat macos.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load" macos.log; then
+            echo "::error::В журнале есть ошибки скриптов"
+            exit 1
+          fi

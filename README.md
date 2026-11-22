@@ -1,8 +1,11 @@
-<h1 align="center">Эксперимент №404: Заражение</h1>
+<h1 align="center">MAKE A ERROR, and you’re an error</h1>
+
+<p align="center"><i>Ошибёшься - и ты ошибка</i></p>
 
 <p align="center">
   <a href="https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/releases/latest"><img alt="Последний релиз" src="https://img.shields.io/github/v/release/coder-smookki/Godot-GameJam-Voenmeh-2026?style=for-the-badge&label=%D1%80%D0%B5%D0%BB%D0%B8%D0%B7&color=FF1FB4"></a>
   <a href="https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/releases/latest/download/Eksperiment404.exe"><img alt="Скачать .exe" src="https://img.shields.io/badge/%D1%81%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-.exe-00C2E0?style=for-the-badge&logo=windows&logoColor=white"></a>
+  <a href="https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/releases/latest/download/Eksperiment404-macos.zip"><img alt="Скачать для macOS" src="https://img.shields.io/badge/%D1%81%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-macOS-A2AAAD?style=for-the-badge&logo=apple&logoColor=white"></a>
   <img alt="3 развилки, 5 концовок" src="https://img.shields.io/badge/3%20%D1%80%D0%B0%D0%B7%D0%B2%D0%B8%D0%BB%D0%BA%D0%B8-5%20%D0%BA%D0%BE%D0%BD%D1%86%D0%BE%D0%B2%D0%BE%D0%BA-0C1220?style=for-the-badge">
   <br>
   <img alt="Godot" src="https://img.shields.io/badge/Godot-4.7.2-478CBF?style=flat-square&logo=godotengine&logoColor=white">
@@ -33,8 +36,8 @@
 
 | Что | Где |
 |---|---|
-| Игра для Windows | [Последний релиз](https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/releases/latest): `Eksperiment404.exe` и его SHA-256 |
-| Сборка каждого коммита | Артефакт `Eksperiment404-windows-dev-<коммит>` в запуске [Проверки и сборка](https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/actions/workflows/ci.yml), хранится 14 дней |
+| Игра для Windows и macOS | [Последний релиз](https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/releases/latest): `Eksperiment404.exe`, `Eksperiment404-macos.zip` и их SHA-256 |
+| Сборка каждого коммита | Артефакты `Eksperiment404-windows-dev-<коммит>` и `Eksperiment404-macos-dev-<коммит>` в запуске [Проверки и сборка](https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/actions/workflows/ci.yml), хранится 14 дней |
 | Логика игры | [src/core/](src/core): мир, журнал, заражение, сохранения, настройки, ход игры, сюжет, лифт |
 | Данные | [src/data/](src/data): каталоги развилок, концовок и 12 локаций |
 | Интерфейс | [src/ui/](src/ui): главное меню, настройки, задания, тосты, диалог, лифт, мини-игра, телефон |
@@ -59,6 +62,11 @@
 1. Скачайте `Eksperiment404.exe` из [последнего релиза](https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/releases/latest)
 2. Запустите файл. Установка не нужна, игра лежит в одном файле
 3. Windows может показать предупреждение SmartScreen, потому что файл не подписан: «Подробнее», затем «Выполнить в любом случае»
+
+На macOS (Apple Silicon и Intel, одна сборка на оба процессора):
+
+1. Скачайте `Eksperiment404-macos.zip` из [последнего релиза](https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/releases/latest) и распакуйте
+2. Приложение подписано только локальной подписью, у команды нет сертификата Apple, поэтому при первом запуске macOS его заблокирует. Откройте «Системные настройки» → «Конфиденциальность и безопасность» и нажмите «Всё равно открыть». Или снимите карантин в Терминале: `xattr -dr com.apple.quarantine "MAKE A ERROR, and you’re an error.app"`
 
 | Клавиша | Действие |
 |---|---|
@@ -255,7 +263,7 @@ python tools/prepare_scene.py assets/minigames/pull 270 "background=спасен
 - Катсцен нет: начало игры, паника преподавателей на втором этаже и эпилог пока идут текстом или отсутствуют
 - Отладчик умеет стрелять и чинить код надписи ERROR в мини-игре. Правки значений объектов нет
 - Звуков и музыки в игре ещё нет: настройки громкости и шины готовы
-- Сборка есть только для Windows x86_64, файл не подписан
+- Сборки есть для Windows x86_64 (не подписана) и macOS (универсальная, только локальная подпись, без нотаризации Apple)
 
 ## Что дальше
 
