@@ -275,8 +275,8 @@ func _announced(player: Player, text_key: String) -> bool:
 	return false
 
 
-## Бой с Компилятором в кабинете 202: Вальштейн у капибары, бой у монитора, три колонны,
-## три бомбы Вальштейна, капибара, победа и кнопка третьего этажа.
+## Бой с Компилятором в кабинете 202: Вальштейн у капибары, бой у монитора, прыжки через
+## ошибки, три бомбы Вальштейна, капибара, победа и кнопка третьего этажа.
 func test_compiler_fight() -> void:
 	await start_game()
 	World.mark("totem_corridor_2")
@@ -305,22 +305,12 @@ func test_compiler_fight() -> void:
 	check(fight.is_running(), "у монитора начался бой")
 	check(not room.player.controls_enabled, "на облёте камеры герой ждёт")
 	await _until(func() -> bool: return fight.phase != CompilerFight.Phase.INTRO)
-	equal(fight.phase, CompilerFight.Phase.COLUMNS, "первая фаза: колонны")
+	equal(fight.phase, CompilerFight.Phase.BOMBS, "сразу прыжки через ошибки и бомбы")
 	equal(
 		fight.director().zoom, Vector2.ONE * CompilerFight.PLAY_ZOOM, "камера отдалена на кабинет"
 	)
 	check(room.player.controls_enabled, "герой снова управляем")
-	await tree.create_timer(FixColumn.RISE_SEC + 0.1).timeout
-	var column: FixColumn = fight.columns()[0]
-	column.value = (column.target + 1) % 10
-	column.hit()
-	check(not column.is_fixed, "не то число: колонна не починена")
-	for item: FixColumn in fight.columns():
-		item.value = item.target
-		item.hit()
-	equal(fight.phase, CompilerFight.Phase.TALK, "порты открыты, говорит Вальштейн")
-	await _until(func() -> bool: return fight.phase != CompilerFight.Phase.TALK)
-	equal(fight.phase, CompilerFight.Phase.BOMBS, "вторая фаза: бомбы")
+	check(room.find_children("*", "FixColumn", true, false).is_empty(), "терминалов в бою нет")
 	for bomb: int in CompilerFight.BOMBS:
 		for dodge: int in CompilerFight.DODGES_PER_BOMB:
 			fight.on_dodged()
@@ -371,9 +361,66 @@ func test_compiler_fight_hits() -> void:
 		await tree.create_timer(CompilerFight.INVULNERABLE_SEC + 0.05).timeout
 	await tree.create_timer(0.6).timeout
 	equal(World.f["hearts"], 2, "минус сердце")
-	equal(fight.phase, CompilerFight.Phase.COLUMNS, "фаза начинается заново")
+	equal(fight.phase, CompilerFight.Phase.BOMBS, "фаза начинается заново")
 	equal(fight.integrity, CompilerFight.INTEGRITY, "целостность снова полная")
 	Engine.time_scale = 1.0
+
+
+## Через низкую и высокую ошибку можно перепрыгнуть, если прыгнуть вовремя; стоящего героя
+## ошибка задевает.
+func test_error_obstacles_are_jumpable() -> void:
+	await start_game()
+	World.mark("seen_valshtein")
+	await Game.goto_room("202", "door")
+	var room := tree.current_scene as Room
+	room.player.global_position.x = 400.0
+	for frame: int in 5:
+		await tree.physics_frame
+	check(not await _run_obstacle(room, false, 0.0), "стоящего героя ошибка задела")
+	check(await _run_obstacle(room, false, 70.0), "через низкую ошибку можно перепрыгнуть")
+	check(await _run_obstacle(room, true, 70.0), "через высокую тоже")
+	var low := ErrorLine.new()
+	low.setup_slide(0.0, true, 0.0, room.player)
+	var high := ErrorLine.new()
+	high.setup_slide(0.0, true, 0.0, room.player, true)
+	check(high.hit_size().y > low.hit_size().y, "одна ошибка ниже, другая выше")
+	low.free()
+	high.free()
+
+
+## Пускает ошибку на героя и прыгает, когда она подъехала на заданное расстояние.
+## [param room] - комната с героем.
+## [param tall] - true для высокой ошибки.
+## [param jump_at] - на каком расстоянии прыгнуть; 0 - не прыгать.
+## Возвращает true, если ошибка проехала, не задев героя.
+func _run_obstacle(room: Room, tall: bool, jump_at: float) -> bool:
+	var hero := room.player
+	var speed := 215.0 + (CompilerFight.HIGH_BONUS_SPEED if tall else 0.0)
+	var line := ErrorLine.new()
+	line.setup_slide(hero.global_position.x + 260.0, false, speed, hero, tall)
+	var hit := [false]
+	line.touched.connect(func(_line: ErrorLine) -> void: hit[0] = true)
+	room.add_child(line)
+	var jumped := false
+	var frames := 0
+	while not line.is_counted() and frames < 300:
+		await tree.physics_frame
+		frames += 1
+		if jump_at > 0.0 and not jumped and line.position.x - hero.global_position.x <= jump_at:
+			jumped = true
+			var press := InputEventAction.new()
+			press.action = "jump"
+			press.pressed = true
+			Input.parse_input_event(press)
+	var release := InputEventAction.new()
+	release.action = "jump"
+	Input.parse_input_event(release)
+	line.queue_free()
+	while not hero.is_on_floor():
+		await tree.physics_frame
+	for frame: int in 10:
+		await tree.physics_frame
+	return not hit[0]
 
 
 ## Ждёт, пока условие не станет верным, но не дольше 20 секунд.

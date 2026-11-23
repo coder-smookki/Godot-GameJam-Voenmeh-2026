@@ -4,22 +4,21 @@ extends Node2D
 ##
 ## При первом входе камера смотрит на Вальштейна, пока он говорит; на словах о компиляторе
 ## экран просыпается и камера переходит на злой монитор, после разговора возвращается к герою.
-## Бой начинается, когда герой подходит к монитору. Камера отъезжает и показывает весь кабинет,
-## потом держит героя на половинном увеличении: ареной служит весь кабинет, сверху и снизу
-## чёрные полосы, на них экран боя. Компилятор стреляет по полу строками ошибок, позже роняет
-## куски кода сверху.
-## Фаза 1: отладчиком починить три колонны, поймав на каждой нужное число. Порты открываются,
-## Вальштейн говорит «Ну всё, теперь можно атаковать».
-## Фаза 2: за каждые пять перепрыгнутых ошибок Вальштейн бросает бомбу в порт. Камера
+## Бой начинается, когда герой подходит к монитору: экран просыпается, его порты открыты,
+## Вальштейн говорит «Ну всё, теперь можно атаковать», камера показывает весь кабинет и потом
+## держит героя на половинном увеличении: ареной служит весь кабинет, сверху и снизу чёрные
+## полосы, на них экран боя. Компилятор пускает по полу ошибки - низкие и высокие столбики
+## шахматки, через них нужно только перепрыгивать.
+## Фаза 1: за каждые пять перепрыгнутых ошибок Вальштейн бросает бомбу в порт. Камера
 ## наезжает на бросок и летит за бомбой. Три бомбы снимают всё здоровье.
-## Фаза 3: «это был не конец» - за отведённое время нарисовать капибару ([DrawGame]).
+## Фаза 2: «это был не конец» - за отведённое время нарисовать капибару ([DrawGame]).
 ## После победы экран разбит, Вальштейн освобождается, герой получает умение, в лифте
 ## возвращается кнопка третьего этажа. Три попадания по герою срывают фазу и отнимают сердце;
 ## фаза начинается заново.
 
 signal finished
 
-enum Phase { WAIT, INTRO, COLUMNS, TALK, BOMBS, BOMB_SCENE, FINISH, OUTRO, DONE, FAILED }
+enum Phase { WAIT, INTRO, BOMBS, BOMB_SCENE, FINISH, OUTRO, DONE, FAILED }
 
 const BOSS_MARK := "boss_2"
 const ABILITY_MARK := "ability_2"
@@ -32,7 +31,6 @@ const VIEW_Y := 135.0
 const MONITOR := Vector2(980.0, 135.0)
 const FLOOR_Y := 254.0
 const TRIGGER := Rect2(790.0, 60.0, 20.0, 200.0)
-const COLUMN_X: Array[float] = [560.0, 1000.0, 1440.0]
 const OVERVIEW_ZOOM := 480.0 / 1700.0
 const PLAY_ZOOM := 0.5
 const SCENE_ZOOM := 1.0
@@ -49,7 +47,11 @@ const PUSH := Vector2(240.0, -200.0)
 const BOMB_TEXTURE: Texture2D = preload("res://assets/props/bomb.png")
 const BOMB_SEC := 1.1
 const BOMB_ARC := 60.0
-const PAIR_GAP_SEC := 0.55
+const PAIR_GAP_SEC := 1.0
+const HIGH_CHANCE := 0.3
+const HIGH_CHANCE_PER_BOMB := 0.15
+const HIGH_BONUS_SPEED := 25.0
+const PAIR_CHANCE := 0.35
 const ORANGE := Color("ff8a1c")
 const FIRE: Array[Color] = [Color("ffe066"), Color("ff8a1c"), Color("d81e1e"), Color("2a2a2a")]
 
@@ -67,7 +69,6 @@ var _invulnerable: float = 0.0
 var _hud: BossHud = null
 var _director: Camera2D = null
 var _screen: BossScreen = null
-var _columns: Array[FixColumn] = []
 var _errors: Node2D = null
 var _trigger: Area2D = null
 var _shake: Tween = null
@@ -75,7 +76,7 @@ var _move: Tween = null
 var _meeting: bool = false
 
 
-## Собирает камеру, экран босса, колонны и чёрные полосы; после победы оставляет разбитый
+## Собирает камеру, экран босса и чёрные полосы; после победы оставляет разбитый
 ## экран и освобождённого Вальштейна, до боя ждёт героя у монитора.
 func _ready() -> void:
 	_screen = BossScreen.new()
@@ -85,14 +86,6 @@ func _ready() -> void:
 	_build_director()
 	_build_bars()
 	_build_hud()
-	for x: float in COLUMN_X:
-		var column := FixColumn.new()
-		column.position = Vector2(x, FLOOR_Y)
-		column.z_index = -5
-		column.fixed.connect(_on_column_fixed)
-		column.missed.connect(_on_column_missed)
-		add_child(column)
-		_columns.append(column)
 	if World.is_marked(BOSS_MARK):
 		phase = Phase.DONE
 		_screen.shatter()
@@ -122,7 +115,7 @@ func _process(delta: float) -> void:
 		var error := line as ErrorLine
 		if error != null and (error.position.x < -80.0 or error.position.x > ROOM_WIDTH + 80.0):
 			error.vanish()
-	if phase == Phase.COLUMNS or phase == Phase.BOMBS:
+	if phase == Phase.BOMBS:
 		var follow := 1.0 - exp(-FOLLOW_RATE * delta)
 		_director.global_position.x = lerpf(
 			_director.global_position.x, _player.global_position.x, follow
@@ -141,11 +134,6 @@ func is_meeting() -> bool:
 ## Сообщает, идёт ли бой прямо сейчас (между началом и победой).
 func is_running() -> bool:
 	return phase != Phase.WAIT and phase != Phase.DONE
-
-
-## Возвращает колонны первой фазы; нужно тестам.
-func columns() -> Array[FixColumn]:
-	return _columns
 
 
 ## Возвращает камеру боя; нужно тестам.
@@ -179,7 +167,8 @@ func meet() -> void:
 		_freeze(false)
 
 
-## Начинает бой: камера отъезжает на весь кабинет, потом держит героя, первая фаза.
+## Начинает бой: камера на мониторе, открытые порты, реплика Вальштейна, весь кабинет,
+## потом камера держит героя, и Компилятор начинает стрелять ошибками.
 func start() -> void:
 	if phase != Phase.WAIT or _meeting:
 		return
@@ -206,45 +195,19 @@ func start() -> void:
 	_hud.banner(tr("BOSS_COMPILER_INTRO"), BossHud.BOSS_COLOR)
 	_hud.flash(Color(1.0, 0.1, 0.2, 0.35))
 	await _wait(1.3)
-	await _pan(Vector2(ROOM_WIDTH * 0.5, VIEW_Y), 1.0, OVERVIEW_ZOOM)
-	await _wait(1.2)
-	await _pan(Vector2(_player.global_position.x, VIEW_Y), 0.9, PLAY_ZOOM)
-	_start_columns()
-	_hud.banner(tr("BOSS_PHASE_COLUMNS"))
-	_freeze(false)
-
-
-## Выдвигает колонны с новыми числами и запускает первую фазу.
-func _start_columns() -> void:
-	var wanted: Array[int] = [2, 5, 7, 3, 8, 4, 6, 9]
-	wanted.shuffle()
-	for index: int in _columns.size():
-		_columns[index].rise(wanted[index])
-	_hud.hint = tr("BOSS_HINT_COLUMNS")
-	_hud.integrity = integrity
-	_spawn_left = 1.8
-	phase = Phase.COLUMNS
-
-
-## Открывает порты: Вальштейн выходит на первый план со своей фразой, начинается вторая фаза.
-func _open_ports() -> void:
-	phase = Phase.TALK
-	_freeze(true)
-	_clear_errors()
-	_hud.hint = ""
-	for column: FixColumn in _columns:
-		column.sink()
 	for index: int in _screen.ports.size():
 		_screen.ports[index] = BossScreen.Port.OPEN
 	_screen.glitch(0.6)
 	_shake_camera(3.0, 0.4)
 	_hud.banner(tr("BOSS_PORTS_OPEN"), Palette.DEBUGGER)
-	await _pan(MONITOR, 0.7, SCENE_ZOOM)
-	await _wait(0.8)
+	await _wait(1.0)
 	await _pan(_valshtein_view(), 0.8)
 	_say(tr("TALK_VALSHTEIN_ATTACK"))
 	await _wait(2.2)
-	await _pan(Vector2(_player.global_position.x, VIEW_Y), 0.8, PLAY_ZOOM)
+	await _pan(Vector2(ROOM_WIDTH * 0.5, VIEW_Y), 1.0, OVERVIEW_ZOOM)
+	await _wait(1.2)
+	await _pan(Vector2(_player.global_position.x, VIEW_Y), 0.9, PLAY_ZOOM)
+	_hud.integrity = integrity
 	_hud.hint = tr("BOSS_HINT_BOMBS")
 	_hud.charge_max = DODGES_PER_BOMB
 	_hud.charge = 0
@@ -374,7 +337,6 @@ func _outro() -> void:
 
 ## Срывает фазу после трёх попаданий: минус сердце, короткая пауза, фаза заново.
 func _fail_phase() -> void:
-	var was := phase
 	phase = Phase.FAILED
 	_freeze(true)
 	_clear_errors()
@@ -390,19 +352,16 @@ func _fail_phase() -> void:
 	_screen.say("")
 	integrity = INTEGRITY
 	_hud.integrity = integrity
-	if was == Phase.COLUMNS:
-		_start_columns()
-	else:
-		dodges = 0
-		_hud.charge = 0
-		_spawn_left = 1.2
-		phase = Phase.BOMBS
+	dodges = 0
+	_hud.charge = 0
+	_spawn_left = 1.2
+	phase = Phase.BOMBS
 	_hud.banner(tr("BOSS_RETRY"))
 	_freeze(false)
 
 
-## Засчитывает строку, через которую герой перепрыгнул; пятая подряд зовёт бомбу.
-## [param _line] - перепрыгнутая строка.
+## Засчитывает ошибку, через которую герой перепрыгнул; пятая зовёт бомбу.
+## [param _line] - перепрыгнутая ошибка.
 func on_dodged(_line: ErrorLine = null) -> void:
 	if phase != Phase.BOMBS:
 		return
@@ -413,9 +372,9 @@ func on_dodged(_line: ErrorLine = null) -> void:
 
 
 ## Отнимает у героя целостность, отбрасывает его и даёт секунду неуязвимости.
-## [param line] - строка или кусок кода, который задел героя.
+## [param line] - ошибка, которая задела героя.
 func on_touched(line: ErrorLine) -> void:
-	if _invulnerable > 0.0 or (phase != Phase.COLUMNS and phase != Phase.BOMBS):
+	if _invulnerable > 0.0 or phase != Phase.BOMBS:
 		return
 	line.vanish()
 	integrity -= 1
@@ -431,23 +390,25 @@ func on_touched(line: ErrorLine) -> void:
 		_fail_phase()
 
 
-## Стреляет строкой ошибки или роняет кусок кода; позже атаки идут парами.
+## Пускает по полу низкую или высокую ошибку; высокие с каждой бомбой чаще. После второй
+## бомбы низкие иногда идут парой, с промежутком, в который успевает уложиться второй прыжок.
 func _attack() -> void:
 	_screen.attack()
-	if phase == Phase.BOMBS and bombs_done >= 1 and randf() < 0.3:
-		_drop()
-		return
 	var from_left := _spawn_from_left()
 	var speed := _line_speed()
+	var tall := randf() < HIGH_CHANCE + HIGH_CHANCE_PER_BOMB * bombs_done
+	if tall:
+		_slide(from_left, speed + HIGH_BONUS_SPEED, true)
+		return
 	_slide(from_left, speed)
-	if phase == Phase.BOMBS and bombs_done >= 2 and randf() < 0.35:
+	if bombs_done >= 2 and randf() < PAIR_CHANCE:
 		await _wait(PAIR_GAP_SEC)
 		if phase == Phase.BOMBS:
 			_slide(from_left, speed)
 
 
-## Выбирает сторону, откуда вылетит строка: так, чтобы до героя было не меньше полэкрана.
-## Возвращает true, если строка полетит слева.
+## Выбирает сторону, откуда поедет ошибка: так, чтобы до героя было не меньше полэкрана.
+## Возвращает true, если ошибка поедет слева.
 func _spawn_from_left() -> bool:
 	var x := _player.global_position.x
 	var left_room := x - SPAWN_MIN_GAP >= 0.0
@@ -457,72 +418,43 @@ func _spawn_from_left() -> bool:
 	return left_room
 
 
-## Выпускает строку ошибки за краем экрана; она едет к герою.
-## [param from_left] - true, если строка едет слева направо.
+## Выпускает ошибку за краем экрана; она едет к герою.
+## [param from_left] - true, если ошибка едет слева направо.
 ## [param speed] - скорость в пикселях в секунду.
-func _slide(from_left: bool, speed: float) -> void:
+## [param tall] - true для высокого столбика.
+func _slide(from_left: bool, speed: float, tall: bool = false) -> void:
 	var line := ErrorLine.new()
 	var hero := _player.global_position.x
 	var x := clampf(hero - SPAWN_AHEAD, -20.0, ROOM_WIDTH + 20.0)
 	if not from_left:
 		x = clampf(hero + SPAWN_AHEAD, -20.0, ROOM_WIDTH + 20.0)
-	line.setup_slide(x, from_left, speed, _player)
+	line.setup_slide(x, from_left, speed, _player, tall)
 	_add_line(line)
 
 
-## Роняет кусок кода туда, где стоит герой.
-func _drop() -> void:
-	var line := ErrorLine.new()
-	var x := clampf(_player.global_position.x, 30.0, ROOM_WIDTH - 30.0)
-	line.setup_drop(x, _player)
-	_add_line(line)
-
-
-## Добавляет строку на арену и подписывается на её события.
-## [param line] - готовая строка.
+## Добавляет ошибку на арену и подписывается на её события.
+## [param line] - готовая ошибка.
 func _add_line(line: ErrorLine) -> void:
 	line.touched.connect(on_touched)
 	line.dodged.connect(on_dodged)
 	_errors.add_child(line)
 
 
-## Выбирает паузу до следующей атаки: во второй фазе атаки чаще, с каждой бомбой ещё чаще.
+## Выбирает паузу до следующей атаки: с каждой бомбой атаки чаще.
 func _next_interval() -> float:
-	if phase == Phase.COLUMNS:
-		return randf_range(2.0, 2.6)
-	return randf_range(1.5, 2.0) * pow(0.9, bombs_done)
+	return randf_range(1.9, 2.5) * pow(0.9, bombs_done)
 
 
-## Выбирает скорость строки: во второй фазе быстрее, с каждой бомбой ещё быстрее.
+## Выбирает скорость ошибки: с каждой бомбой быстрее.
 func _line_speed() -> float:
-	if phase == Phase.COLUMNS:
-		return randf_range(190.0, 215.0)
-	return randf_range(210.0, 250.0) + bombs_done * 15.0
+	return randf_range(200.0, 230.0) + bombs_done * 15.0
 
 
-## Убирает с арены все строки.
+## Убирает с арены все ошибки.
 func _clear_errors() -> void:
 	for line: Node in _errors.get_children():
 		if line is ErrorLine:
 			line.vanish()
-
-
-## Отвечает на починку колонны: после третьей открываются порты.
-## [param _column] - починенная колонна.
-func _on_column_fixed(_column: FixColumn) -> void:
-	_screen.hurt()
-	_shake_camera(3.0, 0.25)
-	for column: FixColumn in _columns:
-		if not column.is_fixed:
-			return
-	_open_ports()
-
-
-## Наказывает за промах по колонне: Компилятор тут же стреляет строкой.
-## [param column] - колонна, по которой промахнулись.
-func _on_column_missed(column: FixColumn) -> void:
-	if phase == Phase.COLUMNS:
-		_slide(column.global_position.x < _player.global_position.x, _line_speed())
 
 
 ## Ведёт бомбу по дуге в порт; камера летит за ней.

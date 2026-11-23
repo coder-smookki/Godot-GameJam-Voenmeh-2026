@@ -638,12 +638,6 @@ msgstr "КОМПИЛЯТОР"
 msgid "BOSS_COMPILER_INTRO"
 msgstr "ЗАРАЖЁННЫЙ КОМПИЛЯТОР"
 
-msgid "BOSS_PHASE_COLUMNS"
-msgstr "ПОЧИНИ ТРИ КОЛОННЫ"
-
-msgid "BOSS_HINT_COLUMNS"
-msgstr "Q + ЛКМ по колонне, когда число совпадёт"
-
 msgid "BOSS_PORTS_OPEN"
 msgstr "ПОРТЫ ОТКРЫТЫ"
 

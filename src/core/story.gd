@@ -5,7 +5,6 @@ extends Node
 ## а что из этого следует, описано здесь в одной таблице. Здесь же разговоры,
 ## которые начинаются сами, когда герой входит в комнату, и плашки над головой героя.
 
-const START_TASK := "TASK_FIND_SCREAM"
 const SEEN_PREFIX := "seen_"
 const ARRIVALS: Dictionary = {
 	"vestibule": ["vestibule_arrival"],
@@ -17,6 +16,7 @@ const ARRIVAL_CONDITIONS: Dictionary = {
 	"lift_lestenko": "is_marked('boss_2')",
 }
 const STEPS: Dictionary = {
+	"heard_scream": {"task": "TASK_FIND_SCREAM"},
 	"vanya_saved": {"task": "TASK_GO_FLOOR_2"},
 	"seen_corridor_2_arrival": {"task": "TASK_FIND_HELP", "infect_floor": 2, "infection": 10.0},
 	"ability_debugger": {"task": "TASK_DEBUG_CODE", "announce": "ANNOUNCE_DEBUGGER"},
@@ -30,9 +30,9 @@ const STEPS: Dictionary = {
 }
 
 
-## Подписывается на начало игры, вход в комнату и отметки мира.
+## Подписывается на вход в комнату и отметки мира.
+## Первое задание появляется не сразу, а когда герой слышит крик из гардероба.
 func _ready() -> void:
-	Game.game_started.connect(_on_game_started)
 	Game.room_entered.connect(_on_room_entered)
 	World.marked.connect(_on_world_marked)
 
@@ -58,11 +58,6 @@ func announce(text_key: String) -> void:
 	var room := get_tree().current_scene as Room
 	if room != null and is_instance_valid(room.player):
 		room.player.announce(tr(text_key))
-
-
-## Ставит первое задание в начале новой игры.
-func _on_game_started() -> void:
-	Game.set_task(START_TASK)
 
 
 ## По очереди начинает разговоры, которыми герой встречает комнату.

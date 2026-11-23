@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7rnhv2si2ksi"
-path="res://.godot/imported/jump_2.png-bd238152aa63f3f895c41e7291b3850b.ctex"
+uid="uid://dm1ayj6tw1ci6"
+path="res://.godot/imported/pull_4.png-cb4caab813652c44ae0a60792b40df44.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/characters/dima/jump_2.png"
-dest_files=["res://.godot/imported/jump_2.png-bd238152aa63f3f895c41e7291b3850b.ctex"]
+source_file="res://assets/minigames/pull/pull_4.png"
+dest_files=["res://.godot/imported/pull_4.png-cb4caab813652c44ae0a60792b40df44.ctex"]
 
 [params]
 

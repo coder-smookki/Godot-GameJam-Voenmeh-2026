@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ch0o6b730jlcm"
-path="res://.godot/imported/mass.png-e97534c86ae48530c4a9ece9dd89c359.ctex"
+uid="uid://cwkscjqhpa5h6"
+path="res://.godot/imported/obstacle_low.png-6b9b623a7a181ad7ec7402d35a0ed139.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/minigames/pull/mass.png"
-dest_files=["res://.godot/imported/mass.png-e97534c86ae48530c4a9ece9dd89c359.ctex"]
+source_file="res://assets/props/obstacle_low.png"
+dest_files=["res://.godot/imported/obstacle_low.png-6b9b623a7a181ad7ec7402d35a0ed139.ctex"]
 
 [params]
 

@@ -44,7 +44,6 @@ func test_every_key_has_text() -> void:
 		for field: String in ["task", "announce"]:
 			if Story.STEPS[key].has(field):
 				keys.append(Story.STEPS[key][field])
-	keys.append(Story.START_TASK)
 	for key: String in keys:
 		check(TranslationServer.translate(key) != key, "нет текста для ключа %s" % key)
 	equal(str(TranslationServer.translate("")), "", "пустой ключ даёт пустой текст")

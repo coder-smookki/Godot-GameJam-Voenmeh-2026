@@ -15,6 +15,11 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  # Стадия сборок из dev: alpha, пока в игре нет всех этажей и финала; потом beta.
+  # Релизы из main выходят без стадии: v0.<номер pull request>.
+  STAGE: alpha
+
 jobs:
   lint:
     name: Линтеры
@@ -66,8 +71,10 @@ jobs:
     name: Сборка .exe и macOS
     runs-on: ubuntu-latest
     needs: test
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     env:
-      BUILD_VERSION: dev-${{ github.sha }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v7
 
@@ -75,8 +82,19 @@ jobs:
         with:
           templates: "true"
 
-      - name: Короткая версия сборки
-        run: echo "BUILD_VERSION=dev-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+      - name: Версия сборки
+        id: version
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$GITHUB_REF" = "refs/heads/dev" ]; then
+            last="$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-pre-releases --limit 100 \
+              --json tagName -q '.[].tagName' | sed -n 's/^v0\.\([0-9][0-9]*\)$/\1/p' | sort -n | tail -1)"
+            version="v0.$(( ${last:-0} + 1 ))-${STAGE}.${GITHUB_RUN_NUMBER}"
+          else
+            version="dev-${GITHUB_SHA::7}"
+          fi
+          echo "версия: $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "BUILD_VERSION=$version" >> "$GITHUB_ENV"
 
       - name: Импорт ресурсов
         run: |
@@ -126,10 +144,9 @@ jobs:
     name: Запуск на macOS
     runs-on: macos-latest
     needs: build
+    env:
+      BUILD_VERSION: ${{ needs.build.outputs.version }}
     steps:
-      - name: Короткая версия сборки
-        run: echo "BUILD_VERSION=dev-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
-
       - uses: actions/download-artifact@v7
         with:
           name: Eksperiment404-macos-${{ env.BUILD_VERSION }}
@@ -147,3 +164,44 @@ jobs:
             echo "::error::В журнале есть ошибки скриптов"
             exit 1
           fi
+
+  prerelease:
+    name: Альфа-релиз из dev
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    needs: [build, macos]
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BUILD_VERSION: ${{ needs.build.outputs.version }}
+      COMMIT_TITLE: ${{ github.event.head_commit.message }}
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: Eksperiment404-windows-${{ env.BUILD_VERSION }}
+          path: build
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: Eksperiment404-macos-${{ env.BUILD_VERSION }}
+          path: build
+
+      - name: Контрольные суммы
+        working-directory: build
+        run: |
+          sha256sum Eksperiment404.exe > Eksperiment404.exe.sha256
+          sha256sum Eksperiment404-macos.zip > Eksperiment404-macos.zip.sha256
+          ls -la
+
+      - name: Опубликовать предрелиз
+        run: |
+          {
+            echo "Тестовая сборка из ветки dev (стадия ${STAGE}), может содержать ошибки."
+            echo
+            echo "Коммит ${GITHUB_SHA::7}: $(printf '%s\n' "$COMMIT_TITLE" | head -1)"
+          } > notes.md
+          gh release create "$BUILD_VERSION" build/Eksperiment404.exe build/Eksperiment404.exe.sha256 \
+            build/Eksperiment404-macos.zip build/Eksperiment404-macos.zip.sha256 \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --latest=false \
+            --title "MAKE A ERROR $BUILD_VERSION" --notes-file notes.md

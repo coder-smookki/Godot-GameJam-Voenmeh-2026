@@ -18,9 +18,9 @@ const EMPTY_LEVEL := 0.001
 const PRESS_GAIN := 0.1
 const WRONG_PENALTY := 0.05
 const HOLD_GAIN_PER_SEC := 0.55
-const DRAIN_PER_SEC := 0.2
-const DRAIN_SCALES: Array[float] = [1.0, 1.5, 2.0]
-const SWITCH_SEC: Array[float] = [0.0, 2.6, 1.8]
+const DRAIN_PER_SEC := 0.13
+const DRAIN_SCALES: Array[float] = [1.0, 1.25, 1.5]
+const SWITCH_SEC: Array[float] = [0.0, 4.0, 3.0]
 const NO_KEY := -1
 const MAX_PRESSURE := 4
 

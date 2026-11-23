@@ -2,23 +2,23 @@ class_name StuckVanya
 extends Interactable
 ## Ваня в гардеробе: сначала застрял в шахматке, после мини-игры «Тяни!» свободен.
 ##
-## Сцену спасения показывают кадры художниц: ком шахматки и герой, который тянет.
-## Игра начинается с первого кадра; каждый промах показывает следующий, на третьем шахматка
-## поглощает героя, а потом отбрасывает его назад, и он теряет сердце.
+## Сцену спасения показывают кадры художниц. До игры Ваня один упирается в ком шахматки,
+## с началом игры его тянет герой. Каждый промах показывает следующий кадр, на третьем шахматка
+## поглощает обоих, а через полсекунды отбрасывает героя назад, и он теряет сердце.
 ## Слои нарисованы на холсте всей комнаты, поэтому лежат в координатах комнаты и не двигаются
 ## вместе с этим узлом. Освобождённый Ваня вылетает из шахматки по дуге и встаёт лицом к герою.
 
 const SAVED_MARK := "vanya_saved"
 const RESCUE_TALK := "vanya_rescue"
 const AFTER_TALK := "vanya_after"
-const FREE_X := 660.0
+const FREE_X := 470.0
 const HERO_PULL_X := 500.0
-const HERO_FREE_X := 560.0
-const HERO_THROWN_FROM := 405.0
+const HERO_FREE_X := 380.0
+const HERO_THROWN_FROM := 380.0
 const THROW := Vector2(-320.0, -260.0)
 const REMNANT_SCALE := 0.55
 const SHRINK_SEC := 0.5
-const SWALLOW_SEC := 0.7
+const SWALLOW_SEC := 0.5
 const ZOOM := 1.2
 const ZOOM_SEC := 0.25
 const PULL_JOLT := 3.0
@@ -26,7 +26,7 @@ const JERK_JOLT := 9.0
 const JOLT_SEC := 0.12
 const SPARKS_SEC := 0.2
 const MISS_TINT := Color(1.6, 0.5, 0.5)
-const FLY_FROM := Vector2(86.0, -8.0)
+const FLY_FROM := Vector2(40.0, -8.0)
 const FLY_HEIGHT := 30.0
 const FLY_SEC := 0.42
 const FLY_SHADOW_SCALE := 0.5
@@ -36,7 +36,7 @@ const FRAMES: Array[Texture2D] = [
 	preload("res://assets/minigames/pull/pull_1.png"),
 	preload("res://assets/minigames/pull/pull_2.png"),
 	preload("res://assets/minigames/pull/pull_3.png"),
-	preload("res://assets/minigames/pull/mass.png"),
+	preload("res://assets/minigames/pull/pull_4.png"),
 ]
 
 var _player: Player = null
@@ -46,7 +46,7 @@ var _sparks_off: Tween = null
 @onready var _body: Sprite2D = $Body
 @onready var _shadow: Node2D = $Shadow
 @onready var _cry: SpeechBubble = $Cry
-@onready var _mass: Sprite2D = $Art/Mass
+@onready var _stuck: Sprite2D = $Art/Stuck
 @onready var _pull: Sprite2D = $Art/Pull
 @onready var _remnant: Sprite2D = $Art/Remnant
 @onready var _sparks: CPUParticles2D = $Art/Sparks
@@ -78,7 +78,7 @@ func _interact(player: Player) -> void:
 	_player = player
 	set_focused(false)
 	_cry.hide()
-	_mass.hide()
+	_stuck.hide()
 	player.hide()
 	player.global_position.x = HERO_PULL_X
 	player.zoom_camera(ZOOM, ZOOM_SEC)
@@ -146,7 +146,7 @@ func _face(player: Player) -> void:
 	_body.flip_h = player.global_position.x < global_position.x
 
 
-## Показывает, как шахматка накрыла героя, и отбрасывает его от кома назад; он теряет сердце.
+## Показывает, как шахматка накрыла обоих, и отбрасывает героя от кома назад; он теряет сердце.
 ## [param player] - герой, который проиграл мини-игру.
 func _throw_back(player: Player) -> void:
 	_show_pressure()
@@ -208,10 +208,11 @@ func _on_missed(_count: int) -> void:
 	tween.tween_property(_pull, "modulate", Color.WHITE, JOLT_SEC * 3.0)
 
 
-## Расставляет сцену: ком шахматки и преграда до спасения, Ваня и остаток шахматки после.
+## Расставляет сцену: Ваня в коме шахматки и преграда до спасения, свободный Ваня и остаток
+## шахматки после.
 ## [param saved] - true, если Ваня уже свободен.
 func _show_state(saved: bool) -> void:
-	_mass.visible = not saved
+	_stuck.visible = not saved
 	_pull.hide()
 	_remnant.visible = saved
 	_remnant.scale = Vector2(REMNANT_SCALE, REMNANT_SCALE)
