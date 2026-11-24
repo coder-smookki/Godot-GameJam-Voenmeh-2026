@@ -242,6 +242,9 @@ func test_difficulty_table() -> void:
 		"cats_hold",
 		"cats_cool",
 		"cats_eat",
+		"quiz_answers",
+		"code_tasks",
+		"code_penalty",
 	]
 	for key: String in Difficulty.TABLE:
 		var values: Array = Difficulty.TABLE[key]
@@ -310,3 +313,74 @@ func test_cats_logic() -> void:
 	check(
 		ultra.sabotage and ultra.time_left < cats.time_left, "на ультра меньше времени и вредитель"
 	)
+
+
+## Викторина: правильные ответы до победы, ошибки и вышедшее время до поражения.
+func test_quiz_logic() -> void:
+	var quiz := QuizLogic.new(3)
+	quiz.configure(Difficulty.MEDIUM)
+	var first := quiz.question_key()
+	var texts: Array[String] = []
+	for slot: int in QuizLogic.OPTIONS:
+		texts.append(quiz.option_key(slot))
+	equal(texts.size(), 4, "четыре варианта")
+	check(quiz.option_key(quiz.correct_slot()).ends_with("_A"), "правильный - вариант A")
+	check(quiz.answer(quiz.correct_slot()), "правильный ответ принят")
+	equal(quiz.hits, 1, "удар засчитан")
+	check(quiz.question_key() != first, "следующий вопрос другой")
+	check(not quiz.answer((quiz.correct_slot() + 1) % 4), "неверный ответ")
+	equal(quiz.mistakes, 1, "ошибка засчитана")
+	quiz.advance(quiz.time_per_question + 0.1)
+	equal(quiz.mistakes, 2, "вышедшее время - тоже ошибка")
+	var won := [false]
+	quiz.won.connect(func() -> void: won[0] = true)
+	while not quiz.is_done():
+		quiz.answer(quiz.correct_slot())
+	check(won[0] and quiz.is_won(), "набрал нужное число ответов - победа")
+	var hard := QuizLogic.new(3)
+	hard.configure(Difficulty.ULTRA)
+	var lost := [false]
+	hard.lost.connect(func() -> void: lost[0] = true)
+	hard.answer((hard.correct_slot() + 1) % 4)
+	check(lost[0] and hard.is_done() and not hard.is_won(), "на ультра первая ошибка проигрывает")
+	var seen := {}
+	var all := QuizLogic.new(1)
+	all.needed = QuizLogic.QUESTIONS
+	for step: int in QuizLogic.QUESTIONS:
+		seen[all.question_key()] = true
+		all.answer(all.correct_slot())
+	equal(seen.size(), QuizLogic.QUESTIONS, "вопросы не повторяются")
+
+
+## Бой в 418: верный код решает задачу, неверный отнимает время, вышедшее время проигрывает.
+func test_code_logic() -> void:
+	equal(CodeLogic.normalize(" &x ; "), "&x", "пробелы и точка с запятой не мешают")
+	var code := CodeLogic.new(2)
+	code.configure(Difficulty.MEDIUM)
+	var has_blank := false
+	for line: String in code.code():
+		has_blank = has_blank or line.contains(CodeLogic.BLANK)
+	check(has_blank, "в программе есть пропуск")
+	var first := code.goal_key()
+	var time := code.time_left
+	check(not code.submit("нечто"), "неверный код")
+	equal(code.time_left, time - code.penalty_sec, "минус время за ошибку")
+	check(not code.submit(""), "пустой ответ не принят")
+	check(code.submit(code.solution() + " "), "верный код принят")
+	equal(code.solved, 1, "задача решена")
+	check(code.goal_key() != first, "следующая задача другая")
+	equal(code.time_left, code.time_per_task, "на новую задачу полное время")
+	var won := [false]
+	code.won.connect(func() -> void: won[0] = true)
+	while not code.is_done():
+		code.submit(code.solution())
+	check(won[0] and code.is_won(), "нужное число задач - победа")
+	var late := CodeLogic.new(2)
+	late.configure(Difficulty.ULTRA)
+	var lost := [false]
+	late.lost.connect(func() -> void: lost[0] = true)
+	late.advance(late.time_per_task + 1.0)
+	check(lost[0] and late.is_done() and not late.is_won(), "время вышло - проигрыш")
+	for task: Dictionary in CodeLogic.TASKS:
+		var lines: Array = task["code"]
+		check(lines.size() <= 4, "программа помещается на экран")

@@ -9,11 +9,12 @@ const SEEN_PREFIX := "seen_"
 const ARRIVALS: Dictionary = {
 	"vestibule": ["vestibule_arrival"],
 	"corridor_2": ["corridor_2_arrival"],
-	"corridor_3": ["lestenko"],
-	"lift": ["elevator_first"],
+	"lift": ["elevator_first", "lestenko"],
 }
-const ENTRY_MARKS: Dictionary = {"316": "cat_joined"}
-const ARRIVAL_CONDITIONS: Dictionary = {}
+const ENTRY_MARKS: Dictionary = {"316": "cat_joined", "corridor_4": "reached_floor_4"}
+const ARRIVAL_CONDITIONS: Dictionary = {
+	"lestenko": "is_marked('boss_2')",
+}
 const STEPS: Dictionary = {
 	"heard_scream": {"task": "TASK_FIND_SCREAM"},
 	"vanya_saved": {"task": "TASK_GO_FLOOR_2"},
@@ -24,7 +25,9 @@ const STEPS: Dictionary = {
 	"ability_2": {"announce": "ANNOUNCE_ABILITY_2"},
 	"boss_2": {"task": "TASK_GO_FLOOR_3", "announce": "ANNOUNCE_BUTTON_3"},
 	"boss_3": {"task": "TASK_GO_FLOOR_4", "announce": "ANNOUNCE_BUTTON_4"},
-	"boss_4": {"announce": "ANNOUNCE_BUTTON_5"},
+	"reached_floor_4": {"task": "TASK_PASS_BLOB"},
+	"blob_corridor_4": {"task": "TASK_ROOM_418"},
+	"boss_4": {"task": "TASK_GO_FLOOR_5", "announce": "ANNOUNCE_BUTTON_5"},
 	"seen_lestenko": {"announce": "ANNOUNCE_RAM"},
 }
 

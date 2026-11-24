@@ -89,15 +89,17 @@ jobs:
       - name: Скачать релиз
         run: |
           if [ -n "$TAG" ]; then
-            gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "Eksperiment404-macos.zip*" --dir release
+            gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "Eksperiment404-macos.zip*" --pattern "Eksperiment404.dmg*" --dir release
           else
-            gh release download --repo "$GITHUB_REPOSITORY" --pattern "Eksperiment404-macos.zip*" --dir release
+            gh release download --repo "$GITHUB_REPOSITORY" --pattern "Eksperiment404-macos.zip*" --pattern "Eksperiment404.dmg*" --dir release
           fi
           ls -la release
 
       - name: Контрольная сумма
         working-directory: release
-        run: shasum -a 256 -c Eksperiment404-macos.zip.sha256
+        run: |
+          shasum -a 256 -c Eksperiment404-macos.zip.sha256
+          if [ -f Eksperiment404.dmg ]; then shasum -a 256 -c Eksperiment404.dmg.sha256; fi
 
       - name: Запуск без окна
         run: |
@@ -108,6 +110,27 @@ jobs:
           "$binary" --headless --quit-after 600 --log-file "$PWD/macos.log"
           cat macos.log
           if grep -E "SCRIPT ERROR|Parse Error|Failed to load" macos.log; then
+            echo "::error::В журнале есть ошибки скриптов"
+            exit 1
+          fi
+
+      - name: Запуск из .dmg
+        run: |
+          if [ ! -f release/Eksperiment404.dmg ]; then
+            echo "В релизе нет .dmg, пропуск"
+            exit 0
+          fi
+          hdiutil verify release/Eksperiment404.dmg
+          mount="$(mktemp -d)"
+          hdiutil attach release/Eksperiment404.dmg -nobrowse -readonly -mountpoint "$mount"
+          ls -la "$mount"
+          app="$(find "$mount" -maxdepth 1 -name '*.app' | head -1)"
+          binary="$(find "$app/Contents/MacOS" -type f -perm -u+x | head -1)"
+          codesign -dv "$app" 2>&1 || true
+          "$binary" --headless --quit-after 600 --log-file "$PWD/dmg.log"
+          hdiutil detach "$mount"
+          cat dmg.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load" dmg.log; then
             echo "::error::В журнале есть ошибки скриптов"
             exit 1
           fi

@@ -7,8 +7,14 @@ extends Control
 
 const TASK_FLASH := Color(1.6, 1.4, 0.8)
 const TASK_FLASH_SEC := 0.6
+const TASK_SLIDE := 24.0
+const TASK_SLIDE_SEC := 0.3
+const MARGIN := 8.0
+const FLOOR_POP := 1.25
+const FLOOR_POP_SEC := 0.3
 
 var _task_hidden: bool = false
+var _floor_text: String = ""
 
 @onready var _task_panel: PanelContainer = $TaskPanel
 @onready var _task_text: Label = $TaskPanel/Box/Text
@@ -39,13 +45,21 @@ func _on_room_entered(_code: String) -> void:
 	_refresh_floor()
 
 
-## Обновляет строку задания; новое задание коротко подсвечивается.
+## Обновляет строку задания; новое задание въезжает слева и коротко подсвечивается.
 ## [param text_key] - ключ текста задания; при пустом ключе панель прячется.
 func _on_task_changed(text_key: String) -> void:
 	_task_panel.visible = not text_key.is_empty() and not _task_hidden
 	if _task_text.text != tr(text_key):
 		_task_panel.modulate = TASK_FLASH
-		create_tween().tween_property(_task_panel, "modulate", Color.WHITE, TASK_FLASH_SEC)
+		_task_panel.position.x = MARGIN - TASK_SLIDE
+		var tween := create_tween().set_parallel()
+		tween.tween_property(_task_panel, "modulate", Color.WHITE, TASK_FLASH_SEC)
+		(
+			tween
+			. tween_property(_task_panel, "position:x", MARGIN, TASK_SLIDE_SEC)
+			. set_trans(Tween.TRANS_BACK)
+			. set_ease(Tween.EASE_OUT)
+		)
 	_task_text.text = tr(text_key)
 
 
@@ -71,10 +85,18 @@ func _on_infection_changed(level: int, _percent: int) -> void:
 		_refresh_floor()
 
 
-## Перечитывает название этажа, его заражение и полоску под ним.
+## Перечитывает название этажа, его заражение и полоску под ним; новый этаж подпрыгивает.
 func _refresh_floor() -> void:
 	var level := Infection.current_floor
-	_floor_name.text = tr(LocationCatalog.floor_key(level))
+	var text := tr(LocationCatalog.floor_key(level))
+	if text != _floor_text and not _floor_text.is_empty():
+		_floor_name.pivot_offset = _floor_name.size * 0.5
+		_floor_name.scale = Vector2(FLOOR_POP, FLOOR_POP)
+		create_tween().tween_property(_floor_name, "scale", Vector2.ONE, FLOOR_POP_SEC).set_trans(
+			Tween.TRANS_BACK
+		)
+	_floor_text = text
+	_floor_name.text = text
 	_infection.visible = Infection.is_active(level) or Infection.is_cured(level)
 	_meter.visible = Infection.is_active(level) and not Infection.is_cured(level)
 	_meter.value = Infection.percent(level)

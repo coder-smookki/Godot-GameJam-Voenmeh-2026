@@ -3,7 +3,8 @@ extends BossFight
 ## Кабинет 316: заражённая Логунова управляет тремя котами, и их нужно удовлетворить разом.
 ##
 ## При первом входе камера показывает Логунову, рассказчик объясняет задачу, от Логуновой
-## к котам вытягиваются нити заражения. Потом камера держит героя на половинном увеличении.
+## к котам вытягиваются нити заражения. Потом камера возвращается к герою, и бой идёт в обычном
+## виде (камера героя, без отдаления).
 ## Рыжему коту (спутнику героя, он садится у батареи) нужно тепло, серому - корм в миске,
 ## чёрному - закрытое окно. Отладчик (Q + ЛКМ) подкручивает батарею, досыпает корм и
 ## закрывает окно; правила - [CatsLogic]. Когда все трое довольны нужное время, нити рвутся,
@@ -28,10 +29,10 @@ const BLACK_HEAD := Vector2(482.0, 208.0)
 const GRAY_HEAD := Vector2(694.0, 205.0)
 const GINGER_HEAD_Y := -38.0
 const MOOD_LIFT := 16.0
-const OVERVIEW_ZOOM := 480.0 / 1700.0
 const CURED_ART: Texture2D = preload("res://assets/rooms/room_316_cured.png")
 const CURE_SEC := 1.4
 const REACH_SEC := 1.0
+const HINT_SEC := 6.0
 
 @export var exit_door: Door = null
 
@@ -86,7 +87,6 @@ func _process(delta: float) -> void:
 		return
 	logic.advance(delta)
 	_show_props()
-	_follow_hero(delta)
 
 
 ## Сообщает, идёт ли бой прямо сейчас (между началом и победой).
@@ -109,7 +109,6 @@ func start() -> void:
 	_lock_door(exit_door, true)
 	_freeze(true)
 	Ui.hud.hide_task(true)
-	get_parent().texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_director.global_position = _hero_view()
 	_director.zoom = Vector2.ONE
 	_take_view()
@@ -130,9 +129,8 @@ func start() -> void:
 	var grow := create_tween()
 	grow.tween_property(_tendrils, "reach", 1.0, REACH_SEC).set_trans(Tween.TRANS_CUBIC)
 	await _wait(1.4)
-	await _pan(Vector2(arena_width * 0.5, VIEW_Y), 1.0, OVERVIEW_ZOOM)
-	await _wait(1.2)
-	await _pan(Vector2(_player.global_position.x, VIEW_Y), 0.9, PLAY_ZOOM)
+	await _pan(_hero_view(), 0.8)
+	_give_view()
 	_begin()
 
 
@@ -149,6 +147,9 @@ func _begin() -> void:
 	_cats_hud.show()
 	phase = Phase.PLAY
 	_freeze(false)
+	await _wait(HINT_SEC)
+	if phase == Phase.PLAY:
+		_hud.hint = ""
 
 
 ## Время вышло: минус сердце, короткая пауза, попытка заново.
@@ -182,6 +183,9 @@ func _outro() -> void:
 	_shake_camera(8.0, 0.8)
 	var snap := create_tween()
 	snap.tween_property(_tendrils, "reach", 0.0, 0.5).set_trans(Tween.TRANS_BACK)
+	_director.global_position = _hero_view()
+	_director.zoom = Vector2.ONE
+	_take_view()
 	await _pan(LOGUNOVA, 0.9, SCENE_ZOOM)
 	_glow.emitting = false
 	_cure_burst(HANDS + Vector2(0.0, -40.0))

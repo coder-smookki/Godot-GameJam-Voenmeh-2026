@@ -165,6 +165,33 @@ jobs:
             exit 1
           fi
 
+      - uses: actions/checkout@v7
+        with:
+          path: source
+          sparse-checkout: .github/scripts
+
+      - name: Образ диска .dmg
+        run: |
+          bash source/.github/scripts/make_dmg.sh Eksperiment404-macos.zip Eksperiment404.dmg
+          mount="$(mktemp -d)"
+          hdiutil attach Eksperiment404.dmg -nobrowse -readonly -mountpoint "$mount"
+          app="$(find "$mount" -maxdepth 1 -name '*.app' | head -1)"
+          binary="$(find "$app/Contents/MacOS" -type f -perm -u+x | head -1)"
+          "$binary" --headless --quit-after 120 --log-file "$PWD/dmg.log"
+          hdiutil detach "$mount"
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load" dmg.log; then
+            echo "::error::Игра из .dmg пишет ошибки скриптов"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Eksperiment404-dmg-${{ env.BUILD_VERSION }}
+          path: Eksperiment404.dmg
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
   prerelease:
     name: Альфа-релиз из dev
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
@@ -187,11 +214,17 @@ jobs:
           name: Eksperiment404-macos-${{ env.BUILD_VERSION }}
           path: build
 
+      - uses: actions/download-artifact@v7
+        with:
+          name: Eksperiment404-dmg-${{ env.BUILD_VERSION }}
+          path: build
+
       - name: Контрольные суммы
         working-directory: build
         run: |
           sha256sum Eksperiment404.exe > Eksperiment404.exe.sha256
           sha256sum Eksperiment404-macos.zip > Eksperiment404-macos.zip.sha256
+          sha256sum Eksperiment404.dmg > Eksperiment404.dmg.sha256
           ls -la
 
       - name: Опубликовать предрелиз
@@ -203,5 +236,6 @@ jobs:
           } > notes.md
           gh release create "$BUILD_VERSION" build/Eksperiment404.exe build/Eksperiment404.exe.sha256 \
             build/Eksperiment404-macos.zip build/Eksperiment404-macos.zip.sha256 \
+            build/Eksperiment404.dmg build/Eksperiment404.dmg.sha256 \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --latest=false \
             --title "MAKE A ERROR $BUILD_VERSION" --notes-file notes.md

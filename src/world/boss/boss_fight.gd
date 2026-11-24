@@ -101,10 +101,13 @@ func _wait(sec: float) -> void:
 	await get_tree().create_timer(sec, false).timeout
 
 
-## Трясёт камеру боя; дрожь затухает сама.
+## Трясёт камеру боя или, если кадр сейчас у героя, камеру героя; дрожь затухает сама.
 ## [param strength] - наибольшее смещение в пикселях.
 ## [param sec] - длительность дрожи.
 func _shake_camera(strength: float, sec: float) -> void:
+	if not _director.enabled and is_instance_valid(_player):
+		_player.shake_camera(strength, sec)
+		return
 	if _shake != null and _shake.is_valid():
 		_shake.kill()
 	_shake = create_tween()
