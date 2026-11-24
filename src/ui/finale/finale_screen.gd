@@ -1,10 +1,12 @@
 extends Control
-## Финал после основной концовки: эпилог на кафедре (после исправления ЛАБЫ) и титры.
+## Финал после основной концовки: эпилог на кафедре (после исправления ЛАБЫ), END и титры.
 ##
 ## Эпилог - кадры художниц 1-4 на весь экран, по репликам из сценария: кадр меняется с
-## каждой репликой, Мажайцев в конце делает «тшшш», затем надпись END. Титры едут снизу
+## каждой репликой, Мажайцев в конце делает «тшшш», и поверх кадра появляется END (после
+## удаления ЛАБЫ сразу этот кадр). Титры едут снизу
 ## вверх: название игры, команда с пиксельными фотографиями, музыка, благодарность и
-## последняя надпись «ВОЕНМЕХ - лучше всех!». Подтверждение ускоряет титры; после них
+## последняя надпись «ВОЕНМЕХ - лучше всех!»; после секретной концовки под титрами идёт парад
+## капибар. Подтверждение ускоряет титры; после них
 ## игра возвращается в главное меню.
 
 const FRAMES: Array[Texture2D] = [
@@ -29,8 +31,9 @@ const SCROLL_SPEED := 22.0
 const FAST_SCROLL := 90.0
 const PHOTO_SIZE := 72.0
 const ROW_GAP := 92.0
-const FRAME_FADE_SEC := 0.4
-const END_SEC := 2.2
+const FRAME_FADE_SEC := 1.5
+const END_SEC := 3.0
+const END_Y := 214.0
 
 var _frame: TextureRect = null
 var _credits: Control = null
@@ -59,40 +62,53 @@ func _ready() -> void:
 	_run.call_deferred()
 
 
-## Проводит эпилог (после хорошей концовки) и титры.
+## Проводит эпилог и титры. После исправления ЛАБЫ идёт разговор за столом по кадрам
+## художниц; после удаления - сразу последний кадр. Оба заканчиваются «тшшш» Мажайцева с
+## надписью END.
 func _run() -> void:
+	Music.play("epilogue")
 	if Game.last_ending in GOOD_ENDINGS:
 		await _epilogue()
+	if is_inside_tree():
+		await _end_card()
 	if is_inside_tree():
 		await _roll_credits()
 
 
-## Эпилог: кадры художниц под реплики из сценария, затем END.
+## Эпилог: кадры художниц под реплики из сценария.
 func _epilogue() -> void:
-	Music.play("epilogue")
 	_frame.texture = FRAMES[0]
 	create_tween().tween_property(_frame, "modulate:a", 1.0, FRAME_FADE_SEC)
 	await get_tree().create_timer(FRAME_FADE_SEC + 0.3).timeout
 	if not is_inside_tree():
 		return
 	Ui.dialogue.line_shown.connect(_on_line_shown)
-	await Ui.dialogue.play(DialogueCatalog.talk("epilogue"))
+	var talk := "epilogue_capybara" if Game.last_ending == "capybara" else "epilogue"
+	await Ui.dialogue.play(DialogueCatalog.talk(talk))
 	Ui.dialogue.line_shown.disconnect(_on_line_shown)
-	if not is_inside_tree():
-		return
+
+
+## Последний кадр: Мажайцев делает «тшшш», поверх появляется END; потом всё гаснет.
+func _end_card() -> void:
+	_frame.texture = FRAMES[FRAMES.size() - 1]
+	if _frame.modulate.a < 1.0:
+		var show := create_tween()
+		show.tween_property(_frame, "modulate:a", 1.0, FRAME_FADE_SEC)
+		await show.finished
 	var end := _label(tr("EPILOGUE_END"), 32, Color.WHITE)
-	end.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	end.add_theme_constant_override("outline_size", 8)
+	end.position = Vector2(0.0, END_Y)
+	end.size = Vector2(size.x, 40.0)
 	end.modulate.a = 0.0
 	add_child(end)
 	var fade := create_tween()
-	fade.tween_property(_frame, "modulate", Color(0.3, 0.3, 0.3), 0.8)
-	fade.parallel().tween_property(end, "modulate:a", 1.0, 0.8)
+	fade.tween_property(end, "modulate:a", 1.0, 0.8)
 	await get_tree().create_timer(END_SEC).timeout
 	if not is_inside_tree():
 		return
 	var out := create_tween().set_parallel()
-	out.tween_property(_frame, "modulate:a", 0.0, 0.8)
-	out.tween_property(end, "modulate:a", 0.0, 0.8)
+	out.tween_property(_frame, "modulate:a", 0.0, 1.2)
+	out.tween_property(end, "modulate:a", 0.0, 1.2)
 	await out.finished
 
 
@@ -101,6 +117,8 @@ func _roll_credits() -> void:
 	Music.play("credits")
 	_credits.position.y = size.y
 	_credits.show()
+	if Game.last_ending == "capybara":
+		_parade()
 	_scrolling = true
 	while _scrolling and is_inside_tree():
 		await get_tree().process_frame
@@ -109,6 +127,19 @@ func _roll_credits() -> void:
 	await get_tree().create_timer(END_SEC).timeout
 	if is_inside_tree():
 		_finish()
+
+
+## Под титрами идёт парад пяти капибар: секретная концовка.
+func _parade() -> void:
+	for index: int in World.CAPY_TOTAL:
+		var capy := CapyPixel.new()
+		capy.pixel = 2.0
+		capy.walking = true
+		capy.position = Vector2(-30.0 - index * 60.0, size.y - 6.0)
+		add_child(capy)
+		var walk := create_tween().set_loops()
+		walk.tween_property(capy, "position:x", size.x + 40.0, 16.0).from(capy.position.x)
+		walk.tween_interval(2.0)
 
 
 ## Двигает титры.

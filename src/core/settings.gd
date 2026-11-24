@@ -17,7 +17,7 @@ const BUSES: Dictionary = {
 	"sfx_volume": &"Sfx",
 }
 const DEFAULTS: Dictionary = {
-	"master_volume": 80,
+	"master_volume": 70,
 	"music_volume": 80,
 	"sfx_volume": 80,
 	"fullscreen": false,

@@ -161,6 +161,22 @@ const TALKS: Dictionary = {
 		{"speaker": "", "text": "TALK_ROOF_CHOICE_1"},
 		{"speaker": "vanya", "text": "TALK_ROOF_CHOICE_2"},
 	],
+	"roof_capybara":
+	[
+		{"speaker": "", "text": "TALK_ROOF_CAPY_1"},
+		{"speaker": "demyan", "text": "TALK_ROOF_CAPY_2"},
+		{"speaker": "mozhaitsev", "text": "TALK_ROOF_CAPY_3"},
+		{"speaker": "vanya", "text": "TALK_ROOF_CAPY_4"},
+		{"speaker": "", "text": "TALK_ROOF_CAPY_5"},
+	],
+	"epilogue_capybara":
+	[
+		{"speaker": "", "text": "TALK_EPILOGUE_1", "pose": "1"},
+		{"speaker": "demyan", "text": "TALK_EPILOGUE_2", "pose": "2"},
+		{"speaker": "mozhaitsev", "text": "TALK_EPILOGUE_3", "pose": "3"},
+		{"speaker": "", "text": "TALK_EPILOGUE_4", "pose": "4"},
+		{"speaker": "", "text": "TALK_EPILOGUE_CAPY", "pose": "4"},
+	],
 	"epilogue":
 	[
 		{"speaker": "", "text": "TALK_EPILOGUE_1", "pose": "1"},

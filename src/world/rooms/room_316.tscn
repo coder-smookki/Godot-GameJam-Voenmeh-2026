@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" path="res://assets/rooms/room_316.png" id="art"]
 [ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
 [ext_resource type="Script" path="res://src/world/cats_boss/cats_fight.gd" id="fight"]
+[ext_resource type="Script" path="res://src/world/capy/capy_pickup.gd" id="capy_pickup"]
 
 [sub_resource type="RectangleShape2D" id="floor"]
 size = Vector2(1900, 60)
@@ -55,3 +56,8 @@ position = Vector2(211, 255)
 [node name="Fight" type="Node2D" parent="." node_paths=PackedStringArray("exit_door")]
 script = ExtResource("fight")
 exit_door = NodePath("../Props/Back")
+
+[node name="Capy" type="Area2D" parent="Props"]
+position = Vector2(1630, 80)
+script = ExtResource("capy_pickup")
+mark_id = "capy_316"

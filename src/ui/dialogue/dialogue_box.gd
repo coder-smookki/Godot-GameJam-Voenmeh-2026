@@ -204,6 +204,11 @@ func _fill_line(line: Dictionary) -> void:
 	line_shown.emit(line)
 
 
+## Сообщает, звучит ли сейчас озвучка реплики.
+func is_speaking() -> bool:
+	return _voice != null and _voice.playing
+
+
 ## Проигрывает озвучку реплики, если она есть: assets/voice/<ключ реплики>.mp3.
 ## [param text_key] - ключ текста реплики.
 func _speak(text_key: String) -> void:

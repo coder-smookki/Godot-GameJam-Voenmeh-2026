@@ -144,3 +144,20 @@ func test_every_line_is_voiced() -> void:
 		for line: Dictionary in DialogueCatalog.talk(talk_id):
 			var key := str(line.get("text", ""))
 			check(ResourceLoader.exists(DialogueBox.VOICE_DIR + key + ".mp3"), "озвучка %s" % key)
+
+
+## Версия в файле VERSION совпадает с версиями сборок Windows и macOS; авторы - команда.
+func test_export_metadata() -> void:
+	var version := FileAccess.get_file_as_string("res://VERSION").strip_edges()
+	var presets := ConfigFile.new()
+	equal(presets.load("res://export_presets.cfg"), OK, "пресеты читаются")
+	equal(
+		presets.get_value("preset.0.options", "application/product_version"),
+		version + ".0",
+		"Windows"
+	)
+	equal(presets.get_value("preset.1.options", "application/short_version"), version, "macOS")
+	for section: String in ["preset.0.options", "preset.1.options"]:
+		var copyright: String = presets.get_value(section, "application/copyright", "")
+		for name: String in ["Ильин", "Мошникова", "Щетинина", "Яковлева"]:
+			check(name in copyright, "%s: %s в авторах" % [section, name])

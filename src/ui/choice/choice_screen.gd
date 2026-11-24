@@ -122,6 +122,8 @@ func _draw() -> void:
 		var note_key := "CHOICE_%s_NOTE" % OPTIONS[index].to_upper()
 		if not open:
 			note_key = "CHOICE_FIX_LOCKED"
+		elif World.ending(OPTIONS[index]) == "capybara":
+			note_key = "CHOICE_FIX_CAPY"
 		_line(font, Vector2(x + 16.0, y), tr(note_key).format(World.f), DIM)
 		y += 22.0
 	var cursor := "_" if int(_clock * 2.0) % 2 == 0 else " "

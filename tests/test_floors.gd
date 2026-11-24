@@ -284,10 +284,14 @@ func test_cat_runs_away() -> void:
 	check(room.cat != null, "кошка ходит за героем и в коридоре")
 
 
-## Без сердец игра показывает заставку и начинается заново, а открытые концовки остаются.
+## Без сердец игра показывает заставку и возвращает героя к последнему сохранению с полными
+## сердцами: пройденное не теряется, открытые концовки остаются.
 func test_game_over_restarts() -> void:
 	await start_game()
 	World.mark("vanya_saved")
+	await Game.goto_room("wardrobe")
+	finish_talk()
+	World.mark("not_saved_yet")
 	SaveSystem.unlock_ending("expelled")
 	World.set_value("hearts", 1)
 	Game.lose_heart()
@@ -299,9 +303,10 @@ func test_game_over_restarts() -> void:
 	Ui.game_over.skip()
 	await Game.room_entered
 	check(not Ui.game_over.visible, "заставка закрыта")
-	equal(Game.room_code, "vestibule", "игра началась с вестибюля")
+	equal(Game.room_code, "wardrobe", "герой там, где было последнее сохранение")
 	equal(World.f["hearts"], 3, "сердца снова полные")
-	check(not World.is_marked("vanya_saved"), "прохождение сброшено")
+	check(World.is_marked("vanya_saved"), "пройденное осталось")
+	check(not World.is_marked("not_saved_yet"), "несохранённое после сохранения откатилось")
 	check(SaveSystem.is_ending_unlocked("expelled"), "открытые концовки остались")
 	finish_talk()
 
@@ -390,6 +395,7 @@ func test_compiler_fight() -> void:
 	)
 	equal(Game.task_key, "TASK_GO_FLOOR_3", "задание: на третий этаж")
 	equal(World.f["hearts"], 3, "сердца целы")
+	equal(World.f["capy"], 1, "нарисованная капибара ожила и засчитана")
 	await Game.goto_room("corridor_2", "from_202")
 	await Game.goto_room("202", "door")
 	fight = tree.current_scene.get_node("Fight")
@@ -706,10 +712,11 @@ func test_roof_fight() -> void:
 	fight.terminal().interact(room.player)
 	check(Ui.choice.visible, "открылся выбор")
 	Ui.choice.pick(1)
-	await _until(func() -> bool: return Game.pending_ending == "retake")
+	await _until(func() -> bool: return Game.last_ending == "retake")
 	check(World.is_marked("roof_done"), "ЛАБА исправлена")
 	await _until(func() -> bool: return not Game.is_busy())
-	Game.pending_ending = ""
+	check(tree.current_scene.scene_file_path == Game.FINALE_SCENE, "без экрана концовки - в финал")
+	await Game.to_main_menu()
 
 
 ## Пиксели дошли до собора раньше, чем бой кончился: концовка №2.

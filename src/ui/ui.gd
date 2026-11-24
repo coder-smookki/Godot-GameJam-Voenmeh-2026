@@ -103,8 +103,9 @@ func is_modal_open() -> bool:
 
 
 ## Плавно затемняет экран.
-func fade_out() -> void:
-	await _fade_to(1.0)
+## [param sec] - сколько длится затемнение.
+func fade_out(sec: float = FADE_SEC) -> void:
+	await _fade_to(1.0, sec)
 
 
 ## Плавно возвращает изображение после затемнения.
@@ -114,13 +115,14 @@ func fade_in() -> void:
 
 ## Меняет прозрачность затемнения и ждёт конца анимации.
 ## [param alpha] - целевая непрозрачность от 0 до 1.
-func _fade_to(alpha: float) -> void:
+## [param sec] - сколько длится переход.
+func _fade_to(alpha: float, sec: float = FADE_SEC) -> void:
 	if _fade_tween != null and _fade_tween.is_valid():
 		_fade_tween.kill()
 	_fade_tween = create_tween()
 	_fade_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	_fade_tween.set_ignore_time_scale(true)
-	_fade_tween.tween_property(_fade, "color:a", alpha, FADE_SEC)
+	_fade_tween.tween_property(_fade, "color:a", alpha, sec)
 	await _fade_tween.finished
 
 
