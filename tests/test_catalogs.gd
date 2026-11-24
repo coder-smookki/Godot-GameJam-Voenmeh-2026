@@ -146,7 +146,8 @@ func test_every_line_is_voiced() -> void:
 			check(ResourceLoader.exists(DialogueBox.VOICE_DIR + key + ".mp3"), "озвучка %s" % key)
 
 
-## Версия в файле VERSION совпадает с версиями сборок Windows и macOS; авторы - команда.
+## Версия в файле VERSION совпадает с версиями сборок Windows и macOS и с плашкой в README;
+## авторы - команда.
 func test_export_metadata() -> void:
 	var version := FileAccess.get_file_as_string("res://VERSION").strip_edges()
 	var presets := ConfigFile.new()
@@ -157,6 +158,8 @@ func test_export_metadata() -> void:
 		"Windows"
 	)
 	equal(presets.get_value("preset.1.options", "application/short_version"), version, "macOS")
+	var readme := FileAccess.get_file_as_string("res://README.md")
+	check(("-v%s-" % version) in readme, "плашка версии в README совпадает с VERSION")
 	for section: String in ["preset.0.options", "preset.1.options"]:
 		var copyright: String = presets.get_value(section, "application/copyright", "")
 		for name: String in ["Ильин", "Мошникова", "Щетинина", "Яковлева"]:

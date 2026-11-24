@@ -3,24 +3,17 @@
 <p align="center"><i>Ошибёшься - и ты ошибка</i></p>
 
 <p align="center">
-  <a href="https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/releases/latest"><img alt="Последний релиз" src="https://img.shields.io/github/v/release/coder-smookki/Godot-GameJam-Voenmeh-2026?style=for-the-badge&label=%D1%80%D0%B5%D0%BB%D0%B8%D0%B7&color=FF1FB4"></a>
-  <a href="https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/releases/latest"><img alt="Скачать .exe" src="https://img.shields.io/badge/%D1%81%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-.exe-00C2E0?style=for-the-badge&logo=windows&logoColor=white"></a>
+  <a href="https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/releases/latest"><img alt="Версия" src="https://img.shields.io/badge/%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%8F-v1.1.0-FF1FB4?style=for-the-badge"></a>
+  <a href="https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/releases/latest"><img alt="Скачать .exe для Windows" src="https://img.shields.io/badge/%D1%81%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-.exe-0078D4?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHBhdGggZmlsbD0iI2ZmZiIgZD0iTTAgMGgxMS4zdjExLjNIMHpNMTIuNyAwSDI0djExLjNIMTIuN3pNMCAxMi43aDExLjNWMjRIMHpNMTIuNyAxMi43SDI0VjI0SDEyLjd6Ii8%2BPC9zdmc%2B"></a>
   <a href="https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/releases/latest"><img alt="Скачать для macOS" src="https://img.shields.io/badge/%D1%81%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-macOS-A2AAAD?style=for-the-badge&logo=apple&logoColor=white"></a>
-  <img alt="3 развилки, 5 концовок" src="https://img.shields.io/badge/3%20%D1%80%D0%B0%D0%B7%D0%B2%D0%B8%D0%BB%D0%BA%D0%B8-5%20%D0%BA%D0%BE%D0%BD%D1%86%D0%BE%D0%B2%D0%BE%D0%BA-0C1220?style=for-the-badge">
-  <br>
-  <img alt="Godot" src="https://img.shields.io/badge/Godot-4.7.2-478CBF?style=flat-square&logo=godotengine&logoColor=white">
-  <img alt="GDScript" src="https://img.shields.io/badge/GDScript-%D1%81%D1%82%D0%B0%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B0%D1%8F%20%D1%82%D0%B8%D0%BF%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F-355570?style=flat-square">
-  <img alt="Windows" src="https://img.shields.io/badge/Windows-x86__64-0078D4?style=flat-square&logo=windows&logoColor=white">
-  <img alt="Разрешение" src="https://img.shields.io/badge/%D1%8D%D0%BA%D1%80%D0%B0%D0%BD-480%C3%97270-121316?style=flat-square">
   <br>
   <a href="https://github.com/coder-smookki/Godot-GameJam-Voenmeh-2026/actions/workflows/ci.yml"><img alt="Проверки и сборка" src="https://img.shields.io/github/actions/workflow/status/coder-smookki/Godot-GameJam-Voenmeh-2026/ci.yml?branch=dev&style=flat-square&label=%D0%BF%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D0%BA%D0%B8%20%D0%B8%20%D1%81%D0%B1%D0%BE%D1%80%D0%BA%D0%B0"></a>
-  <a href="#проверка-качества"><img alt="Тесты" src="https://img.shields.io/badge/%D1%82%D0%B5%D1%81%D1%82%D1%8B-58-2EA043?style=flat-square"></a>
-  <a href="#проверка-качества"><img alt="gdformat, gdlint" src="https://img.shields.io/badge/gdformat%20%C2%B7%20gdlint-%D0%B1%D0%B5%D0%B7%20%D0%B7%D0%B0%D0%BC%D0%B5%D1%87%D0%B0%D0%BD%D0%B8%D0%B9-2EA043?style=flat-square"></a>
+  <img alt="Godot 4.7.2" src="https://img.shields.io/badge/Godot-4.7.2-478CBF?style=flat-square&logo=godotengine&logoColor=white">
   <a href="#лицензия"><img alt="Лицензия: код MIT, арт и тексты защищены" src="https://img.shields.io/badge/%D0%BB%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F-%D0%BA%D0%BE%D0%B4%20MIT%20%C2%B7%20%D0%B0%D1%80%D1%82%20%D0%B8%20%D1%82%D0%B5%D0%BA%D1%81%D1%82%D1%8B%20%D0%B7%D0%B0%D1%89%D0%B8%D1%89%D0%B5%D0%BD%D1%8B-B31D28?style=flat-square"></a>
 </p>
 
 <p align="center">
-  Сюжетная 2D-игра с видом сбоку. Эксперимент на кафедре сорвался, и корпус заражает вирус 404: стены покрываются шахматкой, двери и люди становятся «не найдены». Студент Дима вытаскивает одногруппника из текстуры, поднимается на лифте этаж за этажом, побеждает босса на каждом и на крыше решает, что делать с ЛАБОЙ: удалить или исправить. В игре три развилки и пять концовок
+  Сюжетная 2D-игра с видом сбоку. Эксперимент на кафедре сорвался, и корпус заражает вирус 404: стены покрываются шахматкой, двери и люди становятся «не найдены». Студент Демьян вытаскивает одногруппника из текстуры, поднимается на лифте этаж за этажом, побеждает босса на каждом и на крыше решает, что делать с ЛАБОЙ: удалить или исправить. В игре три развилки и пять концовок
 </p>
 
 <p align="center">
