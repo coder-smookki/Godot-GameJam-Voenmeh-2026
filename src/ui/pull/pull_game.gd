@@ -84,6 +84,8 @@ func _input(event: InputEvent) -> void:
 ## Возвращает true, если сделаны все три рывка, и false после трёх промахов.
 func play(seed_value: int = -1) -> bool:
 	_logic = PullLogic.new(seed_value)
+	_logic.drain_per_sec = Difficulty.value("pull_drain")
+	_logic.switch_sec = [0.0, Difficulty.value("pull_switch_2"), Difficulty.value("pull_switch_3")]
 	_logic.jerked.connect(_on_jerked)
 	_logic.missed.connect(_on_missed)
 	_logic.key_changed.connect(_on_key_changed)

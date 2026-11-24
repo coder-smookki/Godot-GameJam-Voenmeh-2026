@@ -104,6 +104,7 @@ func _input(event: InputEvent) -> void:
 ## Возвращает true, если капибара нарисована вовремя.
 func play() -> bool:
 	_logic = DrawLogic.new()
+	_logic.time_left = Difficulty.value("draw_time")
 	_logic.solved.connect(_on_solved)
 	_logic.failed.connect(_on_failed)
 	_logic.missed.connect(_on_missed)
@@ -152,7 +153,8 @@ func _draw() -> void:
 	var font := Palette.font()
 	_text(font, frame.position + Vector2(10.0, 16.0), tr("DRAW_TITLE"), Palette.GOAL)
 	var low := _logic.time_left <= LOW_TIME and int(_clock * 4.0) % 2 == 0
-	var timer := "0:%02d" % ceili(_logic.time_left)
+	var seconds := ceili(_logic.time_left)
+	var timer := "%d:%02d" % [floori(seconds / 60.0), seconds % 60]
 	var right := frame.end.x - 10.0 - timer.length() * 8.0
 	_text(
 		font,

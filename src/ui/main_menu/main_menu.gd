@@ -44,12 +44,17 @@ func _ready() -> void:
 	tween.tween_property(_logo, "position:y", _logo.position.y, LOGO_FLOAT_SEC)
 
 
-## Начинает новое прохождение; если есть сохранение, сначала спрашивает разрешение его стереть.
+## Начинает новое прохождение; если есть сохранение, сначала спрашивает разрешение его стереть,
+## потом даёт выбрать сложность.
 func _on_play_pressed() -> void:
 	if SaveSystem.has_save() and not await Ui.confirm.ask("MENU_CONFIRM_NEW_GAME"):
 		return
+	var level := await Ui.difficulty.choose()
+	if level.is_empty():
+		_play.grab_focus()
+		return
 	_set_locked(true)
-	Game.new_game()
+	Game.new_game(level)
 
 
 ## Продолжает сохранённое прохождение; если сохранение не читается, возвращает кнопки

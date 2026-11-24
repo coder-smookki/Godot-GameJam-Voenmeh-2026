@@ -53,7 +53,7 @@ static func draw_heart(item: CanvasItem, at: Vector2, color: Color, half: int = 
 
 ## Подбирает размер под все сердца и подписывается на изменения мира.
 func _ready() -> void:
-	custom_minimum_size = Vector2(_total() * (WIDTH + GAP) - GAP, HEIGHT)
+	_fit()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	World.changed.connect(_on_world_changed)
 	World.reloaded.connect(_on_world_reloaded)
@@ -93,9 +93,14 @@ func _draw_breaking(at: Vector2) -> void:
 	draw_heart(self, at + Vector2(SPLIT * spread + 1.0, DROP * part).round(), color, 1)
 
 
-## Возвращает, сколько сердец бывает у героя.
+## Возвращает, сколько сердец бывает у героя на уровне сложности этой игры.
 func _total() -> int:
-	return int(World.SCHEMA[Game.HEARTS]["max"])
+	return Difficulty.max_hearts()
+
+
+## Подгоняет ширину плашки под число сердец.
+func _fit() -> void:
+	custom_minimum_size = Vector2(_total() * (WIDTH + GAP) - GAP, HEIGHT)
 
 
 ## Меняет долю анимации раскола и перерисовывает сердца.
@@ -125,6 +130,7 @@ func _on_world_changed(key: String, value: Variant) -> void:
 
 ## Перечитывает сердца после новой игры или загрузки сохранения.
 func _on_world_reloaded() -> void:
+	_fit()
 	_set_breaking(-1)
 	_shown = int(World.f[Game.HEARTS])
 	queue_redraw()

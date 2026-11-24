@@ -102,6 +102,7 @@ var choices: Array[String] = []
 var cursor: int = 0
 var picking: bool = false
 var time_left: float = TIME_SEC
+var penalty_scale: float = 1.0
 
 var _answer: int = 0
 var _result: int = 0
@@ -229,8 +230,8 @@ func _pick(index: int) -> bool:
 ## Отнимает секунды за ошибку; если время кончилось, отладка провалена.
 ## [param seconds] - сколько секунд отнять.
 func _penalize(seconds: float) -> void:
-	time_left -= seconds
-	penalized.emit(seconds)
+	time_left -= seconds * penalty_scale
+	penalized.emit(seconds * penalty_scale)
 	if time_left <= 0.0:
 		_fail()
 

@@ -25,6 +25,7 @@ var _fade_tween: Tween = null
 @onready var game_over: GameOverScreen = $GameOverScreen
 @onready var settings: SettingsScreen = $SettingsScreen
 @onready var confirm: ConfirmScreen = $ConfirmScreen
+@onready var difficulty: DifficultyScreen = $DifficultyScreen
 @onready var _screen_fx: ColorRect = $ScreenFx
 @onready var _fade: ColorRect = $Fade
 

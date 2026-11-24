@@ -39,8 +39,12 @@ func is_busy() -> bool:
 
 
 ## Начинает новое прохождение: сбрасывает мир, журнал, заражение и сохранение.
-func new_game() -> void:
-	World.reset()
+## [param level] - уровень сложности из [Difficulty]; пустая строка оставляет уровень
+## прошлой игры (так игра начинается заново после проигрыша).
+func new_game(level: String = "") -> void:
+	if level.is_empty():
+		level = Difficulty.current()
+	World.reset({Difficulty.KEY: level, HEARTS: Difficulty.value("hearts", level)})
 	Journal.clear()
 	Infection.reset()
 	SaveSystem.delete_save()

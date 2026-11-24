@@ -507,7 +507,7 @@ msgid "TALK_LESTENKO_2"
 msgstr "Задавайте вопросы…"
 
 msgid "TALK_LESTENKO_3"
-msgstr "Двери лифта открываются. Лестенко молча оставляет подарок - планку RAM, которая увеличивает память."
+msgstr "Лестенко молча оставляет подарок - планку RAM, которая увеличивает память, - и уезжает на лифте назад."
 
 msgid "NAME_VALSHTEIN"
 msgstr "Вальштейн"
@@ -685,3 +685,87 @@ msgstr "Стрелки - кисть, пробел - красить"
 
 msgid "DRAW_DONE"
 msgstr "Капибара готова!"
+
+msgid "DIFFICULTY_TITLE"
+msgstr "ВЫБЕРИТЕ СЛОЖНОСТЬ"
+
+msgid "DIFFICULTY_EASY"
+msgstr "Лёгкий"
+
+msgid "DIFFICULTY_EASY_HINT"
+msgstr "Пять сердец, много времени, шкалы утекают медленно. Чтобы спокойно пройти сюжет."
+
+msgid "DIFFICULTY_MEDIUM"
+msgstr "Средний"
+
+msgid "DIFFICULTY_MEDIUM_HINT"
+msgstr "Три сердца. Игра задумана такой."
+
+msgid "DIFFICULTY_HARD"
+msgstr "Сложный"
+
+msgid "DIFFICULTY_HARD_HINT"
+msgstr "Два сердца, меньше времени, атаки быстрее, Логунова мешает котам."
+
+msgid "DIFFICULTY_ULTRA"
+msgstr "Ультра сложный"
+
+msgid "DIFFICULTY_ULTRA_HINT"
+msgstr "Одно сердце: одна ошибка - и эксперимент №404 начинается заново."
+
+msgid "TALK_LOGUNOVA_1"
+msgstr "В кабинете Логунова. Она тоже заражена вирусом, но теперь у неё есть что-то новое: она управляет тремя котами."
+
+msgid "TALK_LOGUNOVA_2"
+msgstr "Нужно угодить трём котам разом: рыжему нужно тепло, серому - много корма, чёрному - закрытое окно."
+
+msgid "TALK_LOGUNOVA_3"
+msgstr "Отладчик (Q + ЛКМ) прибавит тепла батарее, досыплет корма в миску и закроет окно."
+
+msgid "TALK_LOGUNOVA_FREE_1"
+msgstr "Все три кота довольны одновременно. Заражение исчезает, Логунова освобождается."
+
+msgid "TASK_GO_FLOOR_4"
+msgstr "Подняться на 4 этаж · лифт"
+
+msgid "BOSS_LOGUNOVA"
+msgstr "ЛОГУНОВА"
+
+msgid "BOSS_LOGUNOVA_INTRO"
+msgstr "ТРИ КОТА ПОД ЗАРАЖЕНИЕМ"
+
+msgid "BOSS_HINT_CATS"
+msgstr "Q + ЛКМ по батарее, миске и окну"
+
+msgid "BOSS_CATS_HOLD"
+msgstr "ВСЕ ДОВОЛЬНЫ - ДЕРЖИТЕ!"
+
+msgid "BOSS_CATS_WIN"
+msgstr "КОТЫ ДОВОЛЬНЫ"
+
+msgid "BOSS_TIME_UP"
+msgstr "ВРЕМЯ ВЫШЛО! МИНУС СЕРДЦЕ"
+
+msgid "BOSS_WINDOW_OPEN"
+msgstr "ОКНО РАСПАХНУЛОСЬ"
+
+msgid "CATS_HEAT"
+msgstr "ТЕПЛО РЫЖЕМУ"
+
+msgid "CATS_GINGER"
+msgstr "Рыжий"
+
+msgid "CATS_GRAY"
+msgstr "Серый"
+
+msgid "CATS_BLACK"
+msgstr "Чёрный"
+
+msgid "CATS_WANT_HEAT"
+msgstr "тепло"
+
+msgid "CATS_WANT_FOOD"
+msgstr "корм"
+
+msgid "CATS_WANT_WINDOW"
+msgstr "окно"

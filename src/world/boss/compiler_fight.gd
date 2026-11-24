@@ -1,5 +1,5 @@
 class_name CompilerFight
-extends Node2D
+extends BossFight
 ## Кабинет 202: разговор с Вальштейном и бой с заражённым Компилятором на мониторе.
 ##
 ## При первом входе камера смотрит на Вальштейна, пока он говорит; на словах о компиляторе
@@ -9,8 +9,9 @@ extends Node2D
 ## держит героя на половинном увеличении: ареной служит весь кабинет, сверху и снизу чёрные
 ## полосы, на них экран боя. Компилятор пускает по полу ошибки - низкие и высокие столбики
 ## шахматки, через них нужно только перепрыгивать.
-## Фаза 1: за каждые пять перепрыгнутых ошибок Вальштейн бросает бомбу в порт. Камера
-## наезжает на бросок и летит за бомбой. Три бомбы снимают всё здоровье.
+## Фаза 1: за каждые несколько перепрыгнутых ошибок (сколько - задаёт сложность) Вальштейн
+## бросает бомбу в порт. Камера наезжает на бросок и летит за бомбой. Три бомбы снимают всё
+## здоровье.
 ## Фаза 2: «это был не конец» - за отведённое время нарисовать капибару ([DrawGame]).
 ## После победы экран разбит, Вальштейн освобождается, герой получает умение, в лифте
 ## возвращается кнопка третьего этажа. Три попадания по герою срывают фазу и отнимают сердце;
@@ -26,18 +27,11 @@ const TALK := "valshtein"
 const COMPILER_LINE := "TALK_VALSHTEIN_3"
 const FREE_TALK := "valshtein_free"
 const ROOM_WIDTH := 1700.0
-const ROOM_HEIGHT := 270.0
-const VIEW_Y := 135.0
 const MONITOR := Vector2(980.0, 135.0)
 const FLOOR_Y := 254.0
 const TRIGGER := Rect2(790.0, 60.0, 20.0, 200.0)
 const OVERVIEW_ZOOM := 480.0 / 1700.0
-const PLAY_ZOOM := 0.5
-const SCENE_ZOOM := 1.0
-const FOLLOW_RATE := 5.0
-const INTEGRITY := 3
 const BOMBS := 3
-const DODGES_PER_BOMB := 5
 const SPAWN_AHEAD := 520.0
 const SPAWN_MIN_GAP := 280.0
 const HAND := Vector2(61.0, -159.0)
@@ -59,20 +53,17 @@ const FIRE: Array[Color] = [Color("ffe066"), Color("ff8a1c"), Color("d81e1e"), C
 @export var exit_door: Door = null
 
 var phase: Phase = Phase.WAIT
-var integrity: int = INTEGRITY
+var integrity_max: int = 3
+var dodges_needed: int = 5
+var integrity: int = 3
 var bombs_done: int = 0
 var dodges: int = 0
 
-var _player: Player = null
 var _spawn_left: float = 0.0
 var _invulnerable: float = 0.0
-var _hud: BossHud = null
-var _director: Camera2D = null
 var _screen: BossScreen = null
 var _errors: Node2D = null
 var _trigger: Area2D = null
-var _shake: Tween = null
-var _move: Tween = null
 var _meeting: bool = false
 
 
@@ -83,7 +74,10 @@ func _ready() -> void:
 	add_child(_screen)
 	_errors = Node2D.new()
 	add_child(_errors)
-	_build_director()
+	integrity_max = Difficulty.value("boss_integrity")
+	dodges_needed = Difficulty.value("bomb_dodges")
+	integrity = integrity_max
+	_build_director(MONITOR)
 	_build_bars()
 	_build_hud()
 	if World.is_marked(BOSS_MARK):
@@ -116,10 +110,7 @@ func _process(delta: float) -> void:
 		if error != null and (error.position.x < -80.0 or error.position.x > ROOM_WIDTH + 80.0):
 			error.vanish()
 	if phase == Phase.BOMBS:
-		var follow := 1.0 - exp(-FOLLOW_RATE * delta)
-		_director.global_position.x = lerpf(
-			_director.global_position.x, _player.global_position.x, follow
-		)
+		_follow_hero(delta)
 		_spawn_left -= delta
 		if _spawn_left <= 0.0:
 			_spawn_left = _next_interval()
@@ -134,11 +125,6 @@ func is_meeting() -> bool:
 ## Сообщает, идёт ли бой прямо сейчас (между началом и победой).
 func is_running() -> bool:
 	return phase != Phase.WAIT and phase != Phase.DONE
-
-
-## Возвращает камеру боя; нужно тестам.
-func director() -> Camera2D:
-	return _director
 
 
 ## Первый вход: Вальштейн говорит под камерой, на словах о компиляторе экран просыпается
@@ -178,7 +164,7 @@ func start() -> void:
 	phase = Phase.INTRO
 	_player = room.player
 	_trigger.set_deferred("monitoring", false)
-	_lock_exit(true)
+	_lock_door(exit_door, true)
 	_freeze(true)
 	Ui.hud.hide_task(true)
 	get_parent().texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
@@ -207,9 +193,10 @@ func start() -> void:
 	await _pan(Vector2(ROOM_WIDTH * 0.5, VIEW_Y), 1.0, OVERVIEW_ZOOM)
 	await _wait(1.2)
 	await _pan(Vector2(_player.global_position.x, VIEW_Y), 0.9, PLAY_ZOOM)
+	_hud.integrity_max = integrity_max
 	_hud.integrity = integrity
 	_hud.hint = tr("BOSS_HINT_BOMBS")
-	_hud.charge_max = DODGES_PER_BOMB
+	_hud.charge_max = dodges_needed
 	_hud.charge = 0
 	dodges = 0
 	_spawn_left = 1.2
@@ -323,7 +310,7 @@ func _outro() -> void:
 	if not is_inside_tree():
 		return
 	_freeze(false)
-	_lock_exit(false)
+	_lock_door(exit_door, false)
 	Ui.hud.hide_task(false)
 	_hud.hide()
 	World.mark(ABILITY_MARK)
@@ -350,7 +337,7 @@ func _fail_phase() -> void:
 	if not is_inside_tree():
 		return
 	_screen.say("")
-	integrity = INTEGRITY
+	integrity = integrity_max
 	_hud.integrity = integrity
 	dodges = 0
 	_hud.charge = 0
@@ -360,14 +347,14 @@ func _fail_phase() -> void:
 	_freeze(false)
 
 
-## Засчитывает ошибку, через которую герой перепрыгнул; пятая зовёт бомбу.
+## Засчитывает ошибку, через которую герой перепрыгнул; набранный заряд зовёт бомбу.
 ## [param _line] - перепрыгнутая ошибка.
 func on_dodged(_line: ErrorLine = null) -> void:
 	if phase != Phase.BOMBS:
 		return
 	dodges += 1
 	_hud.charge = dodges
-	if dodges >= DODGES_PER_BOMB:
+	if dodges >= dodges_needed:
 		_throw_bomb()
 
 
@@ -396,7 +383,10 @@ func _attack() -> void:
 	_screen.attack()
 	var from_left := _spawn_from_left()
 	var speed := _line_speed()
-	var tall := randf() < HIGH_CHANCE + HIGH_CHANCE_PER_BOMB * bombs_done
+	var chance: float = (
+		HIGH_CHANCE + HIGH_CHANCE_PER_BOMB * bombs_done + Difficulty.value("attack_high")
+	)
+	var tall := randf() < chance
 	if tall:
 		_slide(from_left, speed + HIGH_BONUS_SPEED, true)
 		return
@@ -440,14 +430,15 @@ func _add_line(line: ErrorLine) -> void:
 	_errors.add_child(line)
 
 
-## Выбирает паузу до следующей атаки: с каждой бомбой атаки чаще.
+## Выбирает паузу до следующей атаки: с каждой бомбой атаки чаще, на высокой сложности
+## тоже чаще.
 func _next_interval() -> float:
-	return randf_range(1.9, 2.5) * pow(0.9, bombs_done)
+	return randf_range(1.9, 2.5) * pow(0.9, bombs_done) * float(Difficulty.value("attack_pause"))
 
 
-## Выбирает скорость ошибки: с каждой бомбой быстрее.
+## Выбирает скорость ошибки: с каждой бомбой и на высокой сложности быстрее.
 func _line_speed() -> float:
-	return randf_range(200.0, 230.0) + bombs_done * 15.0
+	return (randf_range(200.0, 230.0) + bombs_done * 15.0) * float(Difficulty.value("attack_speed"))
 
 
 ## Убирает с арены все ошибки.
@@ -482,77 +473,6 @@ func _valshtein_view() -> Vector2:
 	if valshtein == null:
 		return MONITOR
 	return Vector2(valshtein.global_position.x + 40.0, VIEW_Y)
-
-
-## Возвращает точку, куда смотрит камера героя, чтобы передать ей кадр без скачка.
-func _hero_view() -> Vector2:
-	return Vector2(clampf(_player.global_position.x, 240.0, ROOM_WIDTH - 240.0), VIEW_Y)
-
-
-## Плавно переводит камеру боя в точку и меняет увеличение; работает и на паузе (в разговоре).
-## [param to] - точка, куда смотрит камера.
-## [param sec] - длительность в секундах.
-## [param zoom] - новое увеличение; меньше нуля оставляет прежнее.
-func _pan(to: Vector2, sec: float, zoom: float = -1.0) -> void:
-	if _move != null and _move.is_valid():
-		_move.kill()
-	_move = create_tween().set_parallel().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	_move.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_move.tween_property(_director, "global_position", to, sec)
-	if zoom > 0.0:
-		_move.tween_property(_director, "zoom", Vector2(zoom, zoom), sec)
-	await _move.finished
-
-
-## Ждёт указанное время игры.
-## [param sec] - сколько секунд ждать.
-func _wait(sec: float) -> void:
-	await get_tree().create_timer(sec, false).timeout
-
-
-## Трясёт камеру боя; дрожь затухает сама.
-## [param strength] - наибольшее смещение в пикселях.
-## [param sec] - длительность дрожи.
-func _shake_camera(strength: float, sec: float) -> void:
-	if _shake != null and _shake.is_valid():
-		_shake.kill()
-	_shake = create_tween()
-	_shake.tween_method(_set_offset, strength, 0.0, sec)
-
-
-## Смещает камеру боя на случайный вектор.
-## [param strength] - длина смещения.
-func _set_offset(strength: float) -> void:
-	_director.offset = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * strength
-
-
-## Включает или выключает управление героем.
-## [param frozen] - true забирает управление.
-func _freeze(frozen: bool) -> void:
-	if is_instance_valid(_player):
-		_player.set_controls(not frozen)
-
-
-## Делает камеру боя текущей.
-func _take_view() -> void:
-	_director.enabled = true
-	_director.make_current()
-
-
-## Возвращает кадр камере героя и выключает камеру боя.
-func _give_view() -> void:
-	if is_instance_valid(_player):
-		_player.take_camera()
-	_director.enabled = false
-	_director.zoom = Vector2.ONE
-	get_parent().texture_filter = CanvasItem.TEXTURE_FILTER_PARENT_NODE
-
-
-## Закрывает или открывает дверь из кабинета на время боя.
-## [param locked] - true не даёт выйти.
-func _lock_exit(locked: bool) -> void:
-	if exit_door != null:
-		exit_door.set_deferred("monitorable", not locked)
 
 
 ## Показывает реплику Вальштейна облачком над ним.
@@ -606,41 +526,6 @@ func _crumble() -> void:
 	_burst(BossScreen.RECT.get_center(), Color(0.85, 0.9, 1.0), 30, 240.0, 1.0, 3.0)
 
 
-## Слетающие с Вальштейна клетки заражения в момент, когда он освобождается.
-## [param at] - середина фигуры.
-func _cure_burst(at: Vector2) -> void:
-	_burst(at, Color(1.0, 0.0, 1.0), 24, 160.0, 2.0, 4.0)
-	_burst(at, Color(0.0, 0.07, 0.0), 16, 140.0, 2.0, 4.0)
-	_burst(at, Color.WHITE, 12, 90.0, 1.0, 3.0)
-
-
-## Выбрасывает горсть частиц одного цвета.
-## [param at] - откуда.
-## [param color] - цвет.
-## [param amount] - сколько частиц.
-## [param speed] - наибольшая скорость.
-## [param small] - наименьший размер.
-## [param big] - наибольший размер.
-func _burst(at: Vector2, color: Color, amount: int, speed: float, small: float, big: float) -> void:
-	var sparks := CPUParticles2D.new()
-	sparks.global_position = at
-	sparks.amount = amount
-	sparks.lifetime = 0.8
-	sparks.one_shot = true
-	sparks.explosiveness = 1.0
-	sparks.spread = 180.0
-	sparks.gravity = Vector2(0.0, 300.0)
-	sparks.initial_velocity_min = speed * 0.3
-	sparks.initial_velocity_max = speed
-	sparks.scale_amount_min = small
-	sparks.scale_amount_max = big
-	sparks.color = color
-	sparks.z_index = 30
-	sparks.finished.connect(sparks.queue_free)
-	add_child(sparks)
-	sparks.emitting = true
-
-
 ## Вешает на бомбу искрящий фитиль.
 ## [param bomb] - бомба.
 func _add_fuse(bomb: Sprite2D) -> void:
@@ -659,40 +544,6 @@ func _add_fuse(bomb: Sprite2D) -> void:
 	bomb.add_child(fuse)
 
 
-## Собирает переход цветов «розовый - тёмный» для клеток шахматки.
-func _checker_ramp() -> Gradient:
-	var ramp := Gradient.new()
-	ramp.set_color(0, Color(1.0, 0.0, 1.0))
-	ramp.set_color(1, Color(0.0, 0.07, 0.0, 0.0))
-	return ramp
-
-
-## Создаёт выключенную камеру боя: по горизонтали она не выходит за кабинет, по вертикали
-## стоит на середине, чтобы при отдалении сверху и снизу были чёрные полосы.
-func _build_director() -> void:
-	_director = Camera2D.new()
-	_director.enabled = false
-	_director.process_mode = Node.PROCESS_MODE_ALWAYS
-	_director.limit_left = 0
-	_director.limit_right = int(ROOM_WIDTH)
-	_director.limit_top = -10000
-	_director.limit_bottom = 10000
-	_director.global_position = MONITOR
-	add_child(_director)
-
-
-## Создаёт чёрные полосы над и под кабинетом, видные при отдалённой камере.
-func _build_bars() -> void:
-	for top: float in [-1000.0, ROOM_HEIGHT]:
-		var bar := ColorRect.new()
-		bar.color = Color.BLACK
-		bar.position = Vector2(-500.0, top)
-		bar.size = Vector2(ROOM_WIDTH + 1000.0, 1000.0)
-		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		bar.z_index = 50
-		add_child(bar)
-
-
 ## Создаёт зону у монитора, в которой начинается бой.
 func _build_trigger() -> void:
 	_trigger = Area2D.new()
@@ -706,16 +557,6 @@ func _build_trigger() -> void:
 	_trigger.add_child(shape)
 	_trigger.body_entered.connect(_on_trigger_body_entered)
 	add_child(_trigger)
-
-
-## Создаёт экран боя поверх игры; он спрятан до начала боя.
-func _build_hud() -> void:
-	var layer := CanvasLayer.new()
-	layer.layer = 5
-	add_child(layer)
-	_hud = BossHud.new()
-	_hud.hide()
-	layer.add_child(_hud)
 
 
 ## Переводит камеру на монитор, когда Вальштейн заговорил о компиляторе.

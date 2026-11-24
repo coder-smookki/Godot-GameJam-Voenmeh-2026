@@ -4,7 +4,6 @@
 [ext_resource type="Script" path="res://src/world/lift/lift_art.gd" id="liftart"]
 [ext_resource type="Script" path="res://src/world/lift/lift_buttons.gd" id="buttons"]
 [ext_resource type="Script" path="res://src/world/lift/lift_exit.gd" id="exit"]
-[ext_resource type="PackedScene" path="res://src/world/interact/npc.tscn" id="npc"]
 
 [sub_resource type="RectangleShape2D" id="floor"]
 size = Vector2(680, 60)
@@ -64,11 +63,6 @@ position = Vector2(0, -80)
 shape = SubResource("exit_shape")
 
 [node name="Actors" type="Node2D" parent="."]
-
-[node name="Lestenko" parent="Actors" instance=ExtResource("npc")]
-position = Vector2(290, 243)
-talk_id = "lift_lestenko"
-present_when = "is_marked('boss_2') and not is_marked('seen_lift_lestenko')"
 
 [node name="Spawns" type="Node2D" parent="."]
 

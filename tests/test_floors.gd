@@ -37,26 +37,30 @@ func test_elevator_first_look() -> void:
 	check(not Ui.dialogue.visible, "во второй раз реплики нет")
 
 
-## После победы над боссом в кабине стоит Лестенко: разговор, подарок над головой героя,
-## на панели загорается третья кнопка.
-func test_lift_lestenko() -> void:
+## На третьем этаже у лифта героя встречает Лестенко: разговор по сценарию с его позами,
+## подарок над головой героя, потом Лестенко уходит к лифту и больше не появляется.
+func test_floor_3_lestenko() -> void:
 	await start_game()
 	World.mark("vanya_saved")
-	World.mark("seen_elevator_first")
 	World.mark("boss_2")
-	await Game.goto_room("corridor_2", Elevator.SPAWN)
-	finish_talk()
 	await Game.enter_lift()
-	var cabin := tree.current_scene as Room
-	check(cabin.get_node_or_null("Actors/Lestenko") != null, "Лестенко в кабине")
-	equal(cabin.get_node("Backdrop/Art").texture, LiftArt.ART[1], "горят три кнопки")
-	check(Ui.dialogue.visible, "Лестенко заговорил")
 	finish_talk()
-	check(World.is_marked("seen_lift_lestenko"), "разговор запомнен")
-	check(_announced(cabin.player, "ANNOUNCE_RAM"), "над головой плашка с подарком")
+	check(tree.current_scene.get_node_or_null("Actors/Lestenko") == null, "в кабине его нет")
+	await Game.goto_room("corridor_3", Elevator.SPAWN)
+	var room := tree.current_scene as Room
+	var lestenko: Npc = room.get_node("Actors/Lestenko")
+	check(Ui.dialogue.visible, "Лестенко встречает героя")
+	equal(lestenko.current_texture(), lestenko.poses["stand"], "пока говорит герой, он стоит")
+	Ui.dialogue.advance()
+	Ui.dialogue.advance()
+	equal(lestenko.current_texture(), lestenko.poses["talk"], "на своей реплике говорит")
+	finish_talk()
+	check(World.is_marked("seen_lestenko"), "разговор запомнен")
+	check(_announced(room.player, "ANNOUNCE_RAM"), "над головой плашка с подарком")
+	equal(lestenko.current_texture(), lestenko.poses["stand"], "после разговора снова стоит")
+	await _until(func() -> bool: return not is_instance_valid(lestenko))
+	await Game.enter_lift()
 	await Game.leave_lift()
-	equal(Game.room_code, "corridor_2", "кабина вернула героя на второй этаж")
-	await Game.enter_lift()
 	check(tree.current_scene.get_node_or_null("Actors/Lestenko") == null, "Лестенко уехал")
 
 
@@ -191,6 +195,7 @@ func test_blob() -> void:
 func test_cat_runs_away() -> void:
 	await start_game()
 	await Game.goto_room("corridor_3", Elevator.SPAWN)
+	finish_talk()
 	var room := tree.current_scene as Room
 	var cat: Cat = room.get_node("Actors/Cat")
 	for frame: int in 3:
@@ -213,6 +218,7 @@ func test_cat_runs_away() -> void:
 	var waiting: Cat = tree.current_scene.get_node("Actors/Cat")
 	check(waiting.is_at_door(), "кот снова ждёт у двери 316")
 	check((tree.current_scene as Room).cat == null, "спутника ещё нет")
+	World.mark("boss_3")
 	await Game.goto_room("316", "door")
 	room = tree.current_scene as Room
 	check(World.is_marked("cat_joined"), "в 316 кошка присоединилась")
@@ -312,7 +318,7 @@ func test_compiler_fight() -> void:
 	check(room.player.controls_enabled, "герой снова управляем")
 	check(room.find_children("*", "FixColumn", true, false).is_empty(), "терминалов в бою нет")
 	for bomb: int in CompilerFight.BOMBS:
-		for dodge: int in CompilerFight.DODGES_PER_BOMB:
+		for dodge: int in fight.dodges_needed:
 			fight.on_dodged()
 		check(fight.phase == CompilerFight.Phase.BOMB_SCENE, "бомба %d летит" % (bomb + 1))
 		await _until(func() -> bool: return fight.phase != CompilerFight.Phase.BOMB_SCENE)
@@ -353,7 +359,7 @@ func test_compiler_fight_hits() -> void:
 	Engine.time_scale = 4.0
 	fight.start()
 	await _until(func() -> bool: return fight.phase != CompilerFight.Phase.INTRO)
-	for hit: int in CompilerFight.INTEGRITY:
+	for hit: int in fight.integrity_max:
 		var line := ErrorLine.new()
 		line.setup_slide(room.player.global_position.x, true, 0.0, room.player)
 		fight.add_child(line)
@@ -362,7 +368,7 @@ func test_compiler_fight_hits() -> void:
 	await tree.create_timer(0.6).timeout
 	equal(World.f["hearts"], 2, "минус сердце")
 	equal(fight.phase, CompilerFight.Phase.BOMBS, "фаза начинается заново")
-	equal(fight.integrity, CompilerFight.INTEGRITY, "целостность снова полная")
+	equal(fight.integrity, fight.integrity_max, "целостность снова полная")
 	Engine.time_scale = 1.0
 
 
@@ -421,6 +427,89 @@ func _run_obstacle(room: Room, tall: bool, jump_at: float) -> bool:
 	for frame: int in 10:
 		await tree.physics_frame
 	return not hit[0]
+
+
+## Кабинет 316: Логунова и три кота. Рыжий спутник садится у батареи, отладчик попадает
+## в батарею, миску и окно, все довольны - победа, комната вылечена, задание на 4 этаж.
+func test_cats_fight() -> void:
+	await start_game()
+	World.mark("boss_2")
+	World.mark("ability_debugger")
+	await Game.goto_room("316", "door")
+	var room := tree.current_scene as Room
+	var fight: CatsFight = room.get_node("Fight")
+	check(fight.is_running(), "бой начался при входе")
+	check(room.cat != null, "рыжий кот вошёл вместе с героем")
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	check(fight.director().is_current(), "камера боя показывает Логунову")
+	finish_talk()
+	Engine.time_scale = 4.0
+	await _until(func() -> bool: return fight.phase == CatsFight.Phase.PLAY)
+	equal(fight.director().zoom, Vector2.ONE * BossFight.PLAY_ZOOM, "камера отдалена на кабинет")
+	check(room.player.controls_enabled, "герой управляем")
+	var radiator: Radiator = null
+	var bowl: CatsBowl = null
+	var window: CatsWindow = null
+	for child: Node in fight.get_children():
+		if child is Radiator:
+			radiator = child
+		elif child is CatsBowl:
+			bowl = child
+		elif child is CatsWindow:
+			window = child
+	room.player.global_position.x = 1000.0
+	for frame: int in 3:
+		await tree.physics_frame
+	var from := room.player.global_position + Vector2(0.0, -100.0)
+	var query := PhysicsRayQueryParameters2D.create(
+		from, radiator.global_position + Vector2(0.0, -25.0), Player.SHOT_MASK
+	)
+	var ray := room.get_world_2d().direct_space_state.intersect_ray(query)
+	check(not ray.is_empty() and ray["collider"] is DebugTarget, "луч отладчика попадает в батарею")
+	for step: int in 3:
+		_shoot_target(radiator)
+		_shoot_target(bowl)
+	check(fight.logic.is_happy(CatsLogic.GINGER), "рыжему тепло")
+	check(fight.logic.is_happy(CatsLogic.GRAY), "серый сыт")
+	_shoot_target(window)
+	check(not window.open, "окно закрыто")
+	equal(fight.logic.happy_count(), CatsLogic.CATS, "все трое довольны")
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	finish_talk()
+	await _until(func() -> bool: return not fight.is_running())
+	Engine.time_scale = 1.0
+	check(World.is_marked("boss_3"), "Логунова свободна")
+	equal(Game.task_key, "TASK_GO_FLOOR_4", "задание: на четвёртый этаж")
+	equal(World.f["hearts"], 3, "сердца целы")
+	await Game.goto_room("corridor_3", "from_316")
+	finish_talk()
+	await Game.goto_room("316", "door")
+	fight = tree.current_scene.get_node("Fight")
+	check(not fight.is_running(), "бой не повторяется")
+
+
+## Время боя с котами вышло: минус сердце и новая попытка.
+func test_cats_fight_timeout() -> void:
+	await start_game()
+	World.mark("boss_2")
+	World.mark("seen_logunova")
+	await Game.goto_room("316", "door")
+	var fight: CatsFight = tree.current_scene.get_node("Fight")
+	Engine.time_scale = 4.0
+	await _until(func() -> bool: return fight.phase == CatsFight.Phase.PLAY)
+	fight.logic.time_left = 0.05
+	await _until(func() -> bool: return int(World.f["hearts"]) == 2)
+	await _until(func() -> bool: return fight.phase == CatsFight.Phase.PLAY)
+	Engine.time_scale = 1.0
+	check(fight.logic.time_left > 10.0, "новая попытка с полным временем")
+
+
+## Попадает лучом отладчика в цель боя.
+## [param target] - окно, миска или батарея.
+func _shoot_target(target: Node) -> void:
+	for child: Node in target.get_children():
+		if child is DebugTarget:
+			(child as DebugTarget).hit()
 
 
 ## Ждёт, пока условие не станет верным, но не дольше 20 секунд.

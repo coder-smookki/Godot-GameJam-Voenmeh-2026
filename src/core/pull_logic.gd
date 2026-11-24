@@ -29,6 +29,9 @@ var misses: int = 0
 var level: float = START_LEVEL
 var key: int = 0
 
+var drain_per_sec: float = DRAIN_PER_SEC
+var switch_sec: Array[float] = SWITCH_SEC.duplicate()
+
 var _since_switch: float = 0.0
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -83,12 +86,12 @@ func press(pressed_key: int) -> bool:
 func advance(delta: float, held_key: int = NO_KEY) -> void:
 	if is_done():
 		return
-	var change := -DRAIN_PER_SEC * DRAIN_SCALES[jerk] * delta
+	var change := -drain_per_sec * DRAIN_SCALES[jerk] * delta
 	if held_key == key:
 		change += HOLD_GAIN_PER_SEC * delta
 	_since_switch += delta
 	_add(change)
-	if not is_done() and SWITCH_SEC[jerk] > 0.0 and _since_switch >= SWITCH_SEC[jerk]:
+	if not is_done() and switch_sec[jerk] > 0.0 and _since_switch >= switch_sec[jerk]:
 		_pick_key()
 
 

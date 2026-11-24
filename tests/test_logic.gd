@@ -229,3 +229,84 @@ func test_draw_logic() -> void:
 	late.advance(DrawLogic.TIME_SEC + 0.1)
 	check(late.is_failed(), "время вышло")
 	check(not late.paint(Vector2i(0, 3)), "после конца не рисуется")
+
+
+## Каждый следующий уровень сложности труднее по каждому числу, на ультра одно сердце.
+func test_difficulty_table() -> void:
+	var harder_up: Array[String] = [
+		"pull_drain",
+		"debug_penalty",
+		"bomb_dodges",
+		"attack_speed",
+		"attack_high",
+		"cats_hold",
+		"cats_cool",
+		"cats_eat",
+	]
+	for key: String in Difficulty.TABLE:
+		var values: Array = Difficulty.TABLE[key]
+		equal(values.size(), Difficulty.LEVELS.size(), "%s: число на каждый уровень" % key)
+		for index: int in range(1, values.size()):
+			var before := float(values[index - 1])
+			var now := float(values[index])
+			if key == "cats_sabotage":
+				check(now >= before, "%s не слабеет" % key)
+			elif key in harder_up:
+				check(now > before, "%s растёт к ультра" % key)
+			else:
+				check(now < before, "%s падает к ультра" % key)
+	equal(Difficulty.value("hearts", Difficulty.ULTRA), 1, "на ультра одно сердце")
+	equal(Difficulty.value("hearts", Difficulty.MEDIUM), 3, "на среднем три")
+
+
+## Бой с котами: тепло, корм и закрытое окно разом, удержание до победы; время выходит.
+func test_cats_logic() -> void:
+	var cats := CatsLogic.new(5)
+	cats.configure(Difficulty.MEDIUM)
+	check(cats.window_open, "окно открыто в начале")
+	equal(cats.happy_count(), 0, "в начале все недовольны")
+	var moods: Array[int] = []
+	cats.mood_changed.connect(
+		func(cat: int, happy: bool) -> void: moods.append(cat if happy else -1)
+	)
+	for step: int in 3:
+		cats.warm()
+		cats.feed()
+	check(cats.is_happy(CatsLogic.GINGER) and cats.is_happy(CatsLogic.GRAY), "тепло и сыто")
+	check(cats.celsius() > CatsLogic.warm_celsius(), "градусник в зелёной зоне")
+	cats.advance(1.0)
+	equal(cats.hold, 0.0, "пока окно открыто, удержание не копится")
+	cats.close_window()
+	equal(cats.happy_count(), CatsLogic.CATS, "все трое довольны")
+	check(CatsLogic.GINGER in moods and CatsLogic.BLACK in moods, "о каждом коте сообщено")
+	var won := [false]
+	cats.won.connect(func() -> void: won[0] = true)
+	var steps := 0
+	while not cats.is_done() and steps < 100:
+		cats.advance(0.1)
+		steps += 1
+	check(won[0] and cats.is_won(), "удержали - победа")
+	var cold := CatsLogic.new(5)
+	cold.configure(Difficulty.MEDIUM)
+	cold.close_window()
+	var heat := cold.heat
+	cold.advance(1.0)
+	var closed_loss := heat - cold.heat
+	cold.open_window()
+	heat = cold.heat
+	cold.advance(1.0)
+	check(heat - cold.heat > closed_loss, "через открытое окно тепло уходит быстрее")
+	var late := CatsLogic.new(5)
+	late.configure(Difficulty.MEDIUM)
+	late.close_window()
+	late.advance(Difficulty.value("cats_wind") * 1.25)
+	check(late.window_open, "заражение снова распахивает окно")
+	var lost := [false]
+	late.lost.connect(func() -> void: lost[0] = true)
+	late.advance(late.time_left + 1.0)
+	check(lost[0] and late.is_done() and not late.is_won(), "время вышло - проигрыш")
+	var ultra := CatsLogic.new(5)
+	ultra.configure(Difficulty.ULTRA)
+	check(
+		ultra.sabotage and ultra.time_left < cats.time_left, "на ультра меньше времени и вредитель"
+	)

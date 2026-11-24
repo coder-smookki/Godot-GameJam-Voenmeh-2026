@@ -16,7 +16,8 @@ const SCHEMA: Dictionary = {
 	"mozh": {"default": "", "values": ["", "capy", "stay", "off"]},
 	"messages": {"default": 0, "max": 3},
 	"capy": {"default": 0, "max": 5},
-	"hearts": {"default": 3, "max": 3},
+	"hearts": {"default": 3, "max": 5},
+	"difficulty": {"default": "medium", "values": ["easy", "medium", "hard", "ultra"]},
 }
 const MESSAGES_FOR_FIX := 2
 const CAPY_TOTAL := 5
@@ -41,8 +42,13 @@ func _process(delta: float) -> void:
 
 
 ## Сбрасывает все переменные, отметки и часы к началу новой игры.
-func reset() -> void:
+## [param overrides] - значения, которые новая игра берёт вместо значений по умолчанию
+## (сложность и число сердец); недопустимые значения пропускаются.
+func reset(overrides: Dictionary = {}) -> void:
 	f = defaults()
+	for key: String in overrides:
+		if is_valid(key, overrides[key]):
+			f[key] = _normalize(key, overrides[key])
 	_marks = {}
 	clock = 0.0
 	reloaded.emit()

@@ -321,3 +321,37 @@ func _puffs(actors: Node) -> int:
 		if child is Puff:
 			count += 1
 	return count
+
+
+## Перед новой игрой выбирается сложность; на ультра у героя одно сердце, и после проигрыша
+## игра начинается заново на той же сложности.
+func test_difficulty_choice() -> void:
+	var picked: Array[String] = ["-"]
+	var waiter := func() -> void: picked[0] = await Ui.difficulty.choose()
+	waiter.call()
+	await tree.process_frame
+	check(Ui.difficulty.visible, "экран сложности открыт")
+	var levels: Control = Ui.difficulty.get_node("Panel/Box/Levels")
+	equal(levels.get_child_count(), Difficulty.LEVELS.size(), "четыре уровня")
+	check(levels.get_child(1).has_focus(), "по умолчанию средний")
+	(levels.get_child(3) as Button).pressed.emit()
+	await tree.process_frame
+	equal(picked[0], Difficulty.ULTRA, "выбран ультра")
+	check(not Ui.difficulty.visible, "экран закрыт")
+	await Game.new_game(Difficulty.ULTRA)
+	finish_talk()
+	equal(Difficulty.current(), Difficulty.ULTRA, "сложность в мире")
+	equal(World.f["hearts"], 1, "одно сердце")
+	var hearts: Hearts = Ui.hud.get_node("FloorPanel/Box/Hearts")
+	equal(hearts.custom_minimum_size.x, float(Hearts.WIDTH), "на плашке одно сердце")
+	check(
+		SaveSystem.load_game() and Difficulty.current() == Difficulty.ULTRA, "сложность сохранена"
+	)
+	await Game.new_game()
+	finish_talk()
+	equal(Difficulty.current(), Difficulty.ULTRA, "новая игра после проигрыша на той же сложности")
+	await Game.new_game(Difficulty.EASY)
+	finish_talk()
+	equal(World.f["hearts"], 5, "на лёгком пять сердец")
+	await Game.new_game(Difficulty.MEDIUM)
+	finish_talk()
