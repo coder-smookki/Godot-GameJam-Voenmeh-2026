@@ -16,9 +16,12 @@ permissions:
   contents: read
 
 env:
-  # Стадия сборок из dev: alpha, пока в игре нет всех этажей и финала; потом beta.
-  # Релизы из main выходят без стадии: v0.<номер pull request>.
-  STAGE: alpha
+  # Название файлов в релизе; GitHub сам заменяет в имени файла пробелы и знаки, а подпись
+  # на странице релиза остаётся как есть.
+  GAME_NAME: "MAKE A ERROR, and you're an error"
+  # Стадия сборок из dev: v<VERSION>-beta.<номер запуска>. Версия лежит в файле VERSION;
+  # релиз из main выходит с тегом и названием v<VERSION> без стадии.
+  STAGE: beta
 
 jobs:
   lint:
@@ -86,9 +89,7 @@ jobs:
         id: version
         run: |
           if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$GITHUB_REF" = "refs/heads/dev" ]; then
-            last="$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-pre-releases --limit 100 \
-              --json tagName -q '.[].tagName' | sed -n 's/^v0\.\([0-9][0-9]*\)$/\1/p' | sort -n | tail -1)"
-            version="v0.$(( ${last:-0} + 1 ))-${STAGE}.${GITHUB_RUN_NUMBER}"
+            version="v$(tr -d '[:space:]' < VERSION)-${STAGE}.${GITHUB_RUN_NUMBER}"
           else
             version="dev-${GITHUB_SHA::7}"
           fi
@@ -193,7 +194,7 @@ jobs:
           compression-level: 0
 
   prerelease:
-    name: Альфа-релиз из dev
+    name: Предрелиз из dev
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     needs: [build, macos]
@@ -211,20 +212,17 @@ jobs:
 
       - uses: actions/download-artifact@v7
         with:
-          name: Eksperiment404-macos-${{ env.BUILD_VERSION }}
-          path: build
-
-      - uses: actions/download-artifact@v7
-        with:
           name: Eksperiment404-dmg-${{ env.BUILD_VERSION }}
           path: build
 
-      - name: Контрольные суммы
-        working-directory: build
+      - name: Файлы релиза с названием игры
         run: |
-          sha256sum Eksperiment404.exe > Eksperiment404.exe.sha256
-          sha256sum Eksperiment404-macos.zip > Eksperiment404-macos.zip.sha256
-          sha256sum Eksperiment404.dmg > Eksperiment404.dmg.sha256
+          mkdir -p out
+          cp build/Eksperiment404.exe "out/$GAME_NAME.exe"
+          cp build/Eksperiment404.dmg "out/$GAME_NAME.dmg"
+          cd out
+          sha256sum "$GAME_NAME.exe" > "$GAME_NAME.exe.sha256"
+          sha256sum "$GAME_NAME.dmg" > "$GAME_NAME.dmg.sha256"
           ls -la
 
       - name: Опубликовать предрелиз
@@ -234,8 +232,8 @@ jobs:
             echo
             echo "Коммит ${GITHUB_SHA::7}: $(printf '%s\n' "$COMMIT_TITLE" | head -1)"
           } > notes.md
-          gh release create "$BUILD_VERSION" build/Eksperiment404.exe build/Eksperiment404.exe.sha256 \
-            build/Eksperiment404-macos.zip build/Eksperiment404-macos.zip.sha256 \
-            build/Eksperiment404.dmg build/Eksperiment404.dmg.sha256 \
+          gh release create "$BUILD_VERSION" \
+            "out/$GAME_NAME.exe#$GAME_NAME.exe" "out/$GAME_NAME.exe.sha256#$GAME_NAME.exe.sha256" \
+            "out/$GAME_NAME.dmg#$GAME_NAME.dmg" "out/$GAME_NAME.dmg.sha256#$GAME_NAME.dmg.sha256" \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --latest=false \
-            --title "MAKE A ERROR $BUILD_VERSION" --notes-file notes.md
+            --title "$BUILD_VERSION" --notes-file notes.md

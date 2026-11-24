@@ -33,6 +33,7 @@ func _ready() -> void:
 	_version.text = str(ProjectSettings.get_setting("application/config/version", ""))
 	_set_locked(false)
 	_play.grab_focus()
+	Music.play("menu")
 	var buttons: Array[PaperButton] = [_play, _load, _settings, _quit]
 	for index: int in buttons.size():
 		buttons[index].modulate.a = 0.0
@@ -45,7 +46,7 @@ func _ready() -> void:
 
 
 ## Начинает новое прохождение; если есть сохранение, сначала спрашивает разрешение его стереть,
-## потом даёт выбрать сложность.
+## потом даёт выбрать сложность и показывает открывающую катсцену.
 func _on_play_pressed() -> void:
 	if SaveSystem.has_save() and not await Ui.confirm.ask("MENU_CONFIRM_NEW_GAME"):
 		return
@@ -54,6 +55,7 @@ func _on_play_pressed() -> void:
 		_play.grab_focus()
 		return
 	_set_locked(true)
+	await Ui.intro.play()
 	Game.new_game(level)
 
 

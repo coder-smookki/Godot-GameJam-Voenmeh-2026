@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
 [ext_resource type="Texture2D" path="res://assets/rooms/roof.png" id="art"]
 [ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
-[ext_resource type="PackedScene" path="res://src/world/interact/ending_terminal.tscn" id="terminal"]
+[ext_resource type="Script" path="res://src/world/roof_boss/roof_fight.gd" id="fight"]
 
 [sub_resource type="RectangleShape2D" id="floor"]
 size = Vector2(1900, 60)
@@ -44,17 +44,12 @@ position = Vector2(70, 251)
 target_room = "corridor_5"
 target_spawn = "from_roof"
 
-[node name="Delete" parent="Props" instance=ExtResource("terminal")]
-position = Vector2(700, 251)
-terminal = "delete"
-
-[node name="Fix" parent="Props" instance=ExtResource("terminal")]
-position = Vector2(1000, 251)
-terminal = "fix"
-
 [node name="Actors" type="Node2D" parent="."]
 
 [node name="Spawns" type="Node2D" parent="."]
 
 [node name="start" type="Marker2D" parent="Spawns"]
 position = Vector2(200, 251)
+
+[node name="Fight" type="Node2D" parent="."]
+script = ExtResource("fight")

@@ -28,6 +28,7 @@ const STEPS: Dictionary = {
 	"reached_floor_4": {"task": "TASK_PASS_BLOB"},
 	"blob_corridor_4": {"task": "TASK_ROOM_418"},
 	"boss_4": {"task": "TASK_GO_FLOOR_5", "announce": "ANNOUNCE_BUTTON_5"},
+	"boss_5": {"task": "TASK_GO_ROOF", "announce": "ANNOUNCE_ROOF"},
 	"seen_lestenko": {"announce": "ANNOUNCE_RAM"},
 }
 
@@ -88,3 +89,14 @@ func _on_world_marked(id: String) -> void:
 		Game.set_task(step["task"])
 	if step.has("announce"):
 		announce(step["announce"])
+
+
+## Выдаёт послание ЛАБЫ один раз: отметка, счётчик посланий и тост с текстом послания.
+## [param mark] - отметка послания, например "message_2".
+## [param text_key] - ключ текста послания.
+func give_message(mark: String, text_key: String) -> void:
+	if not World.mark(mark):
+		return
+	World.bump("messages")
+	Ui.toast(tr("TOAST_MESSAGE").format(World.f), ToastStack.KIND_LABA)
+	Ui.toast(tr(text_key), ToastStack.KIND_LABA)

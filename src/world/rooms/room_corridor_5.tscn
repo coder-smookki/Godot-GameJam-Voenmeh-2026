@@ -5,6 +5,8 @@
 [ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
 [ext_resource type="PackedScene" path="res://src/world/interact/elevator_door.tscn" id="elevator"]
 [ext_resource type="PackedScene" path="res://src/world/effects/leak.tscn" id="leak"]
+[ext_resource type="Script" path="res://src/world/mirror_boss/wired_mozhaitsev.gd" id="mozh"]
+[ext_resource type="Script" path="res://src/world/mirror_boss/mirror_fight.gd" id="mirror"]
 
 [sub_resource type="RectangleShape2D" id="floor"]
 size = Vector2(2600, 60)
@@ -65,6 +67,10 @@ locked_text_key = "LOCK_ROOF"
 
 [node name="Actors" type="Node2D" parent="."]
 
+[node name="Mozhaitsev" type="Node2D" parent="Actors"]
+position = Vector2(560, 254)
+script = ExtResource("mozh")
+
 [node name="Spawns" type="Node2D" parent="."]
 
 [node name="elevator" type="Marker2D" parent="Spawns"]
@@ -75,3 +81,7 @@ position = Vector2(894, 254)
 
 [node name="from_roof" type="Marker2D" parent="Spawns"]
 position = Vector2(1143, 254)
+
+[node name="Fight" type="Node2D" parent="." node_paths=PackedStringArray("mozhaitsev")]
+script = ExtResource("mirror")
+mozhaitsev = NodePath("../Actors/Mozhaitsev")

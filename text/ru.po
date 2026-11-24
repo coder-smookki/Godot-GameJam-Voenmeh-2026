@@ -1169,3 +1169,180 @@ msgstr "Пропуски и есть программирование. Иди н
 msgid "TALK_ZEML_AFTER"
 msgstr "Мажайцев на пятом. Смотри под ноги: там по полу тянутся кабели."
 
+msgid "NAME_MOZHAITSEV"
+msgstr "Мажайцев"
+
+msgid "TALK_MOZH_FAR_1"
+msgstr "Мажайцев! Держитесь, я сейчас подойду!"
+
+msgid "TALK_MOZH_FAR_2"
+msgstr "Стой! Не подходи ближе!"
+
+msgid "TALK_MOZH_CLONE_1"
+msgstr "Перед Демьяном из пикселей собирается его двойник."
+
+msgid "TALK_MOZH_CLONE_2"
+msgstr "Это не ты. Вирус сделал твою копию, и она повторяет каждый твой шаг."
+
+msgid "TALK_MOZH_HINT_1"
+msgstr "Только наоборот: ты вправо - он влево, ты вверх - он вниз."
+
+msgid "TALK_MOZH_HINT_2"
+msgstr "Под тремя клетками бомбы. Я их подсвечу - запоминай!"
+
+msgid "TALK_MOZH_HINT_3"
+msgstr "Заведи двойника на все три. А сам на них не наступай."
+
+msgid "TALK_MOZH_RETRY"
+msgstr "Ещё раз. Смотри внимательно, где бомбы."
+
+msgid "TALK_MOZH_FREE_1"
+msgstr "Получилось! Держи кнопку - она откроет выход на крышу."
+
+msgid "TALK_MOZH_FREE_2"
+msgstr "А вы? Я могу вас вытащить."
+
+msgid "TALK_MOZH_FREE_3"
+msgstr "Сейчас выберусь из этих проводов. Вирус уже поднимается на крышу."
+
+msgid "TASK_GO_ROOF"
+msgstr "Выйти на крышу"
+
+msgid "ANNOUNCE_ROOF"
+msgstr "Получена кнопка крыши"
+
+msgid "MIRROR_BOMBS"
+msgstr "Клон на бомбах: {done} из 3"
+
+msgid "MIRROR_MOVES"
+msgstr "Ходов: {left}"
+
+msgid "MIRROR_HINT"
+msgstr "Стрелки или WASD - шаг. Клон ходит зеркально"
+
+msgid "TALK_MOZH_JOIN_1"
+msgstr "Идём на крышу вместе. Одного я тебя туда не пущу."
+
+msgid "TALK_MOZH_JOIN_2"
+msgstr "Тогда за мной."
+
+msgid "TALK_ROOF_ARRIVAL_1"
+msgstr "Крыша. Впереди Петербург и Троицкий собор с синими куполами. Пиксели уже покрыли большую часть города и ползут к собору."
+
+msgid "TALK_ROOF_ARRIVAL_2"
+msgstr "Вирус поднялся сюда по кабелям. Иди вперёд, я рядом."
+
+msgid "TALK_ROOF_1"
+msgstr "Так вот что это было..."
+
+msgid "TALK_ROOF_2"
+msgstr "Это ЛАБА. Её держат три правила. Чини терминалы, и правила отключатся."
+
+msgid "TALK_ROOF_3"
+msgstr "Пока ЛАБА жива, пиксели ползут к собору. Нужно успеть."
+
+msgid "TALK_ROOF_GRAB_1"
+msgstr "Когда Демьян отключает третье правило, ЛАБА хватает его, и он застревает в текстурах."
+
+msgid "TALK_ROOF_GRAB_2"
+msgstr "Не могу вырваться!"
+
+msgid "TALK_ROOF_VANYA_1"
+msgstr "Демьян! Держись, сейчас я тебя вытащу!"
+
+msgid "TALK_ROOF_VANYA_2"
+msgstr "На крышу выбегает Ваня и хватает друга за руку."
+
+msgid "TALK_ROOF_CHOICE_1"
+msgstr "ЛАБА становится маленькой и перестаёт атаковать. Она молчит и ждёт решения."
+
+msgid "TALK_ROOF_CHOICE_2"
+msgstr "Вот терминал. Решай, что с ней делать. Только быстрее!"
+
+msgid "TALK_EPILOGUE_1"
+msgstr "Кафедра Н2. Комната больше не заражена. Демьян, Ваня и Мажайцев сидят за столом."
+
+msgid "TALK_EPILOGUE_2"
+msgstr "Так что это в итоге было? Что это за секретный эксперимент кафедры Н?"
+
+msgid "TALK_EPILOGUE_3"
+msgstr "Честно, я не понимаю, о чём ты..."
+
+msgid "TALK_EPILOGUE_4"
+msgstr "Мажайцев поворачивается: «Тшшшшшш...»"
+
+msgid "LABA_MESSAGE_2"
+msgstr "«Мне не объяснили»"
+
+msgid "LABA_MESSAGE_3"
+msgstr "«Научи меня»"
+
+msgid "BOSS_LABA"
+msgstr "ЛАБА.ZIP"
+
+msgid "BOSS_LABA_INTRO"
+msgstr "ФИНАЛ: ЛАБА"
+
+msgid "BOSS_HINT_LABA"
+msgstr "Правило {n} из {total}: Q + ЛКМ по терминалу на нужном числе"
+
+msgid "BOSS_RULE_OFF"
+msgstr "ПРАВИЛО {n} ОТКЛЮЧЕНО"
+
+msgid "BOSS_MOZH_HELPS"
+msgstr "МАЖАЙЦЕВ ПОМОГАЕТ"
+
+msgid "BOSS_LABA_GRAB"
+msgstr "ЛАБА В ЯРОСТИ"
+
+msgid "BOSS_LABA_SHOCK"
+msgstr "ЛАБА В ШОКЕ"
+
+msgid "BOSS_HINT_CHOICE"
+msgstr "Подойдите к терминалу и решите судьбу ЛАБЫ"
+
+msgid "ROOF_TIMER"
+msgstr "До собора {time}"
+
+msgid "CHOICE_TITLE"
+msgstr "Что сделать с ЛАБОЙ?"
+
+msgid "CHOICE_DELETE"
+msgstr "rm -rf laba"
+
+msgid "CHOICE_DELETE_NOTE"
+msgstr "Удалить ЛАБУ. Вирус исчезнет вместе с ней"
+
+msgid "CHOICE_FIX"
+msgstr "emotion = true"
+
+msgid "CHOICE_FIX_NOTE"
+msgstr "Исправить ЛАБУ и дать ей учиться"
+
+msgid "CHOICE_FIX_LOCKED"
+msgstr "Закрыто: посланий ЛАБЫ {messages} из 2"
+
+msgid "CHOICE_COMMAND_DELETE"
+msgstr "sudo rm -rf /laba"
+
+msgid "CHOICE_COMMAND_FIX"
+msgstr "laba.rules[3].emotion = true"
+
+msgid "INTRO_SKIP"
+msgstr "Enter - пропустить"
+
+msgid "CREDITS_TEAM"
+msgstr "Команда"
+
+msgid "CREDITS_MUSIC"
+msgstr "Музыка"
+
+msgid "CREDITS_THANKS"
+msgstr "Спасибо, что играли!"
+
+msgid "CREDITS_LAST"
+msgstr "ВОЕНМЕХ - лучше всех!"
+
+msgid "EPILOGUE_END"
+msgstr "END"
+

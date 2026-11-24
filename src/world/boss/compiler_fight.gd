@@ -163,6 +163,7 @@ func start() -> void:
 		return
 	phase = Phase.INTRO
 	_player = room.player
+	Music.play("boss2")
 	_trigger.set_deferred("monitoring", false)
 	_lock_door(exit_door, true)
 	_freeze(true)
@@ -319,6 +320,7 @@ func _outro() -> void:
 	World.mark(BOSS_MARK)
 	SaveSystem.save_game()
 	phase = Phase.DONE
+	Music.play_room()
 	finished.emit()
 
 

@@ -104,6 +104,70 @@ const TALKS: Dictionary = {
 	[
 		{"speaker": "zemlyanskaya", "text": "TALK_ZEML_AFTER"},
 	],
+	"mozhaitsev_far":
+	[
+		{"speaker": "demyan", "text": "TALK_MOZH_FAR_1"},
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_FAR_2"},
+	],
+	"mozhaitsev_clone":
+	[
+		{"speaker": "", "text": "TALK_MOZH_CLONE_1"},
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_CLONE_2"},
+	],
+	"mozhaitsev_hint":
+	[
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_HINT_1"},
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_HINT_2"},
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_HINT_3"},
+	],
+	"mozhaitsev_retry":
+	[
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_RETRY"},
+	],
+	"mozhaitsev_free":
+	[
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_FREE_1"},
+		{"speaker": "demyan", "text": "TALK_MOZH_FREE_2"},
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_FREE_3"},
+	],
+	"mozhaitsev_join":
+	[
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_JOIN_1"},
+		{"speaker": "demyan", "text": "TALK_MOZH_JOIN_2"},
+	],
+	"roof_arrival":
+	[
+		{"speaker": "", "text": "TALK_ROOF_ARRIVAL_1"},
+		{"speaker": "mozhaitsev", "text": "TALK_ROOF_ARRIVAL_2"},
+	],
+	"roof":
+	[
+		{"speaker": "demyan", "text": "TALK_ROOF_1"},
+		{"speaker": "mozhaitsev", "text": "TALK_ROOF_2"},
+		{"speaker": "", "text": "TALK_ROOF_3"},
+	],
+	"roof_grabbed":
+	[
+		{"speaker": "", "text": "TALK_ROOF_GRAB_1"},
+		{"speaker": "demyan", "text": "TALK_ROOF_GRAB_2"},
+	],
+	"roof_vanya":
+	[
+		{"speaker": "vanya", "text": "TALK_ROOF_VANYA_1"},
+		{"speaker": "", "text": "TALK_ROOF_VANYA_2"},
+	],
+	"roof_choice":
+	[
+		{"speaker": "", "text": "TALK_ROOF_CHOICE_1"},
+		{"speaker": "vanya", "text": "TALK_ROOF_CHOICE_2"},
+	],
+	"epilogue":
+	[
+		{"speaker": "", "text": "TALK_EPILOGUE_1", "pose": "1"},
+		{"speaker": "demyan", "text": "TALK_EPILOGUE_2", "pose": "2"},
+		{"speaker": "mozhaitsev", "text": "TALK_EPILOGUE_3", "pose": "3"},
+		{"speaker": "", "text": "TALK_EPILOGUE_4", "pose": "4"},
+	],
 	"lestenko":
 	[
 		{"speaker": "demyan", "text": "TALK_LESTENKO_1"},

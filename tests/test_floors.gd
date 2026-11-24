@@ -607,6 +607,141 @@ func test_tv_fight_timeout() -> void:
 	check(Ui.code.logic().solved == 0, "задачи начались заново")
 
 
+## Пятый этаж: Мажайцев вдали, клон перед героем, поле с бомбами. Неудача отнимает сердце и
+## раскладывает бомбы заново; победа отдаёт кнопку крыши.
+func test_mirror_fight() -> void:
+	await start_game()
+	World.mark("boss_4")
+	await Game.goto_room("corridor_5", Elevator.SPAWN)
+	var room := tree.current_scene as Room
+	var fight: MirrorFight = room.get_node("Fight")
+	var mozh: WiredMozhaitsev = room.get_node("Actors/Mozhaitsev")
+	check(not fight.is_running(), "у лифта боя нет")
+	room.player.global_position.x = MirrorFight.TRIGGER_X - 20.0
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	check(fight.is_running(), "герой увидел Мажайцева")
+	Ui.dialogue.advance()
+	Ui.dialogue.advance()
+	check(mozh.talking, "Мажайцев говорит с открытым ртом")
+	finish_talk()
+	check(not mozh.talking, "и закрывает рот после разговора")
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	finish_talk()
+	check(Ui.mirror.visible, "поле открыто, подсказка Мажайцева сразу за разговором")
+	finish_talk()
+	Engine.time_scale = 4.0
+	await tree.create_timer(Ui.mirror.logic().reveal_sec + 0.2, true, false, true).timeout
+	var logic := Ui.mirror.logic()
+	logic.bombs = [Vector2i(5, 0), Vector2i(3, 3), Vector2i(4, 2)] as Array[Vector2i]
+	Ui.mirror.step(Vector2i.LEFT)
+	await _until(func() -> bool: return int(World.f["hearts"]) == 2)
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	finish_talk()
+	await tree.create_timer(logic.reveal_sec + 0.2, true, false, true).timeout
+	logic.bombs = [Vector2i(1, 3), Vector2i(3, 3), Vector2i(5, 3)] as Array[Vector2i]
+	logic.move_limit = 99
+	for step: int in 5:
+		Ui.mirror.step(Vector2i.LEFT)
+	check(logic.is_won(), "клон взорвал три бомбы")
+	await _until(func() -> bool: return Ui.dialogue.visible and not Ui.mirror.visible)
+	finish_talk()
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	check(room.get_node_or_null("Actors/MozhaitsevFree") != null, "Мажайцев выбрался и подошёл")
+	finish_talk()
+	await _until(func() -> bool: return not fight.is_running())
+	Engine.time_scale = 1.0
+	check(World.is_marked("boss_5"), "босс пятого этажа побеждён")
+	equal(Game.task_key, "TASK_GO_ROOF", "задание: на крышу")
+	check((room.get_node("Props/Roof") as Door).is_open(), "выход на крышу открыт")
+	check(World.is_marked("message_3"), "третье послание ЛАБЫ")
+
+
+## Крыша: Мажайцев выходит с героем, бой из трёх подходов с терминалами, рука ЛАБЫ хватает
+## героя, Ваня вытаскивает его, терминал выбора; исправление ведёт к концовке «Пересдача».
+func test_roof_fight() -> void:
+	await start_game()
+	World.mark("boss_5")
+	World.bump("messages", 2)
+	await Game.goto_room("roof", "start")
+	var room := tree.current_scene as Room
+	var fight: RoofFight = room.get_node("Fight")
+	check(room.get_node_or_null("Actors/Mozhaitsev") != null, "Мажайцев вышел на крышу")
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	finish_talk()
+	check(not fight.is_running(), "у двери боя нет")
+	Engine.time_scale = 4.0
+	room.player.global_position.x = RoofFight.TRIGGER_X + 10.0
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	check(fight.laba().power > 0.9, "голограмма ЛАБЫ собралась")
+	finish_talk()
+	for rule: int in RoofFight.RULES:
+		await _until(func() -> bool: return fight.phase == RoofFight.Phase.ROUND)
+		equal(fight.rule, rule, "подход %d" % (rule + 1))
+		await tree.create_timer(FixColumn.RISE_SEC + 0.2).timeout
+		if rule == RoofFight.HELPER_ROUND:
+			await _until(func() -> bool: return _fixed(fight) > 0)
+			check(_fixed(fight) == 1, "Мажайцев сам починил один терминал")
+		for column: FixColumn in fight.columns():
+			if not column.is_fixed:
+				column.value = column.target
+				column.hit()
+		await _until(func() -> bool: return fight.phase != RoofFight.Phase.ROUND)
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	check(fight.phase == RoofFight.Phase.GRAB, "рука схватила героя")
+	check(not room.player.visible, "героя держит рука")
+	finish_talk()
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	check(fight.vanya() != null, "прибежал Ваня")
+	finish_talk()
+	await _until(func() -> bool: return Ui.pull.visible)
+	while Ui.pull.visible:
+		Ui.pull.press()
+		await tree.process_frame
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	check(room.player.visible and fight.laba().shocked, "герой свободен, ЛАБА в шоке")
+	finish_talk()
+	await _until(func() -> bool: return fight.phase == RoofFight.Phase.CHOICE)
+	Engine.time_scale = 1.0
+	check(fight.terminal() != null, "из крыши поднялся терминал")
+	fight.terminal().interact(room.player)
+	check(Ui.choice.visible, "открылся выбор")
+	Ui.choice.pick(1)
+	await _until(func() -> bool: return Game.pending_ending == "retake")
+	check(World.is_marked("roof_done"), "ЛАБА исправлена")
+	await _until(func() -> bool: return not Game.is_busy())
+	Game.pending_ending = ""
+
+
+## Пиксели дошли до собора раньше, чем бой кончился: концовка №2.
+func test_roof_city_lost() -> void:
+	await start_game()
+	World.mark("boss_5")
+	await Game.goto_room("roof", "start")
+	var room := tree.current_scene as Room
+	var fight: RoofFight = room.get_node("Fight")
+	finish_talk()
+	Engine.time_scale = 4.0
+	room.player.global_position.x = RoofFight.TRIGGER_X + 10.0
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	finish_talk()
+	await _until(func() -> bool: return fight.phase == RoofFight.Phase.ROUND)
+	fight.time_left = 0.05
+	await _until(func() -> bool: return Game.pending_ending == "not_found")
+	Engine.time_scale = 1.0
+	await _until(func() -> bool: return not Game.is_busy())
+	Game.pending_ending = ""
+
+
+## Считает починенные терминалы подхода.
+## [param fight] - бой на крыше.
+func _fixed(fight: RoofFight) -> int:
+	var count := 0
+	for column: FixColumn in fight.columns():
+		if column.is_fixed:
+			count += 1
+	return count
+
+
 ## Попадает лучом отладчика в цель боя.
 ## [param target] - окно, миска или батарея.
 func _shoot_target(target: Node) -> void:

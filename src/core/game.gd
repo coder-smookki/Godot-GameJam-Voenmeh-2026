@@ -17,6 +17,7 @@ const START_ROOM := "vestibule"
 const START_SPAWN := "start"
 const MAIN_MENU_SCENE := "res://src/ui/main_menu/main_menu.tscn"
 const ENDING_SCENE := "res://src/ui/ending/ending_screen.tscn"
+const FINALE_SCENE := "res://src/ui/finale/finale_screen.tscn"
 const SLOW_SCALE := 0.5
 const LIFT_ROOM := "lift"
 const HEARTS := "hearts"
@@ -25,6 +26,7 @@ var room_code: String = ""
 var spawn_id: String = ""
 var task_key: String = ""
 var pending_ending: String = ""
+var last_ending: String = ""
 var in_room: bool = false
 var lift_floor: int = 1
 
@@ -161,14 +163,29 @@ func show_ending(ending_id: String) -> void:
 	_busy = false
 
 
-## Завершает показ концовки: основная ведёт в главное меню, остальные возвращают в игру.
+## Завершает показ концовки: основная ведёт в финал (эпилог и титры), остальные возвращают
+## в игру.
 func finish_ending() -> void:
 	var ending_id := pending_ending
 	pending_ending = ""
-	if EndingCatalog.is_final(ending_id) or not LocationCatalog.is_built(room_code):
+	last_ending = ending_id
+	if EndingCatalog.is_final(ending_id):
+		await show_finale()
+	elif not LocationCatalog.is_built(room_code):
 		await to_main_menu()
 	else:
 		await goto_room(room_code, spawn_id)
+
+
+## Показывает финал: эпилог после хорошей концовки и титры, потом главное меню.
+func show_finale() -> void:
+	if _busy:
+		return
+	_busy = true
+	in_room = false
+	rooms_left.emit()
+	await _switch_scene(FINALE_SCENE, "", "")
+	_busy = false
 
 
 ## Возвращает в главное меню.
