@@ -100,3 +100,16 @@ func give_message(mark: String, text_key: String) -> void:
 	World.bump("messages")
 	Ui.toast(tr("TOAST_MESSAGE").format(World.f), ToastStack.KIND_LABA)
 	Ui.toast(tr(text_key), ToastStack.KIND_LABA)
+
+
+## Засчитывает найденную капибару один раз: отметка, счётчик, тост и сохранение.
+## [param mark] - отметка находки, например "capy_316".
+## Возвращает true, если капибара найдена впервые.
+func find_capybara(mark: String) -> bool:
+	if not World.mark(mark):
+		return false
+	World.bump("capy")
+	var key := "TOAST_CAPY_ALL" if int(World.f["capy"]) >= World.CAPY_TOTAL else "TOAST_CAPY"
+	Ui.toast(tr(key).format(World.f), ToastStack.KIND_HINT)
+	SaveSystem.save_game()
+	return true

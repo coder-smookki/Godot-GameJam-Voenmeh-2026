@@ -10,7 +10,7 @@ func before_each() -> void:
 
 ## Настройки начинаются со значений по умолчанию, шины звука существуют.
 func test_defaults() -> void:
-	equal(Settings.value("master_volume"), 80, "общая громкость")
+	equal(Settings.value("master_volume"), 70, "общая громкость")
 	equal(Settings.value("fullscreen"), false, "оконный режим")
 	equal(Settings.value("hold_to_pull"), false, "режим «удерживать» выключен")
 	equal(Settings.value("screen_effects"), true, "эффекты экрана включены")

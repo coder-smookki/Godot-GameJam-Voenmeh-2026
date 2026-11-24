@@ -18,6 +18,7 @@ const START_SPAWN := "start"
 const MAIN_MENU_SCENE := "res://src/ui/main_menu/main_menu.tscn"
 const ENDING_SCENE := "res://src/ui/ending/ending_screen.tscn"
 const FINALE_SCENE := "res://src/ui/finale/finale_screen.tscn"
+const FINAL_FADE_SEC := 2.5
 const SLOW_SCALE := 0.5
 const LIFT_ROOM := "lift"
 const HEARTS := "hearts"
@@ -60,6 +61,31 @@ func new_game(level: String = "") -> void:
 func continue_game() -> bool:
 	if not SaveSystem.load_game():
 		return false
+	await _resume_session()
+	return true
+
+
+## Начинает заново с последнего сохранения (комнаты, куда герой вошёл последней) с полными
+## сердцами. Так проигрыш не стирает пройденные этажи.
+## Возвращает true, если сохранение нашлось.
+func restart_from_save() -> bool:
+	if not SaveSystem.load_game():
+		return false
+	World.set_value(HEARTS, Difficulty.value("hearts"))
+	await _resume_session()
+	return true
+
+
+## Сохраняет прохождение, когда игрок закрывает окно игры.
+## [param what] - код уведомления.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and in_room:
+		_store_session()
+		SaveSystem.save_game()
+
+
+## Ведёт героя в комнату из загруженного сохранения.
+func _resume_session() -> void:
 	var session: Dictionary = SaveSystem.session
 	var code: String = str(session.get("room", START_ROOM))
 	var spawn: String = str(session.get("spawn", START_SPAWN))
@@ -69,7 +95,6 @@ func continue_game() -> bool:
 		code = START_ROOM
 		spawn = START_SPAWN
 	await goto_room(code, spawn)
-	return true
 
 
 ## Переводит героя в другую комнату с затемнением и автосохранением.
@@ -104,8 +129,8 @@ func lose_heart() -> int:
 	return left
 
 
-## Показывает заставку проигрыша и начинает новую игру с вестибюля.
-## Открытые концовки в профиле остаются.
+## Показывает заставку проигрыша и возвращает героя к последнему сохранению с полными
+## сердцами; без сохранения начинает новую игру. Открытые концовки в профиле остаются.
 func game_over() -> void:
 	if _busy:
 		return
@@ -115,7 +140,8 @@ func game_over() -> void:
 	await Ui.fade_out()
 	Ui.game_over.close()
 	_busy = false
-	await new_game()
+	if not await restart_from_save():
+		await new_game()
 
 
 ## Заводит героя в кабину лифта и запоминает этаж, с которого он вошёл.
@@ -149,13 +175,24 @@ func set_task(text_key: String) -> void:
 	task_changed.emit(task_key)
 
 
-## Открывает концовку и показывает её экран.
+## Открывает концовку. Основная концовка без отдельного экрана: картинка медленно темнеет
+## и переходит в финал (эпилог с «тшшш» Мажайцева и END, потом титры). Остальные концовки
+## показывают свой экран.
 ## [param ending_id] - код концовки из каталога.
 func show_ending(ending_id: String) -> void:
 	if _busy or not EndingCatalog.has(ending_id):
 		return
-	_busy = true
 	SaveSystem.unlock_ending(ending_id)
+	if EndingCatalog.is_final(ending_id):
+		_busy = true
+		last_ending = ending_id
+		in_room = false
+		Music.stop()
+		await Ui.fade_out(FINAL_FADE_SEC)
+		_busy = false
+		await show_finale()
+		return
+	_busy = true
 	pending_ending = ending_id
 	in_room = false
 	rooms_left.emit()

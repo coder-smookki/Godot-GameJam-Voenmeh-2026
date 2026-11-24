@@ -4,12 +4,15 @@ extends Node
 ## Дорожка комнаты выбирается по коду комнаты и ходу сюжета ([method room_track]); бои,
 ## мини-игры, концовки и титры ставят свою дорожку через [method play] и возвращают дорожку
 ## комнаты через [method play_room]. Дорожки подобраны по названиям файлов от команды
-## и лежат в assets/music; они загружаются только когда нужны. Играет на шине Music.
+## и лежат в assets/music, выровнены по громкости; они загружаются только когда нужны. Играет
+## на шине Music тише голосов, а пока персонаж говорит, музыка приглушается ещё сильнее.
 
 const DIR := "res://assets/music/"
 const FADE_SEC := 1.2
 const SILENT_DB := -40.0
-const VOLUME_DB := -4.0
+const VOLUME_DB := -11.0
+const DUCK_DB := -7.0
+const DUCK_RATE := 20.0
 const TRACKS: Array[String] = [
 	"menu",
 	"floor1_before",
@@ -36,6 +39,7 @@ var current: String = ""
 var _players: Array[AudioStreamPlayer] = []
 var _active: int = 0
 var _fade: Tween = null
+var _duck: AudioEffectAmplify = null
 
 
 ## Создаёт два проигрывателя для перехода и слушает смену комнат.
@@ -48,6 +52,20 @@ func _ready() -> void:
 		add_child(player)
 		_players.append(player)
 	Game.room_entered.connect(_on_room_entered)
+	_duck = AudioEffectAmplify.new()
+	AudioServer.add_bus_effect(AudioServer.get_bus_index(&"Music"), _duck)
+
+
+## Приглушает музыку, пока звучит озвучка реплики, и плавно возвращает после.
+## [param delta] - время кадра в секундах.
+func _process(delta: float) -> void:
+	var target := DUCK_DB if Ui.dialogue.is_speaking() else 0.0
+	_duck.volume_db = move_toward(_duck.volume_db, target, DUCK_RATE * delta)
+
+
+## Возвращает, на сколько децибел сейчас приглушена музыка; нужно тестам.
+func duck_db() -> float:
+	return _duck.volume_db
 
 
 ## Возвращает дорожку для комнаты по ходу сюжета.

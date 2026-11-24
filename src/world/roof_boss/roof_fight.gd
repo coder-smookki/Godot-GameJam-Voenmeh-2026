@@ -11,6 +11,8 @@ extends BossFight
 ## После третьего правила у ЛАБЫ вырастает рука из пикселей (камера летит за ней) и хватает
 ## героя. Прибегает Ваня и вытаскивает друга мини-игрой «Тяни!». ЛАБА сжимается в шоке, перед
 ## героями из крыши поднимается терминал с выбором: удалить ЛАБУ или исправить её.
+## Если найдены все пять капибар, исправление открывает секретный финал: капибары выбегают на
+## крышу, ЛАБА становится капибарой-ассистентом, вирус уходит из города, над собором салют.
 
 signal finished
 
@@ -45,6 +47,7 @@ const SPAWN_GAP := 130.0
 const PINK := Color(1.0, 0.0, 1.0)
 const DARK := Color(0.0, 0.07, 0.0)
 const HOLO := Color(0.45, 0.85, 1.0)
+const CAPY_GOLD := Color(1.0, 0.78, 0.18)
 
 var phase: Phase = Phase.WAIT
 var rule: int = 0
@@ -400,6 +403,80 @@ func _free_hero() -> void:
 	_freeze(false)
 
 
+## Секретный финал: пять капибар окружают ЛАБУ и превращают её в капибару-ассистента;
+## вирус отступает от собора, над городом салют.
+func _capybara_finale() -> void:
+	_director.global_position = _hero_view()
+	_take_view()
+	Music.play("roof_rescue")
+	_hud.banner(tr("BOSS_CAPY_PARADE"), Palette.GOAL)
+	await _pan(Vector2(BOSS_POS.x + 60.0, 170.0), 0.8, 0.8)
+	var herd: Array[CapyPixel] = []
+	for index: int in World.CAPY_TOTAL:
+		var from_left := index % 2 == 0
+		var capy := CapyPixel.new()
+		capy.pixel = 2.5
+		capy.walking = true
+		capy.faces_right = from_left
+		capy.position = Vector2(BOSS_POS.x + (-560.0 if from_left else 760.0), FLOOR_Y)
+		get_parent().get_node("Actors").add_child(capy)
+		herd.append(capy)
+		var spot := BOSS_POS.x - 160.0 + index * 80.0
+		var run := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+		run.tween_property(capy, "position:x", spot, 1.1).set_trans(Tween.TRANS_QUAD)
+		run.tween_callback(_capy_arrived.bind(capy))
+		await _wait(0.22)
+	await _wait(1.4)
+	for capy: CapyPixel in herd:
+		_burst(capy.position + Vector2(0.0, -20.0), CAPY_GOLD, 12, 260.0, 2.0, 4.0)
+		var hop := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+		hop.tween_property(capy, "position:y", FLOOR_Y - 30.0, 0.18).set_ease(Tween.EASE_OUT)
+		hop.tween_property(capy, "position:y", FLOOR_Y, 0.18).set_ease(Tween.EASE_IN)
+		_beam(capy.position + Vector2(0.0, -20.0))
+		await _wait(0.15)
+	_shake_camera(8.0, 1.2)
+	_hud.flash(Color(1.0, 0.85, 0.4, 0.8))
+	await _pan(BOSS_POS + Vector2(0.0, 20.0), 0.5, 1.1)
+	await _laba.become_capybara(2.0)
+	_burst(BOSS_POS, CAPY_GOLD, 50, 300.0, 2.0, 6.0)
+	_burst(BOSS_POS, Color.WHITE, 30, 240.0, 1.0, 3.0)
+	_hud.banner(tr("BOSS_LABA_CAPY"), CAPY_GOLD)
+	await _wait(1.0)
+	await _pan(CATHEDRAL_VIEW, 1.2, 0.9)
+	_city.cleanse(2.6)
+	for shot: int in 8:
+		var at := CATHEDRAL_VIEW + Vector2(randf_range(-200.0, 200.0), randf_range(-90.0, -10.0))
+		_burst(at, [CAPY_GOLD, PINK, HOLO, Color.WHITE][shot % 4], 30, 200.0, 2.0, 4.0)
+		_shake_camera(3.0, 0.2)
+		await _wait(0.35)
+	await _wait(0.4)
+	await Ui.dialogue.play(DialogueCatalog.talk("roof_capybara"))
+
+
+## Капибара добежала до места: поворачивается к ЛАБЕ.
+## [param capy] - капибара.
+func _capy_arrived(capy: CapyPixel) -> void:
+	capy.walking = false
+	capy.faces_right = BOSS_POS.x > capy.position.x
+	capy.queue_redraw()
+	_burst(capy.position + Vector2(0.0, -10.0), CAPY_GOLD, 8, 100.0, 1.0, 3.0)
+
+
+## Пускает золотой луч от капибары к ЛАБЕ.
+## [param from] - откуда идёт луч.
+func _beam(from: Vector2) -> void:
+	var beam := Line2D.new()
+	beam.points = PackedVector2Array([from, BOSS_POS])
+	beam.width = 6.0
+	beam.default_color = Color(CAPY_GOLD, 0.85)
+	beam.z_index = 5
+	add_child(beam)
+	var fade := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	fade.tween_property(beam, "width", 1.0, 1.4)
+	fade.parallel().tween_property(beam, "modulate:a", 0.0, 1.4)
+	fade.tween_callback(beam.queue_free)
+
+
 ## Город захвачен: пиксели накрывают собор, концовка №2.
 func _city_lost() -> void:
 	phase = Phase.LOST
@@ -430,6 +507,10 @@ func _on_terminal_chosen(chosen_terminal: String) -> void:
 	if chosen_terminal == "delete":
 		_laba.glitch(2.0)
 		_city.progress = CityCapture.START
+	elif ending_id == "capybara":
+		await _capybara_finale()
+		if not is_inside_tree():
+			return
 	World.mark("roof_done")
 	SaveSystem.save_game()
 	finished.emit()

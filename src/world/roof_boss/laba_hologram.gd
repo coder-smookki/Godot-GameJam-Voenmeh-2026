@@ -6,7 +6,8 @@ extends Node2D
 ## развёртки, вокруг дышит голубое свечение, снизу бьёт луч проектора. Она парит и
 ## покачивается. Появляется из пикселей ([method materialize]), рычит при атаке
 ## ([method roar]), корёжится от отключённого правила ([method hurt]) и сжимается в шоке
-## ([method shock]). Живёт и на паузе, чтобы двигаться во время разговоров.
+## ([method shock]). В секретной концовке превращается в золотую капибару-ассистента
+## ([method become_capybara]). Живёт и на паузе, чтобы двигаться во время разговоров.
 ## Начало координат - середина голограммы.
 
 const ART: Texture2D = preload("res://assets/boss/roof/laba.png")
@@ -17,16 +18,20 @@ const BOB := 6.0
 const BOB_RATE := 1.3
 const HURT_SEC := 0.8
 const ROAR_SEC := 0.5
+const GOLD := Color(1.0, 0.8, 0.35)
+const CAPY_PIXEL := 8.0
 
 var power: float = 0.0
 var size: float = 1.0
 var shocked: bool = false
+var form: float = 0.0
 
 var _clock: float = 0.0
 var _glitch: float = 0.0
 var _hurt: float = 0.0
 var _roar: float = 0.0
 var _seed: int = 0
+var _capy: CapyPixel = null
 
 
 ## Живёт и на паузе.
@@ -64,6 +69,25 @@ func shock() -> void:
 	tween.tween_property(self, "size", 0.45, 0.9).set_trans(Tween.TRANS_ELASTIC)
 
 
+## Превращается в капибару-ассистента: папка тает в помехах, из света собирается
+## огромная золотая капибара.
+## [param sec] - сколько длится превращение.
+func become_capybara(sec: float = 2.0) -> void:
+	_glitch = sec
+	_capy = CapyPixel.new()
+	_capy.pixel = CAPY_PIXEL
+	_capy.tint = Color(1.0, 0.95, 0.75)
+	_capy.modulate.a = 0.0
+	_capy.faces_right = false
+	add_child(_capy)
+	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS).set_parallel()
+	tween.tween_property(self, "form", 1.0, sec).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(self, "size", 1.0, sec).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(_capy, "modulate:a", 0.92, sec)
+	await tween.finished
+	_capy.walking = true
+
+
 ## Даёт помехи на время.
 ## [param sec] - сколько секунд.
 func glitch(sec: float) -> void:
@@ -78,6 +102,9 @@ func _process(delta: float) -> void:
 	_hurt = maxf(_hurt - delta, 0.0)
 	_roar = maxf(_roar - delta, 0.0)
 	_seed = int(_clock * 24.0)
+	if _capy != null:
+		var hop := absf(sin(_clock * 3.0)) * 8.0
+		_capy.position = Vector2(0.0, _capy.height() * 0.5 + sin(_clock * BOB_RATE) * BOB - hop)
 	queue_redraw()
 
 
@@ -88,10 +115,12 @@ func _draw() -> void:
 	var bob := sin(_clock * BOB_RATE) * BOB
 	var swell := 1.0 + 0.12 * sin(_roar / ROAR_SEC * PI)
 	var grow := size * swell
-	var art_size := ART.get_size() * grow
+	var capy_size := Vector2(CapyPixel.WIDTH, CapyPixel.BODY.size() + 2) * CAPY_PIXEL
+	var art_size := (ART.get_size() * grow).lerp(capy_size + Vector2(16.0, 16.0), form)
 	var top_left := Vector2(-art_size.x * 0.5, -art_size.y * 0.5 + bob)
 	var flicker := 0.85 + 0.15 * sin(_clock * 17.0) * sin(_clock * 5.3)
-	var alpha := power * flicker * (0.9 if not shocked else 0.7)
+	var alpha := power * flicker * (0.9 if not shocked else 0.7) * (1.0 - form)
+	var glow_color := GLOW.lerp(GOLD, form)
 	var beam := PackedVector2Array(
 		[
 			Vector2(-art_size.x * 0.35, top_left.y + art_size.y),
@@ -100,10 +129,10 @@ func _draw() -> void:
 			Vector2(-18.0, 120.0),
 		]
 	)
-	draw_colored_polygon(beam, Color(GLOW, 0.12 * power))
+	draw_colored_polygon(beam, Color(glow_color, 0.12 * power))
 	for ring: int in 4:
 		var glow := Rect2(top_left, art_size).grow(6.0 + ring * 7.0)
-		draw_rect(glow, Color(GLOW, 0.05 * power * (4 - ring)))
+		draw_rect(glow, Color(glow_color, 0.05 * power * (4 - ring) * (1.0 + form)))
 	var tint := (
 		Color(1.0, 0.75, 0.75) if _hurt > 0.0 and int(_clock * 20.0) % 2 == 0 else Color.WHITE
 	)
@@ -128,7 +157,7 @@ func _draw() -> void:
 			Vector2(top_left.x + art_size.x, row),
 			Color(SCAN, SCAN.a * power)
 		)
-	if shocked:
+	if shocked and form < 0.5:
 		var font := Palette.font()
 		var mark := "?!"
 		var at := Vector2(art_size.x * 0.3, top_left.y - 6.0 + sin(_clock * 6.0) * 3.0)

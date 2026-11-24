@@ -70,6 +70,14 @@ func infected() -> int:
 	return int(clampf(progress, 0.0, 1.0) * _cells.size())
 
 
+## Очищает город: заражённые клетки исчезают от собора к окраинам.
+## [param sec] - сколько длится очистка.
+func cleanse(sec: float = 2.5) -> void:
+	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_property(self, "progress", 0.0, sec).set_trans(Tween.TRANS_SINE)
+	await tween.finished
+
+
 ## Накрывает собор за отведённое время.
 ## [param sec] - сколько длится захват.
 func swallow(sec: float = 1.2) -> void:

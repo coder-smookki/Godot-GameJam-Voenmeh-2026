@@ -15,6 +15,8 @@ const FLOOR_POP_SEC := 0.3
 
 var _task_hidden: bool = false
 var _floor_text: String = ""
+var _saved: Label = null
+var _saved_fade: Tween = null
 
 @onready var _task_panel: PanelContainer = $TaskPanel
 @onready var _task_text: Label = $TaskPanel/Box/Text
@@ -35,6 +37,26 @@ func _ready() -> void:
 	Game.task_changed.connect(_on_task_changed)
 	Game.slow_motion_changed.connect(_on_slow_motion_changed)
 	Infection.changed.connect(_on_infection_changed)
+	_saved = Label.new()
+	_saved.text = tr("HUD_SAVED")
+	_saved.add_theme_font_size_override("font_size", 8)
+	_saved.add_theme_color_override("font_color", Palette.OK)
+	_saved.add_theme_constant_override("outline_size", 4)
+	_saved.add_theme_color_override("font_outline_color", Palette.UI_SOLID)
+	_saved.position = Vector2(404.0, 252.0)
+	_saved.modulate.a = 0.0
+	add_child(_saved)
+	SaveSystem.saved.connect(_on_saved)
+
+
+## Ненадолго показывает в углу, что игра сохранилась.
+func _on_saved() -> void:
+	if _saved_fade != null and _saved_fade.is_valid():
+		_saved_fade.kill()
+	_saved_fade = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_saved_fade.tween_property(_saved, "modulate:a", 1.0, 0.2)
+	_saved_fade.tween_interval(1.2)
+	_saved_fade.tween_property(_saved, "modulate:a", 0.0, 0.5)
 
 
 ## Показывает интерфейс и обновляет плашку этажа при входе в комнату.

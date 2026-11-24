@@ -272,6 +272,7 @@ func _finish() -> void:
 		if not is_inside_tree():
 			return
 		if drawn:
+			_capy_escape()
 			break
 		Game.lose_heart()
 		if int(World.f[Game.HEARTS]) <= 0:
@@ -281,6 +282,28 @@ func _finish() -> void:
 		if not is_inside_tree():
 			return
 	await _outro()
+
+
+## Нарисованная капибара оживает: выпрыгивает из монитора, приземляется и убегает вправо.
+## Это вторая капибара из пяти.
+func _capy_escape() -> void:
+	Story.find_capybara("capy_drawing")
+	var capy := CapyPixel.new()
+	capy.pixel = 3.0
+	capy.position = MONITOR
+	capy.z_index = 8
+	add_child(capy)
+	_burst(MONITOR, Color("ffc62e"), 20, 160.0, 2.0, 4.0)
+	var land := Vector2(MONITOR.x + 90.0, FLOOR_Y)
+	var jump := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	jump.tween_property(capy, "position:x", land.x, 0.7)
+	jump.parallel().tween_property(capy, "position:y", MONITOR.y - 50.0, 0.3).set_ease(
+		Tween.EASE_OUT
+	)
+	jump.chain().tween_property(capy, "position:y", land.y, 0.4).set_ease(Tween.EASE_IN)
+	jump.tween_callback(func() -> void: capy.walking = true)
+	jump.tween_property(capy, "position:x", land.x + 900.0, 4.0)
+	jump.tween_callback(capy.queue_free)
 
 
 ## Победа: экран разбивается, Вальштейн освобождается и благодарит, герой получает умение,

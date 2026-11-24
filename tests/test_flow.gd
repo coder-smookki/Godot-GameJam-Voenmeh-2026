@@ -189,7 +189,7 @@ func test_elevator_ride() -> void:
 	check(not tree.paused, "панель закрыта")
 
 
-## Шуточная концовка возвращает в комнату, основная ведёт в главное меню.
+## Шуточная концовка возвращает в комнату; основная без экрана концовки уходит в финал.
 func test_endings_route() -> void:
 	await start_game()
 	await Game.show_ending("expelled")
@@ -199,8 +199,10 @@ func test_endings_route() -> void:
 	equal(Game.room_code, "vestibule", "после шутки герой снова в вестибюле")
 	check(Game.in_room, "игра продолжается")
 	await Game.show_ending("rm_rf")
-	await Game.finish_ending()
-	check(not Game.in_room, "после основной концовки открыто меню")
+	check(not Game.in_room, "после основной концовки игра вне комнаты")
+	equal(tree.current_scene.scene_file_path, Game.FINALE_SCENE, "сразу финал")
+	check(SaveSystem.is_ending_unlocked("rm_rf"), "концовка открыта")
+	await Game.to_main_menu()
 	equal(Game.pending_ending, "", "ожидающей концовки нет")
 
 
@@ -373,10 +375,30 @@ func test_finale() -> void:
 	await start_game()
 	Game.last_ending = "retake"
 	await Game.show_finale()
-	await tree.create_timer(1.0).timeout
+	await tree.create_timer(2.5).timeout
 	check(Ui.dialogue.visible, "эпилог: разговор за столом")
 	finish_talk()
-	await tree.create_timer(4.0).timeout
+	await tree.create_timer(1.5).timeout
+	check(
+		tree.current_scene.get_children().any(
+			func(node: Node) -> bool: return node is Label and node.text == "END"
+		),
+		"END поверх кадра с «тшшш»"
+	)
+	await tree.create_timer(5.0).timeout
 	equal(Music.current, "credits", "титры под свою музыку")
 	await Game.to_main_menu()
 	check(tree.current_scene.scene_file_path == Game.MAIN_MENU_SCENE, "после титров главное меню")
+
+
+## Музыка тише голосов и приглушается, пока звучит озвучка реплики.
+func test_music_ducks_under_voice() -> void:
+	await start_game()
+	check(Music.VOLUME_DB <= -10.0, "музыка идёт фоном")
+	Ui.dialogue.play(DialogueCatalog.talk("roof"))
+	await tree.create_timer(0.6).timeout
+	check(Ui.dialogue.is_speaking(), "реплика озвучена")
+	check(Music.duck_db() < -3.0, "музыка приглушена под голос")
+	finish_talk()
+	await tree.create_timer(0.6).timeout
+	check(Music.duck_db() > -0.5, "после разговора музыка вернулась")

@@ -76,3 +76,23 @@ func test_profile() -> void:
 	check(SaveSystem.is_ending_unlocked("rm_rf"), "вторая концовка тоже в профиле")
 	SaveSystem.unlock_ending("no_such_ending")
 	check(not SaveSystem.is_ending_unlocked("no_such_ending"), "чужая концовка не записана")
+
+
+## Закрытие окна сохраняет прохождение; «Продолжить» возвращает комнату, капибар и послания.
+func test_close_saves_and_continue_restores() -> void:
+	await start_game()
+	await Game.goto_room("wardrobe")
+	finish_talk()
+	Story.find_capybara("capy_316")
+	World.mark("message_2")
+	World.mark("after_last_save")
+	Game.set_task("TASK_GO_FLOOR_3")
+	Game._notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
+	World.reset({})
+	check(await Game.continue_game(), "сохранение загружено")
+	finish_talk()
+	equal(Game.room_code, "wardrobe", "та же комната")
+	equal(Game.task_key, "TASK_GO_FLOOR_3", "то же задание")
+	equal(World.f["capy"], 1, "капибара на месте")
+	check(World.is_marked("capy_316") and World.is_marked("message_2"), "отметки на месте")
+	check(World.is_marked("after_last_save"), "закрытие окна сохранило последние изменения")
