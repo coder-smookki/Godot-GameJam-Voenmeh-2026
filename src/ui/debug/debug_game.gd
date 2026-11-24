@@ -89,6 +89,8 @@ func _input(event: InputEvent) -> void:
 ## Возвращает true, если код исправлен вовремя.
 func play(seed_value: int = -1, index: int = -1) -> bool:
 	_logic = DebugLogic.new(seed_value, index)
+	_logic.time_left = Difficulty.value("debug_time")
+	_logic.penalty_scale = Difficulty.value("debug_penalty")
 	_logic.penalized.connect(_on_penalized)
 	_logic.solved.connect(_on_solved)
 	_logic.failed.connect(_on_failed)
@@ -155,7 +157,8 @@ func _draw() -> void:
 	var font := Palette.font()
 	var origin := _offset
 	_text(font, origin + Vector2(30.0, 30.0), tr("DEBUG_TITLE"), BORDER)
-	var timer := "0:%02d" % ceili(_logic.time_left)
+	var seconds := ceili(_logic.time_left)
+	var timer := "%d:%02d" % [floori(seconds / 60.0), seconds % 60]
 	var low := _logic.time_left <= LOW_TIME and int(_clock * 4.0) % 2 == 0
 	_text(font, origin + Vector2(430.0 - timer.length() * 8.0, 30.0), timer, _timer_color(low))
 	if not _penalty.is_empty():

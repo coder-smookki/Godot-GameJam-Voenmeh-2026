@@ -10,11 +10,16 @@ func test_new_game_starts_in_vestibule() -> void:
 	finish_talk()
 	check(World.is_marked("seen_vestibule_arrival"), "разговор запомнен")
 	equal(Game.room_code, "vestibule", "стартовая комната")
-	equal(Game.task_key, Story.START_TASK, "первое задание")
+	equal(Game.task_key, "", "до крика задания нет")
 	var room := tree.current_scene as Room
 	check(room != null and room.player != null, "герой создан")
 	equal(room.get_node("Actors").get_child_count(), 1, "в вестибюле только герой")
-	check(tree.current_scene.get_node("Props/Scream").visible, "из гардероба слышен крик")
+	check(not room.get_node("Props/Scream").visible, "у входа крика ещё не слышно")
+	room.player.global_position.x = 1150.0
+	for frame: int in 3:
+		await tree.physics_frame
+	check(room.get_node("Props/Scream").visible, "у гардероба слышен крик")
+	equal(Game.task_key, "TASK_FIND_SCREAM", "задание появилось у гардероба")
 	check(not tree.paused, "мир не на паузе")
 	check(SaveSystem.has_save(), "вход в комнату сохранён")
 
@@ -42,7 +47,12 @@ func test_hero_jumps() -> void:
 		await tree.physics_frame
 		frames += 1
 	await tree.physics_frame
-	equal(sprite.animation, &"land", "после приземления кадр приседа")
+	equal(sprite.animation, &"land", "приземление на том же кадре прыжка")
+	equal(
+		sprite.sprite_frames.get_frame_texture(&"land", 0),
+		sprite.sprite_frames.get_frame_texture(&"jump", 0),
+		"один кадр на весь прыжок"
+	)
 	check(_puffs(player.get_parent()) >= 1, "от приземления поднялась пыль")
 	check(sprite.scale.y < 1.0, "при посадке герой сплющился")
 	for frame: int in 30:
@@ -76,9 +86,11 @@ func test_vanya_rescue() -> void:
 	var room := tree.current_scene as Room
 	var vanya: StuckVanya = room.get_node("Actors/Vanya")
 	check(not Elevator.is_working(), "до спасения лифт не едет")
-	check(vanya.get_node("Art/Mass").visible, "ком шахматки на месте")
+	check(vanya.get_node("Art/Stuck").visible, "Ваня застрял в коме шахматки")
+	check(not vanya.get_node("Body").visible, "до спасения Ваня нарисован в коме")
 	vanya.interact(room.player)
 	check(Ui.pull.visible and tree.paused, "мини-игра открыта и мир стоит")
+	check(not vanya.get_node("Art/Stuck").visible, "кадр с одним Ваней сменился")
 	check(not room.player.visible, "героя рисует кадр мини-игры")
 	equal(vanya.get_node("Art/Pull").texture, StuckVanya.FRAMES[0], "спасение с первого кадра")
 	check(not Ui.hud.visible, "задание спрятано на время мини-игры")
@@ -93,7 +105,7 @@ func test_vanya_rescue() -> void:
 	check(World.is_marked("vanya_saved"), "Ваня спасён")
 	equal(Game.task_key, "TASK_GO_FLOOR_2", "новое задание")
 	check(room.player.visible, "герой снова на ногах")
-	check(not vanya.get_node("Art/Mass").visible, "ком шахматки отступил")
+	check(not vanya.get_node("Art/Stuck").visible, "ком шахматки отступил")
 	check(vanya.get_node("Art/Remnant").visible, "остался маленький остаток")
 	equal(vanya.position.x, StuckVanya.FREE_X, "Ваня стоит свободно")
 	check(not Ui.dialogue.visible, "сначала шахматка сжимается")
@@ -111,7 +123,8 @@ func test_vanya_rescue() -> void:
 	check(not tree.current_scene.get_node("Props/Scream").visible, "крика больше нет")
 
 
-## Три промаха в мини-игре: кадры идут 1-2-3-4, шахматка отбрасывает героя, он теряет сердце,
+## Три промаха в мини-игре: кадры идут 1-2-3-4, шахматка поглощает обоих и отбрасывает героя,
+## он теряет сердце,
 ## Ваня не спасён, можно пробовать снова.
 func test_vanya_rescue_lost() -> void:
 	await start_game()
@@ -142,7 +155,7 @@ func test_vanya_rescue_lost() -> void:
 		room.player.global_position.x < StuckVanya.HERO_THROWN_FROM - 80.0, "герой отлетел от кома"
 	)
 	check(not World.is_marked("vanya_saved"), "Ваня не спасён")
-	check(vanya.get_node("Art/Mass").visible, "ком шахматки на месте")
+	check(vanya.get_node("Art/Stuck").visible, "Ваня снова один в коме")
 	vanya.interact(room.player)
 	check(Ui.pull.visible, "можно попробовать ещё раз")
 	while Ui.pull.visible:
@@ -308,3 +321,37 @@ func _puffs(actors: Node) -> int:
 		if child is Puff:
 			count += 1
 	return count
+
+
+## Перед новой игрой выбирается сложность; на ультра у героя одно сердце, и после проигрыша
+## игра начинается заново на той же сложности.
+func test_difficulty_choice() -> void:
+	var picked: Array[String] = ["-"]
+	var waiter := func() -> void: picked[0] = await Ui.difficulty.choose()
+	waiter.call()
+	await tree.process_frame
+	check(Ui.difficulty.visible, "экран сложности открыт")
+	var levels: Control = Ui.difficulty.get_node("Panel/Box/Levels")
+	equal(levels.get_child_count(), Difficulty.LEVELS.size(), "четыре уровня")
+	check(levels.get_child(1).has_focus(), "по умолчанию средний")
+	(levels.get_child(3) as Button).pressed.emit()
+	await tree.process_frame
+	equal(picked[0], Difficulty.ULTRA, "выбран ультра")
+	check(not Ui.difficulty.visible, "экран закрыт")
+	await Game.new_game(Difficulty.ULTRA)
+	finish_talk()
+	equal(Difficulty.current(), Difficulty.ULTRA, "сложность в мире")
+	equal(World.f["hearts"], 1, "одно сердце")
+	var hearts: Hearts = Ui.hud.get_node("FloorPanel/Box/Hearts")
+	equal(hearts.custom_minimum_size.x, float(Hearts.WIDTH), "на плашке одно сердце")
+	check(
+		SaveSystem.load_game() and Difficulty.current() == Difficulty.ULTRA, "сложность сохранена"
+	)
+	await Game.new_game()
+	finish_talk()
+	equal(Difficulty.current(), Difficulty.ULTRA, "новая игра после проигрыша на той же сложности")
+	await Game.new_game(Difficulty.EASY)
+	finish_talk()
+	equal(World.f["hearts"], 5, "на лёгком пять сердец")
+	await Game.new_game(Difficulty.MEDIUM)
+	finish_talk()

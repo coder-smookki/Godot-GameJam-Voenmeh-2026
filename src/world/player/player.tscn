@@ -7,8 +7,7 @@
 [ext_resource type="Texture2D" path="res://assets/characters/dima/walk_2.png" id="w2"]
 [ext_resource type="Texture2D" path="res://assets/characters/dima/walk_3.png" id="w3"]
 [ext_resource type="Texture2D" path="res://assets/characters/dima/walk_4.png" id="w4"]
-[ext_resource type="Texture2D" path="res://assets/characters/dima/jump_1.png" id="j1"]
-[ext_resource type="Texture2D" path="res://assets/characters/dima/jump_2.png" id="j2"]
+[ext_resource type="Texture2D" path="res://assets/characters/dima/jump.png" id="jump"]
 [ext_resource type="Texture2D" path="res://assets/characters/dima/idle.png" id="idle"]
 
 [sub_resource type="RectangleShape2D" id="body"]
@@ -29,7 +28,7 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("j2")
+"texture": ExtResource("jump")
 }],
 "loop": true,
 "name": &"jump",
@@ -37,7 +36,7 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("j1")
+"texture": ExtResource("jump")
 }],
 "loop": true,
 "name": &"land",

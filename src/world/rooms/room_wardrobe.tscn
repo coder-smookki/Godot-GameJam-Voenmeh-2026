@@ -49,7 +49,7 @@ prompt_offset = Vector2(0, -158)
 [node name="Actors" type="Node2D" parent="."]
 
 [node name="Vanya" parent="Actors" instance=ExtResource("vanya")]
-position = Vector2(430, 246)
+position = Vector2(390, 246)
 
 [node name="Spawns" type="Node2D" parent="."]
 

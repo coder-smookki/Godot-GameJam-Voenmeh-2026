@@ -5,18 +5,18 @@ extends Node
 ## а что из этого следует, описано здесь в одной таблице. Здесь же разговоры,
 ## которые начинаются сами, когда герой входит в комнату, и плашки над головой героя.
 
-const START_TASK := "TASK_FIND_SCREAM"
 const SEEN_PREFIX := "seen_"
 const ARRIVALS: Dictionary = {
 	"vestibule": ["vestibule_arrival"],
 	"corridor_2": ["corridor_2_arrival"],
-	"lift": ["elevator_first", "lift_lestenko"],
+	"lift": ["elevator_first", "lestenko"],
 }
-const ENTRY_MARKS: Dictionary = {"316": "cat_joined"}
+const ENTRY_MARKS: Dictionary = {"316": "cat_joined", "corridor_4": "reached_floor_4"}
 const ARRIVAL_CONDITIONS: Dictionary = {
-	"lift_lestenko": "is_marked('boss_2')",
+	"lestenko": "is_marked('boss_2')",
 }
 const STEPS: Dictionary = {
+	"heard_scream": {"task": "TASK_FIND_SCREAM"},
 	"vanya_saved": {"task": "TASK_GO_FLOOR_2"},
 	"seen_corridor_2_arrival": {"task": "TASK_FIND_HELP", "infect_floor": 2, "infection": 10.0},
 	"ability_debugger": {"task": "TASK_DEBUG_CODE", "announce": "ANNOUNCE_DEBUGGER"},
@@ -24,15 +24,17 @@ const STEPS: Dictionary = {
 	"seen_valshtein": {"task": "TASK_FIGHT_COMPILER"},
 	"ability_2": {"announce": "ANNOUNCE_ABILITY_2"},
 	"boss_2": {"task": "TASK_GO_FLOOR_3", "announce": "ANNOUNCE_BUTTON_3"},
-	"boss_3": {"announce": "ANNOUNCE_BUTTON_4"},
-	"boss_4": {"announce": "ANNOUNCE_BUTTON_5"},
-	"seen_lift_lestenko": {"announce": "ANNOUNCE_RAM"},
+	"boss_3": {"task": "TASK_GO_FLOOR_4", "announce": "ANNOUNCE_BUTTON_4"},
+	"reached_floor_4": {"task": "TASK_PASS_BLOB"},
+	"blob_corridor_4": {"task": "TASK_ROOM_418"},
+	"boss_4": {"task": "TASK_GO_FLOOR_5", "announce": "ANNOUNCE_BUTTON_5"},
+	"seen_lestenko": {"announce": "ANNOUNCE_RAM"},
 }
 
 
-## Подписывается на начало игры, вход в комнату и отметки мира.
+## Подписывается на вход в комнату и отметки мира.
+## Первое задание появляется не сразу, а когда герой слышит крик из гардероба.
 func _ready() -> void:
-	Game.game_started.connect(_on_game_started)
 	Game.room_entered.connect(_on_room_entered)
 	World.marked.connect(_on_world_marked)
 
@@ -58,11 +60,6 @@ func announce(text_key: String) -> void:
 	var room := get_tree().current_scene as Room
 	if room != null and is_instance_valid(room.player):
 		room.player.announce(tr(text_key))
-
-
-## Ставит первое задание в начале новой игры.
-func _on_game_started() -> void:
-	Game.set_task(START_TASK)
 
 
 ## По очереди начинает разговоры, которыми герой встречает комнату.

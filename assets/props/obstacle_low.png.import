@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7rnhv2si2ksi"
-path="res://.godot/imported/jump_2.png-bd238152aa63f3f895c41e7291b3850b.ctex"
+uid="uid://cwkscjqhpa5h6"
+path="res://.godot/imported/obstacle_low.png-6b9b623a7a181ad7ec7402d35a0ed139.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/characters/dima/jump_2.png"
-dest_files=["res://.godot/imported/jump_2.png-bd238152aa63f3f895c41e7291b3850b.ctex"]
+source_file="res://assets/props/obstacle_low.png"
+dest_files=["res://.godot/imported/obstacle_low.png-6b9b623a7a181ad7ec7402d35a0ed139.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ch0o6b730jlcm"
-path="res://.godot/imported/mass.png-e97534c86ae48530c4a9ece9dd89c359.ctex"
+uid="uid://bxdgq0m8sukn0"
+path="res://.godot/imported/talk.png-d0775d9999b9b2c80ddec34f7e214ead.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/minigames/pull/mass.png"
-dest_files=["res://.godot/imported/mass.png-e97534c86ae48530c4a9ece9dd89c359.ctex"]
+source_file="res://assets/characters/zemlyanskaya/talk.png"
+dest_files=["res://.godot/imported/talk.png-d0775d9999b9b2c80ddec34f7e214ead.ctex"]
 
 [params]
 

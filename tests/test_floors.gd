@@ -37,27 +37,33 @@ func test_elevator_first_look() -> void:
 	check(not Ui.dialogue.visible, "во второй раз реплики нет")
 
 
-## После победы над боссом в кабине стоит Лестенко: разговор, подарок над головой героя,
-## на панели загорается третья кнопка.
+## После победы над боссом второго этажа в кабине лифта стоит Лестенко: разговор по сценарию
+## с его позами, подарок над головой героя; в следующий раз его в кабине нет.
 func test_lift_lestenko() -> void:
 	await start_game()
 	World.mark("vanya_saved")
 	World.mark("seen_elevator_first")
+	await Game.enter_lift()
+	check(tree.current_scene.get_node_or_null("Actors/Lestenko") == null, "до босса его нет")
+	await Game.leave_lift()
 	World.mark("boss_2")
-	await Game.goto_room("corridor_2", Elevator.SPAWN)
-	finish_talk()
 	await Game.enter_lift()
 	var cabin := tree.current_scene as Room
-	check(cabin.get_node_or_null("Actors/Lestenko") != null, "Лестенко в кабине")
-	equal(cabin.get_node("Backdrop/Art").texture, LiftArt.ART[1], "горят три кнопки")
-	check(Ui.dialogue.visible, "Лестенко заговорил")
+	var lestenko: Npc = cabin.get_node("Actors/Lestenko")
+	check(Ui.dialogue.visible, "Лестенко заговорил в кабине")
+	equal(lestenko.current_texture(), lestenko.poses["stand"], "пока говорит герой, он стоит")
+	Ui.dialogue.advance()
+	Ui.dialogue.advance()
+	equal(lestenko.current_texture(), lestenko.poses["talk"], "на своей реплике говорит")
 	finish_talk()
-	check(World.is_marked("seen_lift_lestenko"), "разговор запомнен")
+	check(World.is_marked("seen_lestenko"), "разговор запомнен")
 	check(_announced(cabin.player, "ANNOUNCE_RAM"), "над головой плашка с подарком")
+	equal(lestenko.current_texture(), lestenko.poses["stand"], "после разговора снова стоит")
 	await Game.leave_lift()
-	equal(Game.room_code, "corridor_2", "кабина вернула героя на второй этаж")
 	await Game.enter_lift()
 	check(tree.current_scene.get_node_or_null("Actors/Lestenko") == null, "Лестенко уехал")
+	await Game.goto_room("corridor_3", Elevator.SPAWN)
+	check(not Ui.dialogue.visible, "на третьем этаже разговора нет")
 
 
 ## Второй этаж по сценарию и заметкам: паника, Наурусова у надписи ERROR в позах художниц,
@@ -163,7 +169,9 @@ func test_debug_timeout_costs_heart() -> void:
 	Ui.close_all_modals()
 
 
-## Сгусток ошибки на четвёртом этаже: три попадания, после первого он показан раненым.
+## Сгусток на четвёртом этаже стоит стеной; когда герой подходит, сама начинается
+## викторина. Правильные ответы бьют сгусток, нужное число ответов его лопает, дверь 418
+## открывается, и сгусток больше не возвращается.
 func test_blob() -> void:
 	await start_game()
 	await Game.goto_room("corridor_4", Elevator.SPAWN)
@@ -171,12 +179,24 @@ func test_blob() -> void:
 	var blob: Blob = room.get_node("Actors/Blob")
 	var door: Door = room.get_node("Props/Room418")
 	check(not door.is_open(), "сгусток держит дверь 418")
-	blob.hit()
-	equal(blob.get_node("Sprite").texture, Blob.HURT, "после попадания кадр с уроном")
-	blob.hit()
-	check(not World.is_marked(blob.mark_name()), "после двух попаданий сгусток жив")
-	blob.hit()
-	check(World.is_marked(blob.mark_name()), "третье попадание его лопнуло")
+	room.player.global_position.x = blob.global_position.x + 300.0
+	for frame: int in 3:
+		await tree.physics_frame
+	check(not Ui.quiz.visible, "издалека викторины нет")
+	room.player.global_position.x = blob.global_position.x + 160.0
+	for frame: int in 4:
+		await tree.physics_frame
+	check(Ui.quiz.visible and tree.paused, "у сгустка сама началась викторина")
+	var quiz := Ui.quiz.logic()
+	equal(blob.hits_left(), quiz.needed, "здоровья столько, сколько нужно ответов")
+	Ui.quiz.choose(quiz.correct_slot())
+	equal(blob.hits_left(), quiz.needed - 1, "правильный ответ бьёт сгусток")
+	equal(blob.get_node("Sprite").texture, Blob.HURT, "кадр с уроном")
+	while Ui.quiz.visible:
+		await tree.create_timer(QuizGame.FEEDBACK_SEC + 0.1, true, false, true).timeout
+		if Ui.quiz.visible:
+			Ui.quiz.choose(Ui.quiz.logic().correct_slot())
+	check(World.is_marked(blob.mark_name()), "сгусток лопнул")
 	check(door.is_open(), "дверь 418 открыта")
 	await Game.goto_room("corridor_2", Elevator.SPAWN)
 	finish_talk()
@@ -184,6 +204,39 @@ func test_blob() -> void:
 	room = tree.current_scene as Room
 	check(room.get_node_or_null("Actors/Blob") == null, "лопнувший сгусток не вернулся")
 	check(room.get_node_or_null("Props/Seal") == null, "шахматка с двери ушла")
+
+
+## Сгусток не пропускает героя, а проигранная викторина отбрасывает его и отнимает сердце;
+## подойти можно снова.
+func test_blob_quiz_lost() -> void:
+	await start_game()
+	await Game.goto_room("corridor_4", Elevator.SPAWN)
+	var room := tree.current_scene as Room
+	var blob: Blob = room.get_node("Actors/Blob")
+	room.player.global_position.x = blob.global_position.x + 160.0
+	for frame: int in 4:
+		await tree.physics_frame
+	var quiz := Ui.quiz.logic()
+	for mistake: int in quiz.mistakes_allowed + 1:
+		Ui.quiz.choose((quiz.correct_slot() + 1) % QuizLogic.OPTIONS)
+		await tree.create_timer(QuizGame.FEEDBACK_SEC + 0.1, true, false, true).timeout
+	check(not Ui.quiz.visible, "викторина проиграна")
+	equal(World.f["hearts"], 2, "минус сердце")
+	check(room.player.is_stunned(), "сгусток отбросил героя")
+	await tree.create_timer(0.6).timeout
+	check(room.player.global_position.x > blob.global_position.x + 180.0, "герой отлетел")
+	check(not World.is_marked(blob.mark_name()), "сгусток цел")
+	check(blob.collision_layer & 1 != 0, "сгусток - стена на слое мира, сквозь него не пройти")
+	room.player.global_position.x = blob.global_position.x + 400.0
+	for frame: int in 3:
+		await tree.physics_frame
+	room.player.global_position.x = blob.global_position.x + 160.0
+	for frame: int in 4:
+		await tree.physics_frame
+	check(Ui.quiz.visible, "подошёл снова - викторина снова")
+	while Ui.quiz.visible:
+		Ui.quiz.choose(Ui.quiz.logic().correct_slot())
+		await tree.create_timer(QuizGame.FEEDBACK_SEC + 0.1, true, false, true).timeout
 
 
 ## Кот на третьем этаже замечает героя, бежит к кабинету 316 и ждёт у двери; когда герой
@@ -213,6 +266,7 @@ func test_cat_runs_away() -> void:
 	var waiting: Cat = tree.current_scene.get_node("Actors/Cat")
 	check(waiting.is_at_door(), "кот снова ждёт у двери 316")
 	check((tree.current_scene as Room).cat == null, "спутника ещё нет")
+	World.mark("boss_3")
 	await Game.goto_room("316", "door")
 	room = tree.current_scene as Room
 	check(World.is_marked("cat_joined"), "в 316 кошка присоединилась")
@@ -220,8 +274,10 @@ func test_cat_runs_away() -> void:
 	room.player.global_position.x += 300.0
 	await tree.create_timer(0.2).timeout
 	check(not room.cat.is_resting(), "герой ушёл, кошка бежит следом")
-	await tree.create_timer(2.0).timeout
+	await tree.create_timer(3.0).timeout
 	check(room.cat.is_resting(), "кошка догнала героя и села")
+	var gap := absf(room.player.global_position.x - room.cat.global_position.x)
+	check(gap < 40.0, "села рядом с остановившимся героем")
 	await Game.goto_room("corridor_3", "from_316")
 	room = tree.current_scene as Room
 	check(room.get_node_or_null("Actors/Cat") == null, "кот у двери больше не нужен")
@@ -275,8 +331,8 @@ func _announced(player: Player, text_key: String) -> bool:
 	return false
 
 
-## Бой с Компилятором в кабинете 202: Вальштейн у капибары, бой у монитора, три колонны,
-## три бомбы Вальштейна, капибара, победа и кнопка третьего этажа.
+## Бой с Компилятором в кабинете 202: Вальштейн у капибары, бой у монитора, прыжки через
+## ошибки, три бомбы Вальштейна, капибара, победа и кнопка третьего этажа.
 func test_compiler_fight() -> void:
 	await start_game()
 	World.mark("totem_corridor_2")
@@ -305,24 +361,14 @@ func test_compiler_fight() -> void:
 	check(fight.is_running(), "у монитора начался бой")
 	check(not room.player.controls_enabled, "на облёте камеры герой ждёт")
 	await _until(func() -> bool: return fight.phase != CompilerFight.Phase.INTRO)
-	equal(fight.phase, CompilerFight.Phase.COLUMNS, "первая фаза: колонны")
+	equal(fight.phase, CompilerFight.Phase.BOMBS, "сразу прыжки через ошибки и бомбы")
 	equal(
 		fight.director().zoom, Vector2.ONE * CompilerFight.PLAY_ZOOM, "камера отдалена на кабинет"
 	)
 	check(room.player.controls_enabled, "герой снова управляем")
-	await tree.create_timer(FixColumn.RISE_SEC + 0.1).timeout
-	var column: FixColumn = fight.columns()[0]
-	column.value = (column.target + 1) % 10
-	column.hit()
-	check(not column.is_fixed, "не то число: колонна не починена")
-	for item: FixColumn in fight.columns():
-		item.value = item.target
-		item.hit()
-	equal(fight.phase, CompilerFight.Phase.TALK, "порты открыты, говорит Вальштейн")
-	await _until(func() -> bool: return fight.phase != CompilerFight.Phase.TALK)
-	equal(fight.phase, CompilerFight.Phase.BOMBS, "вторая фаза: бомбы")
+	check(room.find_children("*", "FixColumn", true, false).is_empty(), "терминалов в бою нет")
 	for bomb: int in CompilerFight.BOMBS:
-		for dodge: int in CompilerFight.DODGES_PER_BOMB:
+		for dodge: int in fight.dodges_needed:
 			fight.on_dodged()
 		check(fight.phase == CompilerFight.Phase.BOMB_SCENE, "бомба %d летит" % (bomb + 1))
 		await _until(func() -> bool: return fight.phase != CompilerFight.Phase.BOMB_SCENE)
@@ -363,7 +409,7 @@ func test_compiler_fight_hits() -> void:
 	Engine.time_scale = 4.0
 	fight.start()
 	await _until(func() -> bool: return fight.phase != CompilerFight.Phase.INTRO)
-	for hit: int in CompilerFight.INTEGRITY:
+	for hit: int in fight.integrity_max:
 		var line := ErrorLine.new()
 		line.setup_slide(room.player.global_position.x, true, 0.0, room.player)
 		fight.add_child(line)
@@ -371,9 +417,202 @@ func test_compiler_fight_hits() -> void:
 		await tree.create_timer(CompilerFight.INVULNERABLE_SEC + 0.05).timeout
 	await tree.create_timer(0.6).timeout
 	equal(World.f["hearts"], 2, "минус сердце")
-	equal(fight.phase, CompilerFight.Phase.COLUMNS, "фаза начинается заново")
-	equal(fight.integrity, CompilerFight.INTEGRITY, "целостность снова полная")
+	equal(fight.phase, CompilerFight.Phase.BOMBS, "фаза начинается заново")
+	equal(fight.integrity, fight.integrity_max, "целостность снова полная")
 	Engine.time_scale = 1.0
+
+
+## Через низкую и высокую ошибку можно перепрыгнуть, если прыгнуть вовремя; стоящего героя
+## ошибка задевает.
+func test_error_obstacles_are_jumpable() -> void:
+	await start_game()
+	World.mark("seen_valshtein")
+	await Game.goto_room("202", "door")
+	var room := tree.current_scene as Room
+	room.player.global_position.x = 400.0
+	for frame: int in 5:
+		await tree.physics_frame
+	check(not await _run_obstacle(room, false, 0.0), "стоящего героя ошибка задела")
+	check(await _run_obstacle(room, false, 70.0), "через низкую ошибку можно перепрыгнуть")
+	check(await _run_obstacle(room, true, 70.0), "через высокую тоже")
+	var low := ErrorLine.new()
+	low.setup_slide(0.0, true, 0.0, room.player)
+	var high := ErrorLine.new()
+	high.setup_slide(0.0, true, 0.0, room.player, true)
+	check(high.hit_size().y > low.hit_size().y, "одна ошибка ниже, другая выше")
+	low.free()
+	high.free()
+
+
+## Пускает ошибку на героя и прыгает, когда она подъехала на заданное расстояние.
+## [param room] - комната с героем.
+## [param tall] - true для высокой ошибки.
+## [param jump_at] - на каком расстоянии прыгнуть; 0 - не прыгать.
+## Возвращает true, если ошибка проехала, не задев героя.
+func _run_obstacle(room: Room, tall: bool, jump_at: float) -> bool:
+	var hero := room.player
+	var speed := 215.0 + (CompilerFight.HIGH_BONUS_SPEED if tall else 0.0)
+	var line := ErrorLine.new()
+	line.setup_slide(hero.global_position.x + 260.0, false, speed, hero, tall)
+	var hit := [false]
+	line.touched.connect(func(_line: ErrorLine) -> void: hit[0] = true)
+	room.add_child(line)
+	var jumped := false
+	var frames := 0
+	while not line.is_counted() and frames < 300:
+		await tree.physics_frame
+		frames += 1
+		if jump_at > 0.0 and not jumped and line.position.x - hero.global_position.x <= jump_at:
+			jumped = true
+			var press := InputEventAction.new()
+			press.action = "jump"
+			press.pressed = true
+			Input.parse_input_event(press)
+	var release := InputEventAction.new()
+	release.action = "jump"
+	Input.parse_input_event(release)
+	line.queue_free()
+	while not hero.is_on_floor():
+		await tree.physics_frame
+	for frame: int in 10:
+		await tree.physics_frame
+	return not hit[0]
+
+
+## Кабинет 316: Логунова и три кота. Рыжий спутник садится у батареи, отладчик попадает
+## в батарею, миску и окно, все довольны - победа, комната вылечена, задание на 4 этаж.
+func test_cats_fight() -> void:
+	await start_game()
+	World.mark("boss_2")
+	World.mark("ability_debugger")
+	await Game.goto_room("316", "door")
+	var room := tree.current_scene as Room
+	var fight: CatsFight = room.get_node("Fight")
+	check(fight.is_running(), "бой начался при входе")
+	check(room.cat != null, "рыжий кот вошёл вместе с героем")
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	check(fight.director().is_current(), "камера боя показывает Логунову")
+	finish_talk()
+	Engine.time_scale = 4.0
+	await _until(func() -> bool: return fight.phase == CatsFight.Phase.PLAY)
+	check(room.get_viewport().get_camera_2d().get_parent() is Player, "бой в обычном виде героя")
+	equal(room.get_viewport().get_camera_2d().zoom, Vector2.ONE, "без отдаления")
+	check(room.player.controls_enabled, "герой управляем")
+	var radiator: Radiator = null
+	var bowl: CatsBowl = null
+	var window: CatsWindow = null
+	for child: Node in fight.get_children():
+		if child is Radiator:
+			radiator = child
+		elif child is CatsBowl:
+			bowl = child
+		elif child is CatsWindow:
+			window = child
+	room.player.global_position.x = 1000.0
+	for frame: int in 3:
+		await tree.physics_frame
+	var from := room.player.global_position + Vector2(0.0, -100.0)
+	var query := PhysicsRayQueryParameters2D.create(
+		from, radiator.global_position + Vector2(0.0, -25.0), Player.SHOT_MASK
+	)
+	var ray := room.get_world_2d().direct_space_state.intersect_ray(query)
+	check(not ray.is_empty() and ray["collider"] is DebugTarget, "луч отладчика попадает в батарею")
+	for step: int in 3:
+		_shoot_target(radiator)
+		_shoot_target(bowl)
+	check(fight.logic.is_happy(CatsLogic.GINGER), "рыжему тепло")
+	check(fight.logic.is_happy(CatsLogic.GRAY), "серый сыт")
+	_shoot_target(window)
+	check(not window.open, "окно закрыто")
+	equal(fight.logic.happy_count(), CatsLogic.CATS, "все трое довольны")
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	finish_talk()
+	await _until(func() -> bool: return not fight.is_running())
+	Engine.time_scale = 1.0
+	check(World.is_marked("boss_3"), "Логунова свободна")
+	equal(Game.task_key, "TASK_GO_FLOOR_4", "задание: на четвёртый этаж")
+	equal(World.f["hearts"], 3, "сердца целы")
+	await Game.goto_room("corridor_3", "from_316")
+	finish_talk()
+	await Game.goto_room("316", "door")
+	fight = tree.current_scene.get_node("Fight")
+	check(not fight.is_running(), "бой не повторяется")
+
+
+## Время боя с котами вышло: минус сердце и новая попытка.
+func test_cats_fight_timeout() -> void:
+	await start_game()
+	World.mark("boss_2")
+	World.mark("seen_logunova")
+	await Game.goto_room("316", "door")
+	var fight: CatsFight = tree.current_scene.get_node("Fight")
+	Engine.time_scale = 4.0
+	await _until(func() -> bool: return fight.phase == CatsFight.Phase.PLAY)
+	fight.logic.time_left = 0.05
+	await _until(func() -> bool: return int(World.f["hearts"]) == 2)
+	await _until(func() -> bool: return fight.phase == CatsFight.Phase.PLAY)
+	Engine.time_scale = 1.0
+	check(fight.logic.time_left > 10.0, "новая попытка с полным временем")
+
+
+## Кабинет 418: камера на прибитой Землянской, потом задачи на телевизоре; каждая решённая
+## раскалывает преграду; после победы преграды нет, Землянская свободна, задание на 5 этаж.
+func test_tv_fight() -> void:
+	await start_game()
+	World.mark("boss_3")
+	World.mark("blob_corridor_4")
+	await Game.goto_room("418", "door")
+	var room := tree.current_scene as Room
+	var fight: TvFight = room.get_node("Fight")
+	var zeml: Npc = room.get_node("Actors/Zemlyanskaya")
+	check(fight.is_running(), "бой начался при входе")
+	check(not zeml.visible, "свободной Землянской пока нет")
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	check(fight.director().global_position.x > 1300.0, "камера на Землянской")
+	finish_talk()
+	await _until(func() -> bool: return Ui.code.visible)
+	check(fight.director().global_position.x < 1100.0, "камера на телевизоре")
+	var code := Ui.code.logic()
+	Ui.code.submit("неправильно")
+	check(Ui.code.visible, "ошибка не заканчивает бой")
+	while Ui.code.visible:
+		Ui.code.submit(Ui.code.logic().solution())
+		await tree.create_timer(CodeGame.RESULT_SEC + 0.1, true, false, true).timeout
+	check(code.is_won(), "все задачи решены")
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	check(zeml.visible, "Землянская свободна")
+	check(room.get_node("Bounds/BarrierWall").disabled, "преграды больше нет")
+	finish_talk()
+	await _until(func() -> bool: return not fight.is_running())
+	check(World.is_marked("boss_4"), "босс четвёртого этажа побеждён")
+	equal(Game.task_key, "TASK_GO_FLOOR_5", "задание: на пятый этаж")
+	await Game.goto_room("corridor_4", "from_418")
+	await Game.goto_room("418", "door")
+	fight = tree.current_scene.get_node("Fight")
+	check(not fight.is_running(), "бой не повторяется")
+	check(
+		(tree.current_scene.get_node("Actors/Zemlyanskaya") as Npc).visible, "она стоит в кабинете"
+	)
+
+
+## Время на задачу в 418 вышло: минус сердце и задачи заново.
+func test_tv_fight_timeout() -> void:
+	await start_game()
+	World.mark("seen_zemlyanskaya")
+	await Game.goto_room("418", "door")
+	await _until(func() -> bool: return Ui.code.visible)
+	Ui.code.logic().time_left = 0.05
+	await _until(func() -> bool: return int(World.f["hearts"]) == 2)
+	await _until(func() -> bool: return Ui.code.visible)
+	check(Ui.code.logic().solved == 0, "задачи начались заново")
+
+
+## Попадает лучом отладчика в цель боя.
+## [param target] - окно, миска или батарея.
+func _shoot_target(target: Node) -> void:
+	for child: Node in target.get_children():
+		if child is DebugTarget:
+			(child as DebugTarget).hit()
 
 
 ## Ждёт, пока условие не станет верным, но не дольше 20 секунд.

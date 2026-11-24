@@ -38,13 +38,17 @@ func test_every_key_has_text() -> void:
 	keys.append_array(DialogueCatalog.text_keys())
 	keys.append_array(SpeakerCatalog.text_keys())
 	keys.append_array(DebugLogic.text_keys())
+	keys.append_array(QuizLogic.text_keys())
+	keys.append_array(CodeLogic.text_keys())
+	for level: String in Difficulty.LEVELS:
+		keys.append(Difficulty.name_key(level))
+		keys.append(Difficulty.hint_key(level))
 	for key: String in Settings.DEFAULTS:
 		keys.append("SETTINGS_%s" % key.to_upper())
 	for key: String in Story.STEPS:
 		for field: String in ["task", "announce"]:
 			if Story.STEPS[key].has(field):
 				keys.append(Story.STEPS[key][field])
-	keys.append(Story.START_TASK)
 	for key: String in keys:
 		check(TranslationServer.translate(key) != key, "нет текста для ключа %s" % key)
 	equal(str(TranslationServer.translate("")), "", "пустой ключ даёт пустой текст")
@@ -98,6 +102,7 @@ func test_built_rooms() -> void:
 		check(LocationCatalog.is_built(Elevator.room(level)), "коридор этажа %d" % level)
 	check(LocationCatalog.is_built(Game.LIFT_ROOM), "кабина лифта")
 	check(LocationCatalog.is_built("202"), "кабинет 202")
+	check(LocationCatalog.is_built("316") and LocationCatalog.is_built("418"), "кабинеты 316 и 418")
 	check(not LocationCatalog.is_built("server"), "серверная ещё не собрана")
 	check(not LocationCatalog.is_built("9-99"), "чужой код")
 	equal(LocationCatalog.floor_of("wardrobe"), 1, "гардероб на первом этаже")

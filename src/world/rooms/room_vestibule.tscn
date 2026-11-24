@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://src/world/rooms/room.gd" id="room"]
 [ext_resource type="PackedScene" path="res://src/world/interact/door.tscn" id="door"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://src/world/interact/conditional.gd" id="conditional"]
 [ext_resource type="Texture2D" path="res://assets/rooms/vestibule.png" id="vestibule"]
 [ext_resource type="PackedScene" path="res://src/world/effects/leak.tscn" id="leak"]
+[ext_resource type="Script" path="res://src/world/interact/mark_zone.gd" id="mark_zone"]
 
 [sub_resource type="RectangleShape2D" id="floor"]
 size = Vector2(2600, 60)
@@ -203,7 +204,7 @@ prompt_key = "PROMPT_READ"
 [node name="Scream" type="Node2D" parent="Props"]
 position = Vector2(1262, 100)
 script = ExtResource("conditional")
-visible_when = "not is_marked('vanya_saved')"
+visible_when = "is_marked('heard_scream') and not is_marked('vanya_saved')"
 
 [node name="Leak" parent="Props/Scream" instance=ExtResource("leak")]
 position = Vector2(-57, 58)
@@ -215,6 +216,12 @@ script = ExtResource("bubble")
 text_keys = PackedStringArray("VANYA_SCREAM_1", "VANYA_SCREAM_2")
 box_shift = 52.0
 shout = true
+
+[node name="ScreamZone" type="Area2D" parent="Props"]
+position = Vector2(1205, 264)
+script = ExtResource("mark_zone")
+mark_id = "heard_scream"
+size = Vector2(300, 200)
 
 [node name="Actors" type="Node2D" parent="."]
 

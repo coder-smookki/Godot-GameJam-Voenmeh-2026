@@ -507,7 +507,7 @@ msgid "TALK_LESTENKO_2"
 msgstr "Задавайте вопросы…"
 
 msgid "TALK_LESTENKO_3"
-msgstr "Двери лифта открываются. Лестенко молча оставляет подарок - планку RAM, которая увеличивает память."
+msgstr "Двери лифта открываются. Лестенко молча оставляет подарок - планку RAM, которая увеличивает память, - и уезжает назад."
 
 msgid "NAME_VALSHTEIN"
 msgstr "Вальштейн"
@@ -638,12 +638,6 @@ msgstr "КОМПИЛЯТОР"
 msgid "BOSS_COMPILER_INTRO"
 msgstr "ЗАРАЖЁННЫЙ КОМПИЛЯТОР"
 
-msgid "BOSS_PHASE_COLUMNS"
-msgstr "ПОЧИНИ ТРИ КОЛОННЫ"
-
-msgid "BOSS_HINT_COLUMNS"
-msgstr "Q + ЛКМ по колонне, когда число совпадёт"
-
 msgid "BOSS_PORTS_OPEN"
 msgstr "ПОРТЫ ОТКРЫТЫ"
 
@@ -691,3 +685,487 @@ msgstr "Стрелки - кисть, пробел - красить"
 
 msgid "DRAW_DONE"
 msgstr "Капибара готова!"
+
+msgid "DIFFICULTY_TITLE"
+msgstr "ВЫБЕРИТЕ СЛОЖНОСТЬ"
+
+msgid "DIFFICULTY_EASY"
+msgstr "Лёгкий"
+
+msgid "DIFFICULTY_EASY_HINT"
+msgstr "Пять сердец, много времени, шкалы утекают медленно. Чтобы спокойно пройти сюжет."
+
+msgid "DIFFICULTY_MEDIUM"
+msgstr "Средний"
+
+msgid "DIFFICULTY_MEDIUM_HINT"
+msgstr "Три сердца. Игра задумана такой."
+
+msgid "DIFFICULTY_HARD"
+msgstr "Сложный"
+
+msgid "DIFFICULTY_HARD_HINT"
+msgstr "Два сердца, меньше времени, атаки быстрее, Логунова мешает котам."
+
+msgid "DIFFICULTY_ULTRA"
+msgstr "Ультра сложный"
+
+msgid "DIFFICULTY_ULTRA_HINT"
+msgstr "Одно сердце: одна ошибка - и эксперимент №404 начинается заново."
+
+msgid "TALK_LOGUNOVA_1"
+msgstr "В кабинете Логунова. Она тоже заражена вирусом, но теперь у неё есть что-то новое: она управляет тремя котами."
+
+msgid "TALK_LOGUNOVA_2"
+msgstr "Нужно угодить трём котам разом: рыжему нужно тепло, серому - много корма, чёрному - закрытое окно."
+
+msgid "TALK_LOGUNOVA_3"
+msgstr "Отладчик (Q + ЛКМ) прибавит тепла батарее, досыплет корма в миску и закроет окно."
+
+msgid "TALK_LOGUNOVA_FREE_1"
+msgstr "Все три кота довольны одновременно. Заражение исчезает, Логунова освобождается."
+
+msgid "TASK_GO_FLOOR_4"
+msgstr "Подняться на 4 этаж · лифт"
+
+msgid "BOSS_LOGUNOVA"
+msgstr "ЛОГУНОВА"
+
+msgid "BOSS_LOGUNOVA_INTRO"
+msgstr "ТРИ КОТА ПОД ЗАРАЖЕНИЕМ"
+
+msgid "BOSS_HINT_CATS"
+msgstr "Q + ЛКМ по батарее, миске и окну"
+
+msgid "BOSS_CATS_HOLD"
+msgstr "ВСЕ ДОВОЛЬНЫ - ДЕРЖИТЕ!"
+
+msgid "BOSS_CATS_WIN"
+msgstr "КОТЫ ДОВОЛЬНЫ"
+
+msgid "BOSS_TIME_UP"
+msgstr "ВРЕМЯ ВЫШЛО! МИНУС СЕРДЦЕ"
+
+msgid "BOSS_WINDOW_OPEN"
+msgstr "ОКНО РАСПАХНУЛОСЬ"
+
+msgid "CATS_HEAT"
+msgstr "ТЕПЛО РЫЖЕМУ"
+
+msgid "CATS_GINGER"
+msgstr "Рыжий"
+
+msgid "CATS_GRAY"
+msgstr "Серый"
+
+msgid "CATS_BLACK"
+msgstr "Чёрный"
+
+msgid "CATS_WANT_HEAT"
+msgstr "тепло"
+
+msgid "CATS_WANT_FOOD"
+msgstr "корм"
+
+msgid "CATS_WANT_WINDOW"
+msgstr "окно"
+
+msgid "QUIZ_Q1"
+msgstr "Что выведет printf(\"%d\", 7 / 2);?"
+
+msgid "QUIZ_Q1_A"
+msgstr "3"
+
+msgid "QUIZ_Q1_B"
+msgstr "3.5"
+
+msgid "QUIZ_Q1_C"
+msgstr "4"
+
+msgid "QUIZ_Q1_D"
+msgstr "Ошибку компиляции"
+
+msgid "QUIZ_Q2"
+msgstr "Сколько байт занимает char в C?"
+
+msgid "QUIZ_Q2_A"
+msgstr "1"
+
+msgid "QUIZ_Q2_B"
+msgstr "2"
+
+msgid "QUIZ_Q2_C"
+msgstr "4"
+
+msgid "QUIZ_Q2_D"
+msgstr "8"
+
+msgid "QUIZ_Q3"
+msgstr "С какого индекса начинается массив в C?"
+
+msgid "QUIZ_Q3_A"
+msgstr "С 0"
+
+msgid "QUIZ_Q3_B"
+msgstr "С 1"
+
+msgid "QUIZ_Q3_C"
+msgstr "С -1"
+
+msgid "QUIZ_Q3_D"
+msgstr "Как решит компилятор"
+
+msgid "QUIZ_Q4"
+msgstr "Какой цикл выполнится хотя бы один раз?"
+
+msgid "QUIZ_Q4_A"
+msgstr "do-while"
+
+msgid "QUIZ_Q4_B"
+msgstr "for"
+
+msgid "QUIZ_Q4_C"
+msgstr "while"
+
+msgid "QUIZ_Q4_D"
+msgstr "Никакой"
+
+msgid "QUIZ_Q5"
+msgstr "Что делает оператор == ?"
+
+msgid "QUIZ_Q5_A"
+msgstr "Сравнивает"
+
+msgid "QUIZ_Q5_B"
+msgstr "Присваивает"
+
+msgid "QUIZ_Q5_C"
+msgstr "Проверяет неравенство"
+
+msgid "QUIZ_Q5_D"
+msgstr "Берёт адрес"
+
+msgid "QUIZ_Q6"
+msgstr "Как получить адрес переменной x?"
+
+msgid "QUIZ_Q6_A"
+msgstr "&x"
+
+msgid "QUIZ_Q6_B"
+msgstr "*x"
+
+msgid "QUIZ_Q6_C"
+msgstr "#x"
+
+msgid "QUIZ_Q6_D"
+msgstr "@x"
+
+msgid "QUIZ_Q7"
+msgstr "Чему равно 5 % 3?"
+
+msgid "QUIZ_Q7_A"
+msgstr "2"
+
+msgid "QUIZ_Q7_B"
+msgstr "1"
+
+msgid "QUIZ_Q7_C"
+msgstr "1.66"
+
+msgid "QUIZ_Q7_D"
+msgstr "0"
+
+msgid "QUIZ_Q8"
+msgstr "Какая функция C выделяет память в куче?"
+
+msgid "QUIZ_Q8_A"
+msgstr "malloc"
+
+msgid "QUIZ_Q8_B"
+msgstr "printf"
+
+msgid "QUIZ_Q8_C"
+msgstr "sizeof"
+
+msgid "QUIZ_Q8_D"
+msgstr "scanf"
+
+msgid "QUIZ_Q9"
+msgstr "Что делает break внутри цикла?"
+
+msgid "QUIZ_Q9_A"
+msgstr "Выходит из цикла"
+
+msgid "QUIZ_Q9_B"
+msgstr "Пропускает шаг"
+
+msgid "QUIZ_Q9_C"
+msgstr "Начинает цикл заново"
+
+msgid "QUIZ_Q9_D"
+msgstr "Ничего"
+
+msgid "QUIZ_Q10"
+msgstr "Какая сложность у двоичного поиска?"
+
+msgid "QUIZ_Q10_A"
+msgstr "O(log n)"
+
+msgid "QUIZ_Q10_B"
+msgstr "O(n)"
+
+msgid "QUIZ_Q10_C"
+msgstr "O(n²)"
+
+msgid "QUIZ_Q10_D"
+msgstr "O(1)"
+
+msgid "QUIZ_Q11"
+msgstr "Какой тип C хранит дробные числа?"
+
+msgid "QUIZ_Q11_A"
+msgstr "double"
+
+msgid "QUIZ_Q11_B"
+msgstr "int"
+
+msgid "QUIZ_Q11_C"
+msgstr "char"
+
+msgid "QUIZ_Q11_D"
+msgstr "unsigned"
+
+msgid "QUIZ_Q12"
+msgstr "Чем заканчивается строка в C?"
+
+msgid "QUIZ_Q12_A"
+msgstr "Нулевым символом"
+
+msgid "QUIZ_Q12_B"
+msgstr "Точкой"
+
+msgid "QUIZ_Q12_C"
+msgstr "Пробелом"
+
+msgid "QUIZ_Q12_D"
+msgstr "Переводом строки"
+
+msgid "QUIZ_Q13"
+msgstr "Что такое рекурсия?"
+
+msgid "QUIZ_Q13_A"
+msgstr "Функция зовёт сама себя"
+
+msgid "QUIZ_Q13_B"
+msgstr "Цикл без условия"
+
+msgid "QUIZ_Q13_C"
+msgstr "Ошибка компилятора"
+
+msgid "QUIZ_Q13_D"
+msgstr "Объявление массива"
+
+msgid "QUIZ_Q14"
+msgstr "Как устроен стек?"
+
+msgid "QUIZ_Q14_A"
+msgstr "Последним пришёл - первым ушёл"
+
+msgid "QUIZ_Q14_B"
+msgstr "Первым пришёл - первым ушёл"
+
+msgid "QUIZ_Q14_C"
+msgstr "Доступ к любому элементу"
+
+msgid "QUIZ_Q14_D"
+msgstr "Дерево поиска"
+
+msgid "QUIZ_Q15"
+msgstr "Сколько будет 0b1010 в десятичной системе?"
+
+msgid "QUIZ_Q15_A"
+msgstr "10"
+
+msgid "QUIZ_Q15_B"
+msgstr "12"
+
+msgid "QUIZ_Q15_C"
+msgstr "5"
+
+msgid "QUIZ_Q15_D"
+msgstr "1010"
+
+msgid "QUIZ_Q16"
+msgstr "Какой оператор в C означает логическое «И»?"
+
+msgid "QUIZ_Q16_A"
+msgstr "&&"
+
+msgid "QUIZ_Q16_B"
+msgstr "||"
+
+msgid "QUIZ_Q16_C"
+msgstr "!"
+
+msgid "QUIZ_Q16_D"
+msgstr "^"
+
+msgid "QUIZ_Q17"
+msgstr "Что делает continue в цикле?"
+
+msgid "QUIZ_Q17_A"
+msgstr "Идёт к следующему шагу"
+
+msgid "QUIZ_Q17_B"
+msgstr "Выходит из цикла"
+
+msgid "QUIZ_Q17_C"
+msgstr "Останавливает программу"
+
+msgid "QUIZ_Q17_D"
+msgstr "Ничего"
+
+msgid "QUIZ_Q18"
+msgstr "Что напечатает printf(\"%c\", 'A' + 1);?"
+
+msgid "QUIZ_Q18_A"
+msgstr "B"
+
+msgid "QUIZ_Q18_B"
+msgstr "A1"
+
+msgid "QUIZ_Q18_C"
+msgstr "66"
+
+msgid "QUIZ_Q18_D"
+msgstr "Ошибку"
+
+msgid "QUIZ_Q19"
+msgstr "Какая команда git сохраняет изменения в историю?"
+
+msgid "QUIZ_Q19_A"
+msgstr "git commit"
+
+msgid "QUIZ_Q19_B"
+msgstr "git push"
+
+msgid "QUIZ_Q19_C"
+msgstr "git clone"
+
+msgid "QUIZ_Q19_D"
+msgstr "git status"
+
+msgid "QUIZ_Q20"
+msgstr "Что хранит указатель?"
+
+msgid "QUIZ_Q20_A"
+msgstr "Адрес в памяти"
+
+msgid "QUIZ_Q20_B"
+msgstr "Копию значения"
+
+msgid "QUIZ_Q20_C"
+msgstr "Имя переменной"
+
+msgid "QUIZ_Q20_D"
+msgstr "Тип данных"
+
+msgid "QUIZ_TITLE"
+msgstr "СГУСТОК ОШИБКИ"
+
+msgid "QUIZ_HINT"
+msgstr "Правильный ответ бьёт сгусток"
+
+msgid "QUIZ_MISTAKES"
+msgstr "Ошибок можно: {left}"
+
+msgid "QUIZ_WON"
+msgstr "Сгусток лопнул!"
+
+msgid "QUIZ_LOST"
+msgstr "Сгусток отбросил вас. Минус сердце. Подойдите снова"
+
+msgid "TASK_PASS_BLOB"
+msgstr "Пройти сгусток ошибки · подойдите к нему"
+
+msgid "TASK_ROOM_418"
+msgstr "Зайти в кабинет 418"
+
+msgid "CODE_TASK_1"
+msgstr "Допишите, чтобы программа вывела 404"
+
+msgid "CODE_TASK_2"
+msgstr "Программа должна вывести слово Hello"
+
+msgid "CODE_TASK_3"
+msgstr "Цикл должен вывести 0 1 2"
+
+msgid "CODE_TASK_4"
+msgstr "Выведите число элементов массива (5)"
+
+msgid "CODE_TASK_5"
+msgstr "Указатель p должен смотреть на x"
+
+msgid "CODE_TASK_6"
+msgstr "Проверьте, что n чётное"
+
+msgid "CODE_TASK_7"
+msgstr "Функция должна вернуть сумму a и b"
+
+msgid "CODE_TASK_8"
+msgstr "Считайте с клавиатуры число в n"
+
+msgid "CODE_TASK_9"
+msgstr "Выведите букву B"
+
+msgid "CODE_TASK_10"
+msgstr "Выведите 404 через формат printf"
+
+msgid "CODE_HEAD"
+msgstr "ЗАДАЧА {n} ИЗ {total}"
+
+msgid "CODE_HINT"
+msgstr "Впишите код в пропуск и нажмите Enter"
+
+msgid "CODE_WRONG"
+msgstr "error: вывод не совпал. Минус время"
+
+msgid "CODE_TIME_UP"
+msgstr "Время вышло"
+
+msgid "BOSS_TV"
+msgstr "ВИРУС В ТЕЛЕВИЗОРЕ"
+
+msgid "BOSS_TV_INTRO"
+msgstr "ТЕЛЕВИЗОР ЗАРАЖЁН"
+
+msgid "BOSS_TV_WIN"
+msgstr "ЗЕМЛЯНСКАЯ СВОБОДНА"
+
+msgid "TASK_GO_FLOOR_5"
+msgstr "Подняться на 5 этаж · лифт"
+
+msgid "NAME_ZEMLYANSKAYA"
+msgstr "Землянская"
+
+msgid "TALK_ZEML_1"
+msgstr "В кабинете 418 Землянская. Вирус прибил её к стене за преградой."
+
+msgid "TALK_ZEML_2"
+msgstr "Не стоило это делать..."
+
+msgid "TALK_ZEML_3"
+msgstr "Начинается бой. Телевизор оживает: на нём программы с пропусками, и решать их нужно на время."
+
+msgid "TALK_ZEML_FREE_1"
+msgstr "Спасибо. Вирус держал меня у стены и крутил на экране мои же задачи."
+
+msgid "TALK_ZEML_FREE_2"
+msgstr "Задачи были честные. Только пропуски злые."
+
+msgid "TALK_ZEML_FREE_3"
+msgstr "Пропуски и есть программирование. Иди наверх: кнопка пятого этажа должна вернуться."
+
+msgid "TALK_ZEML_AFTER"
+msgstr "Мажайцев на пятом. Смотри под ноги: там по полу тянутся кабели."
+

@@ -78,7 +78,33 @@ const TALKS: Dictionary = {
 		{"speaker": "valshtein", "text": "TALK_VALSHTEIN_FREE_1"},
 		{"speaker": "demyan", "text": "TALK_VALSHTEIN_FREE_2"},
 	],
-	"lift_lestenko":
+	"logunova":
+	[
+		{"speaker": "", "text": "TALK_LOGUNOVA_1"},
+		{"speaker": "", "text": "TALK_LOGUNOVA_2"},
+		{"speaker": "", "text": "TALK_LOGUNOVA_3"},
+	],
+	"logunova_free":
+	[
+		{"speaker": "", "text": "TALK_LOGUNOVA_FREE_1"},
+	],
+	"zemlyanskaya":
+	[
+		{"speaker": "", "text": "TALK_ZEML_1"},
+		{"speaker": "zemlyanskaya", "text": "TALK_ZEML_2"},
+		{"speaker": "", "text": "TALK_ZEML_3"},
+	],
+	"zemlyanskaya_free":
+	[
+		{"speaker": "zemlyanskaya", "text": "TALK_ZEML_FREE_1"},
+		{"speaker": "demyan", "text": "TALK_ZEML_FREE_2"},
+		{"speaker": "zemlyanskaya", "text": "TALK_ZEML_FREE_3"},
+	],
+	"zemlyanskaya_after":
+	[
+		{"speaker": "zemlyanskaya", "text": "TALK_ZEML_AFTER"},
+	],
+	"lestenko":
 	[
 		{"speaker": "demyan", "text": "TALK_LESTENKO_1"},
 		{"speaker": "lestenko", "text": "TALK_LESTENKO_2"},

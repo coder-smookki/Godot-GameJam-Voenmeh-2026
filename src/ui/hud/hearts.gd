@@ -26,11 +26,14 @@ const BREAK_SEC := 0.8
 const SHAKE_PART := 0.25
 const SPLIT := 6.0
 const DROP := 8.0
+const BEAT_SEC := 1.1
+const GLOW := Color(1.0, 0.2, 0.33, 0.45)
 
 var _shown: int = 0
 var _breaking: int = -1
 var _break: float = 0.0
 var _tween: Tween = null
+var _clock: float = 0.0
 
 
 ## Рисует пиксельное сердце.
@@ -51,9 +54,18 @@ static func draw_heart(item: CanvasItem, at: Vector2, color: Color, half: int = 
 			item.draw_rect(Rect2(at + Vector2(column, row), Vector2.ONE), pixel)
 
 
+## Бьёт последнее сердце, когда сердце осталось одно.
+## [param delta] - время кадра в секундах.
+func _process(delta: float) -> void:
+	if _shown != 1:
+		return
+	_clock += delta
+	queue_redraw()
+
+
 ## Подбирает размер под все сердца и подписывается на изменения мира.
 func _ready() -> void:
-	custom_minimum_size = Vector2(_total() * (WIDTH + GAP) - GAP, HEIGHT)
+	_fit()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	World.changed.connect(_on_world_changed)
 	World.reloaded.connect(_on_world_reloaded)
@@ -69,6 +81,8 @@ func _draw() -> void:
 		if index == _breaking:
 			_draw_breaking(at)
 		else:
+			if index == 0 and _shown == 1 and fmod(_clock, BEAT_SEC) < 0.18:
+				draw_rect(Rect2(at - Vector2.ONE, Vector2(WIDTH + 2, HEIGHT + 2)), GLOW)
 			draw_heart(self, at, FULL if index < _shown else EMPTY)
 
 
@@ -93,9 +107,14 @@ func _draw_breaking(at: Vector2) -> void:
 	draw_heart(self, at + Vector2(SPLIT * spread + 1.0, DROP * part).round(), color, 1)
 
 
-## Возвращает, сколько сердец бывает у героя.
+## Возвращает, сколько сердец бывает у героя на уровне сложности этой игры.
 func _total() -> int:
-	return int(World.SCHEMA[Game.HEARTS]["max"])
+	return Difficulty.max_hearts()
+
+
+## Подгоняет ширину плашки под число сердец.
+func _fit() -> void:
+	custom_minimum_size = Vector2(_total() * (WIDTH + GAP) - GAP, HEIGHT)
 
 
 ## Меняет долю анимации раскола и перерисовывает сердца.
@@ -125,6 +144,7 @@ func _on_world_changed(key: String, value: Variant) -> void:
 
 ## Перечитывает сердца после новой игры или загрузки сохранения.
 func _on_world_reloaded() -> void:
+	_fit()
 	_set_breaking(-1)
 	_shown = int(World.f[Game.HEARTS])
 	queue_redraw()

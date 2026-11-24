@@ -6,7 +6,8 @@ extends Node2D
 ## от бомбы по экрану идут трещины. Внизу три порта: закрыты, открыты (светятся) и разбиты.
 ## После победы экран разбит: тёмное стекло с трещинами от удара, выбитые осколки и редкие
 ## искры; так он выглядит и при следующих визитах. Экран живёт и на паузе, чтобы ожить во время
-## разговора с Вальштейном.
+## разговора с Вальштейном. Прямоугольник экрана (rect) можно задать: так же выглядит
+## заражённый телевизор в кабинете 418, у него нет портов.
 
 enum Face { IDLE, ATTACK, HURT, TEXT }
 enum Port { CLOSED, OPEN, BROKEN }
@@ -24,6 +25,7 @@ const BOOT_SEC := 0.9
 const HURT_SEC := 0.7
 const ATTACK_SEC := 0.35
 
+var rect: Rect2 = RECT
 var face: Face = Face.IDLE
 var text: String = ""
 var ports: Array[Port] = [Port.CLOSED, Port.CLOSED, Port.CLOSED]
@@ -76,7 +78,7 @@ func shatter() -> void:
 	face = Face.IDLE
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 202
-	_impact = Vector2(RECT.position.x + RECT.size.x * 0.58, RECT.position.y + RECT.size.y * 0.42)
+	_impact = Vector2(rect.position.x + rect.size.x * 0.58, rect.position.y + rect.size.y * 0.42)
 	_crack_lines.clear()
 	for ray: int in 11:
 		var angle := TAU * ray / 11.0 + rng.randf_range(-0.2, 0.2)
@@ -85,7 +87,7 @@ func shatter() -> void:
 		for step: int in 6:
 			var reach := rng.randf_range(14.0, 34.0)
 			var bend := angle + rng.randf_range(-0.35, 0.35)
-			at = (at + Vector2(cos(bend), sin(bend)) * reach).clamp(RECT.position, RECT.end)
+			at = (at + Vector2(cos(bend), sin(bend)) * reach).clamp(rect.position, rect.end)
 			points.append(at)
 		_crack_lines.append(points)
 	_holes.clear()
@@ -157,8 +159,8 @@ func _draw() -> void:
 	if _power <= 0.0:
 		return
 	var alpha := _power
-	draw_rect(RECT, Color(BACK, alpha))
-	var center := RECT.get_center() + Vector2(0.0, -12.0)
+	draw_rect(rect, Color(BACK, alpha))
+	var center := rect.get_center() + Vector2(0.0, -12.0)
 	if _glitch > 0.0:
 		center.x += randf_range(-6.0, 6.0) * _glitch
 	if face == Face.TEXT:
@@ -168,21 +170,21 @@ func _draw() -> void:
 	_draw_ports(alpha)
 	for line: PackedVector2Array in _crack_lines:
 		draw_polyline(line, Color(CRACK, alpha), 1.0)
-	for y: int in range(int(RECT.position.y), int(RECT.end.y), 3):
-		draw_line(Vector2(RECT.position.x, y), Vector2(RECT.end.x, y), Color(SCAN, SCAN.a * alpha))
+	for y: int in range(int(rect.position.y), int(rect.end.y), 3):
+		draw_line(Vector2(rect.position.x, y), Vector2(rect.end.x, y), Color(SCAN, SCAN.a * alpha))
 	if _glitch > 0.0:
 		for band: int in 3:
-			var y := randf_range(RECT.position.y, RECT.end.y - 6.0)
+			var y := randf_range(rect.position.y, rect.end.y - 6.0)
 			var shift := randf_range(-14.0, 14.0)
 			var strip := Rect2(
-				RECT.position.x + maxf(shift, 0.0), y, RECT.size.x - absf(shift), 4.0
+				rect.position.x + maxf(shift, 0.0), y, rect.size.x - absf(shift), 4.0
 			)
 			draw_rect(strip, Color(EYE, 0.25 * alpha))
 
 
 ## Рисует разбитый экран: тёмное стекло, трещины, дыры и искру, которая иногда проскакивает.
 func _draw_broken() -> void:
-	draw_rect(RECT, Color(0.0, 0.0, 0.0, 0.55))
+	draw_rect(rect, Color(0.0, 0.0, 0.0, 0.55))
 	for hole: PackedVector2Array in _holes:
 		draw_colored_polygon(hole, Color(0.0, 0.0, 0.0, 0.95))
 		draw_polyline(hole + PackedVector2Array([hole[0]]), CRACK, 1.0)
@@ -244,8 +246,8 @@ func _draw_text(center: Vector2, alpha: float) -> void:
 ## [param alpha] - яркость экрана.
 func _draw_ports(alpha: float) -> void:
 	for index: int in ports.size():
-		var x := RECT.get_center().x + (index - 1) * 120.0 - PORT_SIZE.x * 0.5
-		var box := Rect2(Vector2(x, RECT.end.y - PORT_SIZE.y - 8.0), PORT_SIZE)
+		var x := rect.get_center().x + (index - 1) * 120.0 - PORT_SIZE.x * 0.5
+		var box := Rect2(Vector2(x, rect.end.y - PORT_SIZE.y - 8.0), PORT_SIZE)
 		match ports[index]:
 			Port.CLOSED:
 				draw_rect(box, Color(PORT_CLOSED, alpha))
@@ -274,12 +276,12 @@ func _show(value: Face, sec: float) -> void:
 func _make_crack() -> PackedVector2Array:
 	var points := PackedVector2Array()
 	var at := Vector2(
-		randf_range(RECT.position.x + 40.0, RECT.end.x - 40.0),
-		randf_range(RECT.position.y + 10.0, RECT.end.y - 30.0)
+		randf_range(rect.position.x + 40.0, rect.end.x - 40.0),
+		randf_range(rect.position.y + 10.0, rect.end.y - 30.0)
 	)
 	points.append(at)
 	for step: int in 6:
 		at += Vector2(randf_range(-26.0, 26.0), randf_range(4.0, 18.0))
-		at = at.clamp(RECT.position, RECT.end)
+		at = at.clamp(rect.position, rect.end)
 		points.append(at)
 	return points
