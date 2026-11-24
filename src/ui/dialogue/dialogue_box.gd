@@ -4,13 +4,15 @@ extends Modal
 ##
 ## Реплики приходят готовым списком из [DialogueCatalog]. Ответы игрока появляются
 ## плашками посреди экрана. Ответ с меткой «сюжет» ведёт разговор дальше; после остальных
-## ответов игрок возвращается к выбору.
+## ответов игрок возвращается к выбору. Если у реплики есть озвучка (assets/voice/<ключ>.mp3),
+## она играет, пока реплика на экране.
 
 signal typed
 signal advanced
 signal picked(index: int)
 signal line_shown(line: Dictionary)
 
+const VOICE_DIR := "res://assets/voice/"
 const CHARS_PER_SEC := 45.0
 const SLIDE_SEC := 0.16
 const BLINK_SEC := 0.35
@@ -34,6 +36,7 @@ var _waiting: bool = false
 var _shown: float = 0.0
 var _session: int = 0
 var _offered: Array[int] = []
+var _voice: AudioStreamPlayer = null
 
 @onready var _sheet: Control = $Sheet
 @onready var _frame: Panel = $Sheet/Frame
@@ -49,6 +52,9 @@ var _offered: Array[int] = []
 ## Выключает покадровую обработку, пока текст не печатается, и запускает мигание стрелки.
 func _ready() -> void:
 	set_process(false)
+	_voice = AudioStreamPlayer.new()
+	_voice.bus = &"Sfx"
+	add_child(_voice)
 	_more.hide()
 	var tween := create_tween().set_loops()
 	tween.tween_property(_more, "modulate:a", 0.25, BLINK_SEC)
@@ -134,6 +140,7 @@ func _closed() -> void:
 	_set_waiting(false)
 	set_process(false)
 	_clear_choices()
+	_voice.stop()
 
 
 ## Показывает реплики по порядку; реплика с ответами ждёт выбора игрока.
@@ -193,7 +200,19 @@ func _fill_line(line: Dictionary) -> void:
 	_text.add_theme_color_override("font_color", color)
 	_text.text = tr(str(line.get("text", "")))
 	_text.visible_characters = -1
+	_speak(str(line.get("text", "")))
 	line_shown.emit(line)
+
+
+## Проигрывает озвучку реплики, если она есть: assets/voice/<ключ реплики>.mp3.
+## [param text_key] - ключ текста реплики.
+func _speak(text_key: String) -> void:
+	_voice.stop()
+	var path := VOICE_DIR + text_key + ".mp3"
+	if text_key.is_empty() or not ResourceLoader.exists(path):
+		return
+	_voice.stream = load(path)
+	_voice.play()
 
 
 ## Печатает текущую реплику по буквам и ждёт конца печати.

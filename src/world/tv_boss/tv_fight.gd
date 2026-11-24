@@ -103,6 +103,7 @@ func start() -> void:
 		return
 	phase = Phase.INTRO
 	_player = room.player
+	Music.play("boss4")
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_lock_door(exit_door, true)
 	_freeze(true)
@@ -200,6 +201,8 @@ func _outro() -> void:
 	Ui.hud.hide_task(false)
 	phase = Phase.DONE
 	process_mode = Node.PROCESS_MODE_INHERIT
+	Music.play_room()
+	Story.give_message("message_2", "LABA_MESSAGE_2")
 	World.mark(BOSS_MARK)
 	SaveSystem.save_game()
 	finished.emit()

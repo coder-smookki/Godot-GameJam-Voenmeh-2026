@@ -355,3 +355,28 @@ func test_difficulty_choice() -> void:
 	equal(World.f["hearts"], 5, "на лёгком пять сердец")
 	await Game.new_game(Difficulty.MEDIUM)
 	finish_talk()
+
+
+## Открывающая катсцена играет на весь экран и пропускается клавишей.
+func test_intro_cutscene() -> void:
+	var player := func() -> void: await Ui.intro.play()
+	player.call()
+	await tree.process_frame
+	check(Ui.intro.visible and Ui.intro.is_playing(), "катсцена идёт")
+	await tree.create_timer(IntroScreen.SKIP_AFTER_SEC + 0.1, true, false, true).timeout
+	Ui.intro.skip()
+	check(not Ui.intro.visible, "катсцену можно пропустить")
+
+
+## После хорошей концовки - эпилог по кадрам художниц, потом титры и главное меню.
+func test_finale() -> void:
+	await start_game()
+	Game.last_ending = "retake"
+	await Game.show_finale()
+	await tree.create_timer(1.0).timeout
+	check(Ui.dialogue.visible, "эпилог: разговор за столом")
+	finish_talk()
+	await tree.create_timer(4.0).timeout
+	equal(Music.current, "credits", "титры под свою музыку")
+	await Game.to_main_menu()
+	check(tree.current_scene.scene_file_path == Game.MAIN_MENU_SCENE, "после титров главное меню")

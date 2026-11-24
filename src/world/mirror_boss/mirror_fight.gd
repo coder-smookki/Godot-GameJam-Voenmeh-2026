@@ -67,6 +67,7 @@ func start() -> void:
 		return
 	phase = Phase.INTRO
 	_player = room.player
+	Music.play("boss5")
 	_freeze(true)
 	Ui.hud.hide_task(true)
 	_director.global_position = _hero_view()
@@ -132,14 +133,35 @@ func _outro() -> void:
 	await Ui.dialogue.play(DialogueCatalog.talk("mozhaitsev_free"))
 	if not is_inside_tree():
 		return
+	await _step_out()
 	await _pan(_hero_view(), 0.9)
 	_give_view()
+	Story.give_message("message_3", "LABA_MESSAGE_3")
+	Music.play_room()
 	_freeze(false)
 	Ui.hud.hide_task(false)
 	phase = Phase.DONE
 	World.mark(BOSS_MARK)
 	SaveSystem.save_game()
 	finished.emit()
+
+
+## Мажайцев выбирается из проводов и подходит к герою: провода осыпаются клетками.
+func _step_out() -> void:
+	if mozhaitsev == null:
+		return
+	_cure_burst(mozhaitsev.global_position + Vector2(0.0, -90.0))
+	_burst(mozhaitsev.global_position + Vector2(0.0, -40.0), Color("6a4fd8"), 30, 160.0, 2.0, 4.0)
+	_shake_camera(4.0, 0.4)
+	mozhaitsev.hide()
+	var walker := Walker.mozhaitsev()
+	walker.name = "MozhaitsevFree"
+	walker.position = mozhaitsev.position
+	mozhaitsev.get_parent().add_child(walker)
+	await _pan(Vector2(_player.global_position.x - 80.0, VIEW_Y), 1.4)
+	await walker.walk_to(_player.global_position.x - 70.0)
+	walker.face(1.0)
+	await Ui.dialogue.play(DialogueCatalog.talk("mozhaitsev_join"))
 
 
 ## Собирает клона перед героем из клеток шахматки: он мерцает и проявляется.

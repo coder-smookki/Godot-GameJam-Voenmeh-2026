@@ -19,6 +19,8 @@
 [ext_resource type="PackedScene" path="res://src/ui/quiz/quiz_game.tscn" id="18"]
 [ext_resource type="PackedScene" path="res://src/ui/code/code_game.tscn" id="19"]
 [ext_resource type="PackedScene" path="res://src/ui/mirror/mirror_game.tscn" id="20"]
+[ext_resource type="PackedScene" path="res://src/ui/choice/choice_screen.tscn" id="21"]
+[ext_resource type="PackedScene" path="res://src/ui/intro/intro_screen.tscn" id="22"]
 
 [ext_resource type="Shader" path="res://src/ui/effects/screen_fx.gdshader" id="13"]
 
@@ -66,6 +68,10 @@ mouse_filter = 2
 [node name="QuizGame" parent="." instance=ExtResource("18")]
 
 [node name="CodeGame" parent="." instance=ExtResource("19")]
+
+[node name="ChoiceScreen" parent="." instance=ExtResource("21")]
+
+[node name="IntroScreen" parent="." instance=ExtResource("22")]
 
 [node name="SettingsScreen" parent="." instance=ExtResource("11")]
 

@@ -136,3 +136,11 @@ func _collect_scenes(folder: String, into: Array[String]) -> void:
 			into.append(folder + file)
 	for sub: String in DirAccess.get_directories_at(folder):
 		_collect_scenes("%s%s/" % [folder, sub], into)
+
+
+## У каждой реплики разговоров есть озвучка.
+func test_every_line_is_voiced() -> void:
+	for talk_id: String in DialogueCatalog.ids():
+		for line: Dictionary in DialogueCatalog.talk(talk_id):
+			var key := str(line.get("text", ""))
+			check(ResourceLoader.exists(DialogueBox.VOICE_DIR + key + ".mp3"), "озвучка %s" % key)

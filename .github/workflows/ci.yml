@@ -19,9 +19,9 @@ env:
   # Название файлов в релизе; GitHub сам заменяет в имени файла пробелы и знаки, а подпись
   # на странице релиза остаётся как есть.
   GAME_NAME: "MAKE A ERROR, and you're an error"
-  # Стадия сборок из dev: alpha, пока в игре нет всех этажей и финала; потом beta.
-  # Релизы из main выходят без стадии: v0.<номер pull request>.
-  STAGE: alpha
+  # Стадия сборок из dev: v<VERSION>-beta.<номер запуска>. Версия лежит в файле VERSION;
+  # релиз из main выходит с тегом и названием v<VERSION> без стадии.
+  STAGE: beta
 
 jobs:
   lint:
@@ -89,9 +89,7 @@ jobs:
         id: version
         run: |
           if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$GITHUB_REF" = "refs/heads/dev" ]; then
-            last="$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-pre-releases --limit 100 \
-              --json tagName -q '.[].tagName' | sed -n 's/^v0\.\([0-9][0-9]*\)$/\1/p' | sort -n | tail -1)"
-            version="v0.$(( ${last:-0} + 1 ))-${STAGE}.${GITHUB_RUN_NUMBER}"
+            version="v$(tr -d '[:space:]' < VERSION)-${STAGE}.${GITHUB_RUN_NUMBER}"
           else
             version="dev-${GITHUB_SHA::7}"
           fi
@@ -196,7 +194,7 @@ jobs:
           compression-level: 0
 
   prerelease:
-    name: Альфа-релиз из dev
+    name: Предрелиз из dev
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     needs: [build, macos]
@@ -238,4 +236,4 @@ jobs:
             "out/$GAME_NAME.exe#$GAME_NAME.exe" "out/$GAME_NAME.exe.sha256#$GAME_NAME.exe.sha256" \
             "out/$GAME_NAME.dmg#$GAME_NAME.dmg" "out/$GAME_NAME.dmg.sha256#$GAME_NAME.dmg.sha256" \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --latest=false \
-            --title "MAKE A ERROR $BUILD_VERSION" --notes-file notes.md
+            --title "$BUILD_VERSION" --notes-file notes.md

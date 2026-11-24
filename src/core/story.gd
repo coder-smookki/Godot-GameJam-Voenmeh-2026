@@ -89,3 +89,14 @@ func _on_world_marked(id: String) -> void:
 		Game.set_task(step["task"])
 	if step.has("announce"):
 		announce(step["announce"])
+
+
+## Выдаёт послание ЛАБЫ один раз: отметка, счётчик посланий и тост с текстом послания.
+## [param mark] - отметка послания, например "message_2".
+## [param text_key] - ключ текста послания.
+func give_message(mark: String, text_key: String) -> void:
+	if not World.mark(mark):
+		return
+	World.bump("messages")
+	Ui.toast(tr("TOAST_MESSAGE").format(World.f), ToastStack.KIND_LABA)
+	Ui.toast(tr(text_key), ToastStack.KIND_LABA)

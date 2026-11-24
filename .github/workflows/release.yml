@@ -24,13 +24,21 @@ jobs:
     name: Сборка Windows и macOS
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     env:
       MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
-      BUILD_VERSION: v0.${{ github.event.pull_request.number }}
     steps:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
+
+      - name: Версия релиза
+        id: version
+        run: |
+          version="v$(tr -d '[:space:]' < VERSION)"
+          echo "BUILD_VERSION=$version" >> "$GITHUB_ENV"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - uses: ./.github/actions/setup-godot
         with:
@@ -106,7 +114,7 @@ jobs:
       PR_TITLE: ${{ github.event.pull_request.title }}
       PR_BODY: ${{ github.event.pull_request.body }}
       MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
-      BUILD_VERSION: v0.${{ github.event.pull_request.number }}
+      BUILD_VERSION: ${{ needs.build.outputs.version }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/download-artifact@v7
@@ -136,8 +144,8 @@ jobs:
           printf '%s\n' "$PR_BODY" > notes.md
           if [ -z "$(tr -d '[:space:]' < notes.md)" ]; then
             gh release create "$BUILD_VERSION" "${files[@]}" --repo "$GITHUB_REPOSITORY" \
-              --target "$MERGE_SHA" --title "$PR_TITLE" --generate-notes
+              --target "$MERGE_SHA" --title "$BUILD_VERSION" --generate-notes
           else
             gh release create "$BUILD_VERSION" "${files[@]}" --repo "$GITHUB_REPOSITORY" \
-              --target "$MERGE_SHA" --title "$PR_TITLE" --notes-file notes.md
+              --target "$MERGE_SHA" --title "$BUILD_VERSION" --notes-file notes.md
           fi

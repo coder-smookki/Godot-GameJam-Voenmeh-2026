@@ -24,6 +24,7 @@ func before_each() -> void:
 
 ## Начинает новую игру и дочитывает разговор, которым герой встречает вестибюль.
 func start_game() -> void:
+	Engine.time_scale = 1.0
 	await Game.new_game()
 	finish_talk()
 

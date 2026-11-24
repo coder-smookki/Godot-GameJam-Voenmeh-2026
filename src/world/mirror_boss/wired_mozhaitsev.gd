@@ -26,6 +26,10 @@ var _sprite: Sprite2D = null
 
 ## Создаёт рисунок и слушает разговоры.
 func _ready() -> void:
+	if World.is_marked("boss_5"):
+		hide()
+		set_process(false)
+		return
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_sprite = Sprite2D.new()
 	_sprite.centered = false

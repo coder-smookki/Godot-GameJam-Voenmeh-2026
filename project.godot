@@ -31,6 +31,7 @@ Settings="*res://src/core/settings.gd"
 Game="*res://src/core/game.gd"
 Story="*res://src/core/story.gd"
 Ui="*res://src/ui/ui.tscn"
+Music="*res://src/core/music.gd"
 
 [debug]
 

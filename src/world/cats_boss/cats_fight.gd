@@ -103,6 +103,7 @@ func start() -> void:
 		return
 	phase = Phase.INTRO
 	_player = room.player
+	Music.play("boss3")
 	_cat = room.cat
 	if _cat != null:
 		_cat.stay_at(GINGER_X)
@@ -210,6 +211,7 @@ func _outro() -> void:
 	if is_instance_valid(_cat):
 		_cat.release()
 	phase = Phase.DONE
+	Music.play_room()
 	World.mark(BOSS_MARK)
 	SaveSystem.save_game()
 	finished.emit()
