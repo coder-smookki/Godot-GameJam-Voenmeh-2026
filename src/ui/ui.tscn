@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" path="res://src/ui/difficulty/difficulty_screen.tscn" id="17"]
 [ext_resource type="PackedScene" path="res://src/ui/quiz/quiz_game.tscn" id="18"]
 [ext_resource type="PackedScene" path="res://src/ui/code/code_game.tscn" id="19"]
+[ext_resource type="PackedScene" path="res://src/ui/mirror/mirror_game.tscn" id="20"]
 
 [ext_resource type="Shader" path="res://src/ui/effects/screen_fx.gdshader" id="13"]
 
@@ -41,6 +42,8 @@ mouse_filter = 2
 [node name="Hud" parent="." instance=ExtResource("2")]
 
 [node name="Toasts" parent="." instance=ExtResource("3")]
+
+[node name="MirrorGame" parent="." instance=ExtResource("20")]
 
 [node name="DialogueBox" parent="." instance=ExtResource("4")]
 

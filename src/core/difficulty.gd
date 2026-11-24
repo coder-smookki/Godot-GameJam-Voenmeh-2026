@@ -42,6 +42,8 @@ const TABLE: Dictionary = {
 	"code_tasks": [2, 3, 4, 5],
 	"code_time": [120.0, 80.0, 55.0, 40.0],
 	"code_penalty": [3.0, 6.0, 9.0, 12.0],
+	"mirror_reveal": [6.0, 4.0, 2.5, 1.5],
+	"mirror_slack": [99, 10, 6, 3],
 }
 
 

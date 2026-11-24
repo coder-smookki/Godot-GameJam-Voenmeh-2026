@@ -13,6 +13,7 @@ const COLORS: Dictionary = {
 	"valshtein": Color("4f7d8c"),
 	"lestenko": Color("7a6a4f"),
 	"zemlyanskaya": Color("b8a05a"),
+	"mozhaitsev": Color("6a4f8a"),
 }
 
 

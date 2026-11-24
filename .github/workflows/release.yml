@@ -14,6 +14,11 @@ concurrency:
 permissions:
   contents: write
 
+env:
+  # Название файлов в релизе; GitHub сам заменяет в имени файла пробелы и знаки, а подпись
+  # на странице релиза остаётся как есть.
+  GAME_NAME: "MAKE A ERROR, and you're an error"
+
 jobs:
   build:
     name: Сборка Windows и macOS
@@ -94,7 +99,7 @@ jobs:
           compression-level: 0
 
   release:
-    name: Релиз из pull request (Windows, macOS .zip и .dmg)
+    name: Релиз из pull request (Windows .exe и macOS .dmg)
     runs-on: ubuntu-latest
     needs: [build, dmg]
     env:
@@ -114,19 +119,20 @@ jobs:
           name: release-dmg
           path: build
 
-      - name: Контрольные суммы
-        working-directory: build
+      - name: Файлы релиза с названием игры
         run: |
-          sha256sum Eksperiment404.exe > Eksperiment404.exe.sha256
-          sha256sum Eksperiment404-macos.zip > Eksperiment404-macos.zip.sha256
-          sha256sum Eksperiment404.dmg > Eksperiment404.dmg.sha256
+          mkdir -p out
+          cp build/Eksperiment404.exe "out/$GAME_NAME.exe"
+          cp build/Eksperiment404.dmg "out/$GAME_NAME.dmg"
+          cd out
+          sha256sum "$GAME_NAME.exe" > "$GAME_NAME.exe.sha256"
+          sha256sum "$GAME_NAME.dmg" > "$GAME_NAME.dmg.sha256"
           ls -la
 
       - name: Опубликовать релиз
         run: |
-          files=(build/Eksperiment404.exe build/Eksperiment404.exe.sha256
-            build/Eksperiment404-macos.zip build/Eksperiment404-macos.zip.sha256
-            build/Eksperiment404.dmg build/Eksperiment404.dmg.sha256)
+          files=("out/$GAME_NAME.exe#$GAME_NAME.exe" "out/$GAME_NAME.exe.sha256#$GAME_NAME.exe.sha256"
+            "out/$GAME_NAME.dmg#$GAME_NAME.dmg" "out/$GAME_NAME.dmg.sha256#$GAME_NAME.dmg.sha256")
           printf '%s\n' "$PR_BODY" > notes.md
           if [ -z "$(tr -d '[:space:]' < notes.md)" ]; then
             gh release create "$BUILD_VERSION" "${files[@]}" --repo "$GITHUB_REPOSITORY" \

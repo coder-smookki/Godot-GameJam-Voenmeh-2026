@@ -24,6 +24,7 @@ var _fade_tween: Tween = null
 @onready var drawing: DrawGame = $DrawGame
 @onready var quiz: QuizGame = $QuizGame
 @onready var code: CodeGame = $CodeGame
+@onready var mirror: MirrorGame = $MirrorGame
 @onready var game_over: GameOverScreen = $GameOverScreen
 @onready var settings: SettingsScreen = $SettingsScreen
 @onready var confirm: ConfirmScreen = $ConfirmScreen

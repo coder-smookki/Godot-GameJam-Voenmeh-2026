@@ -1169,3 +1169,54 @@ msgstr "Пропуски и есть программирование. Иди н
 msgid "TALK_ZEML_AFTER"
 msgstr "Мажайцев на пятом. Смотри под ноги: там по полу тянутся кабели."
 
+msgid "NAME_MOZHAITSEV"
+msgstr "Мажайцев"
+
+msgid "TALK_MOZH_FAR_1"
+msgstr "Мажайцев! Держитесь, я сейчас подойду!"
+
+msgid "TALK_MOZH_FAR_2"
+msgstr "Стой! Не подходи ближе!"
+
+msgid "TALK_MOZH_CLONE_1"
+msgstr "Перед Демьяном из пикселей собирается его двойник."
+
+msgid "TALK_MOZH_CLONE_2"
+msgstr "Это не ты. Вирус сделал твою копию, и она повторяет каждый твой шаг."
+
+msgid "TALK_MOZH_HINT_1"
+msgstr "Только наоборот: ты вправо - он влево, ты вверх - он вниз."
+
+msgid "TALK_MOZH_HINT_2"
+msgstr "Под тремя клетками бомбы. Я их подсвечу - запоминай!"
+
+msgid "TALK_MOZH_HINT_3"
+msgstr "Заведи двойника на все три. А сам на них не наступай."
+
+msgid "TALK_MOZH_RETRY"
+msgstr "Ещё раз. Смотри внимательно, где бомбы."
+
+msgid "TALK_MOZH_FREE_1"
+msgstr "Получилось! Держи кнопку - она откроет выход на крышу."
+
+msgid "TALK_MOZH_FREE_2"
+msgstr "А вы? Я могу вас вытащить."
+
+msgid "TALK_MOZH_FREE_3"
+msgstr "Я пока посижу в проводах. Иди, вирус уже поднимается на крышу."
+
+msgid "TASK_GO_ROOF"
+msgstr "Выйти на крышу"
+
+msgid "ANNOUNCE_ROOF"
+msgstr "Получена кнопка крыши"
+
+msgid "MIRROR_BOMBS"
+msgstr "Клон на бомбах: {done} из 3"
+
+msgid "MIRROR_MOVES"
+msgstr "Ходов: {left}"
+
+msgid "MIRROR_HINT"
+msgstr "Стрелки или WASD - шаг. Клон ходит зеркально"
+

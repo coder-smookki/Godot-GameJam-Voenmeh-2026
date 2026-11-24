@@ -607,6 +607,51 @@ func test_tv_fight_timeout() -> void:
 	check(Ui.code.logic().solved == 0, "задачи начались заново")
 
 
+## Пятый этаж: Мажайцев вдали, клон перед героем, поле с бомбами. Неудача отнимает сердце и
+## раскладывает бомбы заново; победа отдаёт кнопку крыши.
+func test_mirror_fight() -> void:
+	await start_game()
+	World.mark("boss_4")
+	await Game.goto_room("corridor_5", Elevator.SPAWN)
+	var room := tree.current_scene as Room
+	var fight: MirrorFight = room.get_node("Fight")
+	var mozh: WiredMozhaitsev = room.get_node("Actors/Mozhaitsev")
+	check(not fight.is_running(), "у лифта боя нет")
+	room.player.global_position.x = MirrorFight.TRIGGER_X - 20.0
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	check(fight.is_running(), "герой увидел Мажайцева")
+	Ui.dialogue.advance()
+	Ui.dialogue.advance()
+	check(mozh.talking, "Мажайцев говорит с открытым ртом")
+	finish_talk()
+	check(not mozh.talking, "и закрывает рот после разговора")
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	finish_talk()
+	check(Ui.mirror.visible, "поле открыто, подсказка Мажайцева сразу за разговором")
+	finish_talk()
+	Engine.time_scale = 4.0
+	await tree.create_timer(Ui.mirror.logic().reveal_sec + 0.2, true, false, true).timeout
+	var logic := Ui.mirror.logic()
+	logic.bombs = [Vector2i(5, 0), Vector2i(3, 3), Vector2i(4, 2)] as Array[Vector2i]
+	Ui.mirror.step(Vector2i.LEFT)
+	await _until(func() -> bool: return int(World.f["hearts"]) == 2)
+	await _until(func() -> bool: return Ui.dialogue.visible)
+	finish_talk()
+	await tree.create_timer(logic.reveal_sec + 0.2, true, false, true).timeout
+	logic.bombs = [Vector2i(1, 3), Vector2i(3, 3), Vector2i(5, 3)] as Array[Vector2i]
+	logic.move_limit = 99
+	for step: int in 5:
+		Ui.mirror.step(Vector2i.LEFT)
+	check(logic.is_won(), "клон взорвал три бомбы")
+	await _until(func() -> bool: return Ui.dialogue.visible and not Ui.mirror.visible)
+	finish_talk()
+	await _until(func() -> bool: return not fight.is_running())
+	Engine.time_scale = 1.0
+	check(World.is_marked("boss_5"), "босс пятого этажа побеждён")
+	equal(Game.task_key, "TASK_GO_ROOF", "задание: на крышу")
+	check((room.get_node("Props/Roof") as Door).is_open(), "выход на крышу открыт")
+
+
 ## Попадает лучом отладчика в цель боя.
 ## [param target] - окно, миска или батарея.
 func _shoot_target(target: Node) -> void:

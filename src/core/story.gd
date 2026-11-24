@@ -28,6 +28,7 @@ const STEPS: Dictionary = {
 	"reached_floor_4": {"task": "TASK_PASS_BLOB"},
 	"blob_corridor_4": {"task": "TASK_ROOM_418"},
 	"boss_4": {"task": "TASK_GO_FLOOR_5", "announce": "ANNOUNCE_BUTTON_5"},
+	"boss_5": {"task": "TASK_GO_ROOF", "announce": "ANNOUNCE_ROOF"},
 	"seen_lestenko": {"announce": "ANNOUNCE_RAM"},
 }
 

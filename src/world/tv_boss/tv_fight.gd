@@ -2,7 +2,8 @@ class_name TvFight
 extends BossFight
 ## Кабинет 418: заражённый телевизор, преграда и Землянская, прибитая вирусом к стене.
 ##
-## При первом входе камера показывает Землянскую: она бьётся у стены (кадры 1-2-3-3-2-1),
+## При первом входе камера показывает Землянскую: она один раз бьётся у стены (кадры
+## 1-2-3-3-2-1, потом замирает на первом),
 ## рассказчик и её реплика из сценария, потом камера переходит на телевизор, он просыпается
 ## со злым лицом, и начинается бой: на стекле программы с пропусками ([CodeGame]). Каждая
 ## решённая задача ранит экран, трясёт и раскалывает преграду. Если время на задачу вышло,
@@ -30,7 +31,7 @@ const PINNED_FRAMES: Array[Texture2D] = [
 	preload("res://assets/characters/zemlyanskaya/pinned_3.png"),
 ]
 const PINNED_ORDER: Array[int] = [0, 1, 2, 2, 1, 0]
-const PINNED_FPS := 6.0
+const PINNED_FPS := 5.0
 const CRACK_SEC := 0.35
 
 @export var exit_door: Door = null
@@ -42,7 +43,7 @@ var phase: Phase = Phase.WAIT
 
 var _screen: BossScreen = null
 var _pinned: Sprite2D = null
-var _pinned_clock: float = 0.0
+var _pinned_clock: float = -1.0
 var _cracks: int = 0
 
 
@@ -76,14 +77,16 @@ func _ready() -> void:
 	Game.room_entered.connect(_on_room_entered, CONNECT_ONE_SHOT)
 
 
-## Двигает кадры прибитой Землянской: 1-2-3-3-2-1 по кругу, и во время пауз тоже.
+## Двигает кадры прибитой Землянской один раз: 1-2-3-3-2-1, потом она замирает на первом.
 ## [param delta] - время кадра в секундах.
 func _process(delta: float) -> void:
-	if not _pinned.visible:
+	if not _pinned.visible or _pinned_clock < 0.0:
 		return
 	_pinned_clock += delta
-	var step := int(_pinned_clock * PINNED_FPS) % PINNED_ORDER.size()
+	var step := mini(int(_pinned_clock * PINNED_FPS), PINNED_ORDER.size() - 1)
 	_pinned.texture = PINNED_FRAMES[PINNED_ORDER[step]]
+	if step == PINNED_ORDER.size() - 1:
+		_pinned_clock = -1.0
 
 
 ## Сообщает, идёт ли бой прямо сейчас (между началом и победой).
@@ -108,7 +111,8 @@ func start() -> void:
 	_director.zoom = Vector2.ONE
 	_take_view()
 	await _pan(ZEML_VIEW, 1.1)
-	await _wait(2.4)
+	_pinned_clock = 0.0
+	await _wait(PINNED_ORDER.size() / PINNED_FPS + 0.6)
 	await Story.play_once(TALK)
 	if not is_inside_tree():
 		return
@@ -274,7 +278,6 @@ func _on_answered(correct: bool) -> void:
 		_hud.damage()
 		_crack_barrier()
 		_shake_camera(5.0, 0.35)
-		_pinned_clock += 0.5
 	else:
 		_screen.attack()
 		_screen.glitch(0.5)

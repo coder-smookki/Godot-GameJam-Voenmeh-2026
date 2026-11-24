@@ -384,3 +384,39 @@ func test_code_logic() -> void:
 	for task: Dictionary in CodeLogic.TASKS:
 		var lines: Array = task["code"]
 		check(lines.size() <= 4, "программа помещается на экран")
+
+
+## Клон шагает зеркально, взрывает бомбы и проигрывает герою; любая раскладка проходима.
+func test_mirror_logic() -> void:
+	equal(MirrorLogic.mirror(MirrorLogic.HERO_START), MirrorLogic.CLONE_START, "углы напротив")
+	var mirror := MirrorLogic.new(4)
+	mirror.bombs = [Vector2i(1, 3), Vector2i(3, 3), Vector2i(5, 3)] as Array[Vector2i]
+	mirror.move_limit = 99
+	check(not mirror.step(Vector2i.UP), "за край поля не шагнуть")
+	var hits: Array[Vector2i] = []
+	mirror.clone_hit.connect(func(cell: Vector2i) -> void: hits.append(cell))
+	for step: int in 5:
+		mirror.step(Vector2i.LEFT)
+		equal(mirror.clone, MirrorLogic.mirror(mirror.hero), "клон всегда напротив героя")
+	equal(hits.size(), 3, "клон наступил на три бомбы")
+	check(mirror.is_won(), "победа")
+	var boom := MirrorLogic.new(4)
+	boom.bombs = [Vector2i(5, 0), Vector2i(3, 3), Vector2i(4, 2)] as Array[Vector2i]
+	boom.move_limit = 99
+	boom.step(Vector2i.LEFT)
+	check(boom.is_done() and not boom.is_won(), "герой на бомбе - проигрыш")
+	var tired := MirrorLogic.new(4)
+	tired.bombs = [Vector2i(1, 3), Vector2i(3, 3), Vector2i(5, 3)] as Array[Vector2i]
+	tired.move_limit = 1
+	tired.step(Vector2i.DOWN)
+	check(tired.is_done() and not tired.is_won(), "ходы кончились - проигрыш")
+	for seed: int in 40:
+		var layout := MirrorLogic.new(seed)
+		layout.configure(Difficulty.ULTRA)
+		equal(layout.bombs.size(), MirrorLogic.BOMBS, "три бомбы")
+		for bomb: Vector2i in layout.bombs:
+			check(
+				not MirrorLogic.mirror(bomb) in layout.bombs, "бомбы не стоят друг напротив друга"
+			)
+		check(layout.shortest_tour() > 0, "раскладка проходима")
+		equal(layout.move_limit, layout.shortest_tour() + layout.slack, "запас ходов по уровню")

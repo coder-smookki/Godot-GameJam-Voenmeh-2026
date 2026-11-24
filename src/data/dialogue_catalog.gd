@@ -104,6 +104,32 @@ const TALKS: Dictionary = {
 	[
 		{"speaker": "zemlyanskaya", "text": "TALK_ZEML_AFTER"},
 	],
+	"mozhaitsev_far":
+	[
+		{"speaker": "demyan", "text": "TALK_MOZH_FAR_1"},
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_FAR_2"},
+	],
+	"mozhaitsev_clone":
+	[
+		{"speaker": "", "text": "TALK_MOZH_CLONE_1"},
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_CLONE_2"},
+	],
+	"mozhaitsev_hint":
+	[
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_HINT_1"},
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_HINT_2"},
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_HINT_3"},
+	],
+	"mozhaitsev_retry":
+	[
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_RETRY"},
+	],
+	"mozhaitsev_free":
+	[
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_FREE_1"},
+		{"speaker": "demyan", "text": "TALK_MOZH_FREE_2"},
+		{"speaker": "mozhaitsev", "text": "TALK_MOZH_FREE_3"},
+	],
 	"lestenko":
 	[
 		{"speaker": "demyan", "text": "TALK_LESTENKO_1"},

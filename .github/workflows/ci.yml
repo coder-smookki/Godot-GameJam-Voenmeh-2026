@@ -16,6 +16,9 @@ permissions:
   contents: read
 
 env:
+  # Название файлов в релизе; GitHub сам заменяет в имени файла пробелы и знаки, а подпись
+  # на странице релиза остаётся как есть.
+  GAME_NAME: "MAKE A ERROR, and you're an error"
   # Стадия сборок из dev: alpha, пока в игре нет всех этажей и финала; потом beta.
   # Релизы из main выходят без стадии: v0.<номер pull request>.
   STAGE: alpha
@@ -211,20 +214,17 @@ jobs:
 
       - uses: actions/download-artifact@v7
         with:
-          name: Eksperiment404-macos-${{ env.BUILD_VERSION }}
-          path: build
-
-      - uses: actions/download-artifact@v7
-        with:
           name: Eksperiment404-dmg-${{ env.BUILD_VERSION }}
           path: build
 
-      - name: Контрольные суммы
-        working-directory: build
+      - name: Файлы релиза с названием игры
         run: |
-          sha256sum Eksperiment404.exe > Eksperiment404.exe.sha256
-          sha256sum Eksperiment404-macos.zip > Eksperiment404-macos.zip.sha256
-          sha256sum Eksperiment404.dmg > Eksperiment404.dmg.sha256
+          mkdir -p out
+          cp build/Eksperiment404.exe "out/$GAME_NAME.exe"
+          cp build/Eksperiment404.dmg "out/$GAME_NAME.dmg"
+          cd out
+          sha256sum "$GAME_NAME.exe" > "$GAME_NAME.exe.sha256"
+          sha256sum "$GAME_NAME.dmg" > "$GAME_NAME.dmg.sha256"
           ls -la
 
       - name: Опубликовать предрелиз
@@ -234,8 +234,8 @@ jobs:
             echo
             echo "Коммит ${GITHUB_SHA::7}: $(printf '%s\n' "$COMMIT_TITLE" | head -1)"
           } > notes.md
-          gh release create "$BUILD_VERSION" build/Eksperiment404.exe build/Eksperiment404.exe.sha256 \
-            build/Eksperiment404-macos.zip build/Eksperiment404-macos.zip.sha256 \
-            build/Eksperiment404.dmg build/Eksperiment404.dmg.sha256 \
+          gh release create "$BUILD_VERSION" \
+            "out/$GAME_NAME.exe#$GAME_NAME.exe" "out/$GAME_NAME.exe.sha256#$GAME_NAME.exe.sha256" \
+            "out/$GAME_NAME.dmg#$GAME_NAME.dmg" "out/$GAME_NAME.dmg.sha256#$GAME_NAME.dmg.sha256" \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --latest=false \
             --title "MAKE A ERROR $BUILD_VERSION" --notes-file notes.md
